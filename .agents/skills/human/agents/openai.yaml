@@ -1,0 +1,5 @@
+interface:
+  display_name: "Human"
+  short_description: "Respuesta puntual en espanol: conclusion primero, tablas/listas por default, cero relleno."
+policy:
+  allow_implicit_invocation: true
