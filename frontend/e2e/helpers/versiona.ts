@@ -26,6 +26,17 @@ export async function createProject(page: Page, name: string): Promise<void> {
   await expect(page.getByTestId('upload-dropzone')).toBeVisible({ timeout: 15_000 });
 }
 
+/** Opens the seeded multi-role project (Torre E2E): the ONLY project where all
+ * five seeded actors are members — required by multi-user specs (d4/d5) until
+ * the invitations UI arrives (A2, It6). */
+export async function openSeededProject(page: Page): Promise<void> {
+  await page.goto('/projects');
+  await page.getByTestId('board-search').fill('Torre E2E');
+  const card = page.getByTestId('projects-grid').getByRole('link', { name: /Torre E2E/ });
+  await card.first().click();
+  await expect(page.getByTestId('upload-dropzone')).toBeVisible({ timeout: 15_000 });
+}
+
 /** C1/C2 happy path: pick a fixture, confirm the preview, wait for analysis. */
 export async function uploadPdf(
   page: Page,

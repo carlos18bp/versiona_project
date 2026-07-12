@@ -5,9 +5,9 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
-**Iteración**: **It2** · **Fecha**: 2026-07-12 ·
-**Escenarios totales (03)**: 258 · **Con fila aquí**: 11 (U/H) + 45 (B/C) + 9 (E1 + D5-A01) ·
-**VERDES**: 11 + 40 + 9 = **60** · **Pendientes**: 198
+**Iteración**: **It3** · **Fecha**: 2026-07-12 ·
+**Escenarios totales (03)**: 258 · **Con fila aquí**: 11 (U/H) + 45 (B/C) + 9 (E1) + 28 (D4/D5/NTF) ·
+**VERDES**: 11 + 40 + 9 + 28 = **88** · **Pendientes**: 170
 
 ## 1. Reglas de cumplimiento
 
