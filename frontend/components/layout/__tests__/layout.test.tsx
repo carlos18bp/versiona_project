@@ -45,7 +45,7 @@ describe('layout components', () => {
     const signOut = jest.fn();
     renderHeader({ isAuthenticated: true, signOut });
 
-    expect(screen.getByRole('link', { name: 'Panel' })).toHaveAttribute('href', '/dashboard');
+    expect(screen.getByRole('link', { name: 'Panel' })).toHaveAttribute('href', '/projects');
     const signOutButton = screen.getByRole('button', { name: 'Salir' });
 
     await userEvent.click(signOutButton);

@@ -32,6 +32,13 @@ const customJestConfig = {
       lines: 50,
       statements: 50,
     },
+    // Staged gates per docs/audit/04 §4 (It1 step: stores 75).
+    './lib/stores/': {
+      branches: 60,
+      functions: 75,
+      lines: 75,
+      statements: 75,
+    },
   },
   coverageReporters: ['text-summary', 'text', 'lcov', 'html', 'json-summary'],
 };

@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import StagingGate from '@/components/staging/StagingGate';
+import { Toaster } from '@/components/ui/toast';
 import Providers from './providers';
 
 export const metadata: Metadata = {
-  title: 'Base Django + React + Next Feature Template',
-  description: 'A template for building web applications with Django and React',
+  title: 'Versiona — El Git de tus documentos',
+  description: 'Control de versiones, comparación y aprobación con sello para PDFs',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -17,11 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <StagingGate>
             <Header />
             {children}
-            <footer className="border-t border-border mt-16">
-              <div className="max-w-6xl mx-auto px-6 py-10 text-sm text-muted-foreground">
-                &copy; 2026 Base Django + React + Next Feature Template
-              </div>
-            </footer>
+            <Footer />
+            <Toaster />
           </StagingGate>
         </Providers>
       </body>
