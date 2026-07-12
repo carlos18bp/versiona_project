@@ -15,6 +15,8 @@ generator and regenerate in a PR that also updates the truth table below.
 |---|---|---|
 | `contrato_v1.pdf` | Native-text baseline: 8 numbered sections | C1, engine sectioning, A1 sample |
 | `contrato_v2.pdf` | The documented re-delivery (truth table below) | C2, E1, **D5 queen test** |
+| `contrato_v3.pdf` | v2 + ONLY §3 modified (adds prior-written-notice sentence — answers the master-journey observation) | Master journey step 9 (D3-A03) |
+| `contrato_v4.pdf` | v3 + ONLY §3 modified again ("cinco (5) días" → "diez (10) días") | Master journey step 13 (**D5-F01 mirror**) |
 | `escaneado_v1.pdf` | Raster of v1, no text layer | scanned-scenario detection, OCR path |
 | `sin_encabezados.pdf` | Headless prose | section-per-page fallback (DP-09) |
 | `protegido.pdf` | Password-protected (`versiona-secreta`) | upload rejection (needs_pass) |
@@ -43,3 +45,20 @@ generator and regenerate in a PR that also updates the truth table below.
 Reference D5 scenario (`06` §5.4): reviewer A seals sections {1, 2} → both
 preserved; reviewer B seals {3, 7} → invalidated because 3 changed (7 stays
 intact and is recorded as such in the partial evidence); only B is notified.
+
+## Truth table: v2 → v3 (master journey, docs/audit/03 §7 step 9)
+
+| Section | Change | Expected engine result |
+|---|---|---|
+| 3. Obligaciones del contratista | paragraph 2 gains: "La penalidad del cinco por ciento (5%) se aplicará previa notificación escrita con al menos cinco (5) días hábiles de antelación." | **modified** (the ONLY change) |
+| All other 7 sections | none | unchanged |
+
+## Truth table: v3 → v4 (master journey step 13 — the D5 trigger)
+
+| Section | Change | Expected engine result | D5 effect |
+|---|---|---|---|
+| 3. Obligaciones del contratista | "cinco (5) días hábiles" → "diez (10) días hábiles" | **modified** (the ONLY change) | Seal over {3,7} → **invalidated** (partial record of intact §7); seal over {1,2} → **preserved**; email ONLY to the {3,7} reviewer |
+| All other 7 sections | none | unchanged | preserved |
+
+Verified sha256 (regenerate only via the script; v1/v2 bytes are frozen — DP-A9):
+run `sha256sum testdata/pdfs/*.pdf` after regeneration and compare against git.

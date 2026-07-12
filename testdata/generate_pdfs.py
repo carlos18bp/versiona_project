@@ -140,6 +140,25 @@ BODIES = {
         'rectificar y suprimir sus datos mediante solicitud escrita dirigida '
         'al responsable del tratamiento.',
     ],
+    # v3/v4 additions for the master journey (docs/audit/03 §7). Independent
+    # strings: NEVER reuse or edit the v1/v2 bodies above (DP-A9 — the bytes
+    # of contrato_v1/v2 must stay identical).
+    'obligaciones_contratista_p2_v3': (
+        'En caso de retraso imputable al contratista, se aplicara una multa '
+        'equivalente al cinco por ciento (5%) del valor total del contrato por '
+        'cada semana de retraso, sin exceder el veinte por ciento (20%) del '
+        'valor total. La penalidad del cinco por ciento (5%) se aplicara '
+        'previa notificacion escrita con al menos cinco (5) dias habiles de '
+        'antelacion.'
+    ),
+    'obligaciones_contratista_p2_v4': (
+        'En caso de retraso imputable al contratista, se aplicara una multa '
+        'equivalente al cinco por ciento (5%) del valor total del contrato por '
+        'cada semana de retraso, sin exceder el veinte por ciento (20%) del '
+        'valor total. La penalidad del cinco por ciento (5%) se aplicara '
+        'previa notificacion escrita con al menos diez (10) dias habiles de '
+        'antelacion.'
+    ),
 }
 
 V1_SECTIONS = [
@@ -161,6 +180,34 @@ V2_SECTIONS = [
     ('2. DEFINICIONES', BODIES['definiciones']),
     ('3. OBLIGACIONES DEL CONTRATISTA',
      [BODIES['obligaciones_contratista_p1'], BODIES['obligaciones_contratista_p2_v2']]),
+    ('4. OBLIGACIONES DEL CONTRATANTE', BODIES['obligaciones_contratante']),
+    ('5. VALOR Y FORMA DE PAGO', [BODIES['valor_p1_v2'], BODIES['valor_p2']]),
+    ('6. CONFIDENCIALIDAD', BODIES['confidencialidad']),
+    ('7. RESOLUCION DE CONTROVERSIAS', BODIES['controversias']),
+    ('8. PROTECCION DE DATOS PERSONALES', BODIES['datos_personales']),
+]
+
+# v2→v3: ONLY §3 changes (adds the prior-written-notice sentence, answering
+# the master-journey observation); everything else byte-of-text identical.
+V3_SECTIONS = [
+    ('1. OBJETO DEL CONTRATO', BODIES['objeto']),
+    ('2. DEFINICIONES', BODIES['definiciones']),
+    ('3. OBLIGACIONES DEL CONTRATISTA',
+     [BODIES['obligaciones_contratista_p1'], BODIES['obligaciones_contratista_p2_v3']]),
+    ('4. OBLIGACIONES DEL CONTRATANTE', BODIES['obligaciones_contratante']),
+    ('5. VALOR Y FORMA DE PAGO', [BODIES['valor_p1_v2'], BODIES['valor_p2']]),
+    ('6. CONFIDENCIALIDAD', BODIES['confidencialidad']),
+    ('7. RESOLUCION DE CONTROVERSIAS', BODIES['controversias']),
+    ('8. PROTECCION DE DATOS PERSONALES', BODIES['datos_personales']),
+]
+
+# v3→v4: ONLY §3 changes again (5 días → 10 días). Mirror of the reference D5
+# scenario: a seal over {3,7} invalidates, a seal over {1,2} is preserved.
+V4_SECTIONS = [
+    ('1. OBJETO DEL CONTRATO', BODIES['objeto']),
+    ('2. DEFINICIONES', BODIES['definiciones']),
+    ('3. OBLIGACIONES DEL CONTRATISTA',
+     [BODIES['obligaciones_contratista_p1'], BODIES['obligaciones_contratista_p2_v4']]),
     ('4. OBLIGACIONES DEL CONTRATANTE', BODIES['obligaciones_contratante']),
     ('5. VALOR Y FORMA DE PAGO', [BODIES['valor_p1_v2'], BODIES['valor_p2']]),
     ('6. CONFIDENCIALIDAD', BODIES['confidencialidad']),
@@ -263,6 +310,8 @@ def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     build_contract(OUT_DIR / 'contrato_v1.pdf', 'contrato de obra v1', V1_SECTIONS)
     build_contract(OUT_DIR / 'contrato_v2.pdf', 'contrato de obra v2', V2_SECTIONS)
+    build_contract(OUT_DIR / 'contrato_v3.pdf', 'contrato de obra v3', V3_SECTIONS)
+    build_contract(OUT_DIR / 'contrato_v4.pdf', 'contrato de obra v4', V4_SECTIONS)
     build_headless(OUT_DIR / 'sin_encabezados.pdf')
     build_protected(OUT_DIR / 'protegido.pdf')
     build_corrupt(OUT_DIR / 'corrupto.pdf')
