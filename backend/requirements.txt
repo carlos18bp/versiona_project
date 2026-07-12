@@ -7,9 +7,7 @@ django-silk>=5.0.0
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1
 python-dotenv==1.2.2
-easy-thumbnails==2.10.1
 Faker==40.18.0
-huey>=2.5.0
 pillow==12.2.0
 pytest==9.0.3
 pytest-cov==7.1.0
@@ -25,9 +23,25 @@ six==1.17.0
 sqlparse==0.5.5
 typing_extensions==4.15.0
 
+# Task queue (Celery — broker and result backend on Redis)
+celery[redis]>=5.5,<6
+
+# Database (PostgreSQL + pgvector)
+psycopg[binary]>=3.2,<4
+pgvector>=0.3,<1
+
+# Object storage (S3/MinIO)
+django-storages[s3]>=1.14,<2
+
+# PDF engine & test fixtures
+PyMuPDF>=1.24,<2
+reportlab>=4.2,<5
+
+# Seal signing (Ed25519)
+cryptography>=44,<46
+
 # Production server
 gunicorn>=23.0,<24.0
-mysqlclient>=2.2,<3.0
 
 # Security pins (transitive deps con CVEs en versiones previas)
 urllib3>=2.7.0
