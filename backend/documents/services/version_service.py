@@ -134,6 +134,11 @@ def complete_upload(document: Document, upload_id: str, message: str, user, requ
         )
         locked.latest_number = number
         locked.save(update_fields=['latest_number', 'updated_at'])
+        # D1: reviewing an outdated version is pointless — supersede open
+        # requests on older versions of this document.
+        from reviews.services.review_service import supersede_open_requests
+
+        supersede_open_requests(version)
         audit.record(org=locked.project.organization, project=locked.project, actor=user,
                      event_type='version.uploaded', obj=version,
                      payload={'number': number, 'sha256': sha256, 'size': size},

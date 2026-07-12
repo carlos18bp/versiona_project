@@ -1,10 +1,12 @@
-"""Notification delivery (kit 5): in-app always + email per preference."""
+"""Notification delivery (kit 5): in-app always + email per preference,
+rendered per-recipient language through the bilingual template registry."""
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
 from .models import NOTIFICATION_CATALOG, Notification, NotificationPreference
+from .templates import render
 
 
 def _wants(user, event_key: str, channel: str) -> bool:
@@ -19,16 +21,21 @@ def _wants(user, event_key: str, channel: str) -> bool:
     return bool(catalog.get(f'default_{channel}', False))
 
 
-def notify(*, user, event_key: str, org, project=None, title: str, body: str = '',
-           link: str = '', payload: dict | None = None) -> Notification | None:
+def notify(*, user, event_key: str, org, project=None, context: dict | None = None,
+           title: str = '', body: str = '', link: str = '',
+           payload: dict | None = None) -> Notification | None:
     """Returns the in-app notification (None when the user opted out and the
-    event is not mandatory). Email is sent only when the preference allows it —
-    this is where S6 lives: `seal.preserved` defaults to OFF on both channels,
-    so a reviewer whose seal survived is never disturbed."""
+    event is not mandatory). Copy comes from the bilingual registry rendered
+    with `context` in the RECIPIENT's language; explicit title/body override
+    it. S6 lives here: `seal.preserved` defaults to OFF on both channels."""
     wants_in_app = _wants(user, event_key, 'in_app')
     wants_email = _wants(user, event_key, 'email')
     if not wants_in_app and not wants_email:
         return None
+
+    if not title:
+        language = getattr(user, 'language', 'es') or 'es'
+        title, body = render(event_key, language, context)
 
     notification = None
     if wants_in_app:

@@ -36,6 +36,41 @@ NOTIFICATION_CATALOG = {
         'default_in_app': True,
         'mandatory_in_app': False,
     },
+    'review.requested': {
+        'label_es': 'Te asignaron una revisión',
+        'label_en': 'You were assigned a review',
+        'default_email': True,
+        'default_in_app': True,
+        'mandatory_in_app': True,  # assigned work
+    },
+    'review.completed': {
+        'label_es': 'Tu solicitud de revisión se completó',
+        'label_en': 'Your review request was completed',
+        'default_email': True,
+        'default_in_app': True,
+        'mandatory_in_app': False,
+    },
+    'observation.created': {
+        'label_es': 'Nueva observación en tu documento',
+        'label_en': 'New observation on your document',
+        'default_email': True,
+        'default_in_app': True,
+        'mandatory_in_app': False,
+    },
+    'observation.replied': {
+        'label_es': 'Respondieron tu observación',
+        'label_en': 'Your observation got a reply',
+        'default_email': True,
+        'default_in_app': True,
+        'mandatory_in_app': False,
+    },
+    'observation.resolved': {
+        'label_es': 'Tu observación fue resuelta',
+        'label_en': 'Your observation was resolved',
+        'default_email': False,
+        'default_in_app': True,
+        'mandatory_in_app': False,
+    },
     'seal_plan.pending': {
         'label_es': 'Hay un plan de invalidación por confirmar',
         'label_en': 'An invalidation plan awaits confirmation',

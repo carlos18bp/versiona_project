@@ -25,6 +25,8 @@ urlpatterns = [
     path('api/', include('comparisons.urls')),
     path('api/', include('reviews.urls')),
     path('api/', include('notifications.urls')),
+    path('api/', include('observations.urls')),
+    path('api/', include('audit.urls')),
 ]
 
 if settings.DEBUG:

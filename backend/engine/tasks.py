@@ -102,6 +102,10 @@ def _auto_compare(version: DocumentVersion) -> dict | None:
     from reviews.services.seal_service import apply_invalidation
 
     apply_invalidation(comparison)
+    # D3: every thread gets exactly one anchor on the new version (I14).
+    from observations.services import reanchor_observations
+
+    reanchor_observations(version)
     return {
         'id': str(comparison.public_id),
         'from': previous.number,

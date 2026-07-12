@@ -87,6 +87,22 @@ def org_projects(request, org):
     )
 
 
+@api_view(['GET'])
+@require_project_role('viewer')
+def project_members(request, proj):
+    """Members with their effective role — feeds the reviewer picker (D1)."""
+    from projects.models import ProjectMembership
+
+    memberships = ProjectMembership.objects.filter(
+        project=request.project
+    ).select_related('user')
+    return Response({'results': [
+        {'id': m.user_id, 'email': m.user.email,
+         'first_name': m.user.first_name, 'role': m.role}
+        for m in memberships
+    ]})
+
+
 @api_view(['GET', 'PATCH', 'DELETE'])
 @require_project_role('viewer')
 def project_detail(request, proj):

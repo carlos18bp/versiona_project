@@ -93,6 +93,9 @@ def create_seal(
         request=request,
     )
     _notify_author_seal_placed(seal)
+    from .review_service import complete_assignment_on_seal
+
+    complete_assignment_on_seal(seal)
     _refresh_approval(version, request=request)
     return seal
 
@@ -105,10 +108,13 @@ def _notify_author_seal_placed(seal: Seal):
     project = version.document.project
     notify(
         user=author, event_key='seal.placed', org=project.organization, project=project,
-        title=f'{seal.reviewer.email} selló v{version.number} de "{version.document.title}"',
-        body='El sello cubre '
-             + ('todo el documento.' if seal.covers_all
-                else f'{seal.covered_sections.count()} sección(es).'),
+        context={
+            'reviewer': seal.reviewer.email,
+            'version': version.number,
+            'document': version.document.title,
+            'coverage': ('todo el documento' if seal.covers_all
+                         else f'{seal.covered_sections.count()} sección(es)'),
+        },
         link=f'/projects/{project.public_id}/documents/{version.document.public_id}',
         payload={'seal': str(seal.public_id), 'version': version.number},
     )
@@ -172,8 +178,8 @@ def _refresh_approval(version: DocumentVersion, request=None):
             notify(
                 user=version.author, event_key='version.approved',
                 org=project.organization, project=project,
-                title=f'v{version.number} de "{version.document.title}" quedó aprobada',
-                body=f'{qualifying} sello(s) válidos — regla: {required}.',
+                context={'version': version.number, 'document': version.document.title,
+                         'qualifying': qualifying, 'required': required},
                 link=f'/projects/{project.public_id}/documents/{version.document.public_id}',
                 payload={'version': version.number},
             )
@@ -279,9 +285,8 @@ def apply_invalidation(comparison: Comparison) -> list[SealValidityRecord]:
             notify(
                 user=seal.reviewer, event_key='seal.invalidated',
                 org=project.organization, project=project,
-                title=f'Tu sello en "{document.title}" requiere re-revisión (v{to_version.number})',
-                body='Cambió lo que sellaste: ' + (', '.join(changed) or 'el documento') + '. '
-                     'Tu re-revisión está acotada a esas secciones.',
+                context={'document': document.title, 'version': to_version.number,
+                         'sections': ', '.join(changed) or 'el documento'},
                 link=f'/projects/{project.public_id}/documents/{document.public_id}/'
                      f'compare/{from_version.public_id}/{to_version.public_id}',
                 payload={'seal': str(seal.public_id), 'sections': changed,
@@ -305,9 +310,7 @@ def _notify_coordinators_plan_pending(project, document, to_version):
         notify(
             user=membership.user, event_key='seal_plan.pending',
             org=project.organization, project=project,
-            title=f'Plan de invalidación por confirmar — "{document.title}" v{to_version.number}',
-            body='El análisis fue degradado o el proyecto está en modo coordinador: '
-                 'confirma qué sellos se conservan.',
+            context={'document': document.title, 'version': to_version.number},
             link=f'/projects/{project.public_id}/documents/{document.public_id}',
             payload={'version': to_version.number},
         )
@@ -352,12 +355,13 @@ def confirm_seal_plan(
             request=request,
         )
         if choice == 'invalidated':
+            changed_keys = [c['stable_key'] for c in record.evidence.get('changed', [])]
             notify(
                 user=record.seal.reviewer, event_key='seal.invalidated',
                 org=project.organization, project=project,
-                title=f'Tu sello en "{to_version.document.title}" requiere re-revisión '
-                      f'(v{to_version.number})',
-                body='El coordinador confirmó que los cambios afectan lo que sellaste.',
+                context={'document': to_version.document.title,
+                         'version': to_version.number,
+                         'sections': ', '.join(changed_keys) or 'el documento'},
                 link=f'/projects/{project.public_id}/documents/{to_version.document.public_id}',
                 payload={'seal': str(record.seal.public_id)},
             )
