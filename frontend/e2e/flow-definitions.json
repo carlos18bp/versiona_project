@@ -50,6 +50,42 @@
       "description": "Recovery page renders the two-step code + reset form",
       "expectedSpecs": 1
     },
+    "auth-sign-in-success": {
+      "name": "Sign-in happy path with a real session",
+      "module": "auth",
+      "roles": ["shared"],
+      "priority": "P1",
+      "description": "Valid credentials create a real session (cookies set) and land on /dashboard; header shows Panel/Salir",
+      "expectedSpecs": 1,
+      "knownGaps": "Needs seeded users + storageState globalSetup (It1, docs/plan/06 SS5.1) — current auth specs only assert forms/redirects"
+    },
+    "auth-sign-out": {
+      "name": "Sign out ends the session",
+      "module": "auth",
+      "roles": ["user"],
+      "priority": "P2",
+      "description": "Authenticated user presses Salir; cookies are cleared and protected routes redirect again",
+      "expectedSpecs": 1,
+      "knownGaps": "Depends on auth-sign-in-success plumbing (It1)"
+    },
+    "auth-admin-login-handoff": {
+      "name": "Django admin impersonation handoff",
+      "module": "auth",
+      "roles": ["staff"],
+      "priority": "P3",
+      "description": "/admin-login consumes access/refresh/redirect query params, stores tokens and redirects",
+      "expectedSpecs": 1,
+      "knownGaps": "Unit-tested only; E2E needs crafted tokens (low priority)"
+    },
+    "help-manual-browse": {
+      "name": "Browse the interactive help",
+      "module": "home",
+      "roles": ["shared"],
+      "priority": "P3",
+      "description": "/manual renders Versiona help sections and fuzzy search finds a process",
+      "expectedSpecs": 1,
+      "knownGaps": "No spec yet — nice-to-have"
+    },
     "a1-onboarding-wow": {
       "name": "A1 - Sign-up and first wow moment",
       "module": "onboarding",

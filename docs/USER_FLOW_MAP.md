@@ -36,6 +36,10 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 | `auth-login-invalid` | Invalid credentials rejected | auth | P1 | shared | `/sign-in` | Implemented |
 | `auth-protected-redirect` | Protected routes redirect | auth | P1 | guest | `/dashboard` | Implemented |
 | `auth-forgot-password-form` | Password recovery | auth | P2 | shared | `/forgot-password` | Implemented |
+| `auth-sign-in-success` | Sign-in happy path (real session) | auth | P1 | shared | `/sign-in` → `/dashboard` | **Gap** — spec lands with It1 storageState setup |
+| `auth-sign-out` | Sign out ends the session | auth | P2 | user | header (Salir) | **Gap** — depends on `auth-sign-in-success` |
+| `auth-admin-login-handoff` | Django admin impersonation handoff | auth | P3 | staff | `/admin-login` | Gap — unit-tested only |
+| `help-manual-browse` | Browse the interactive help | home | P3 | shared | `/manual` | Gap — nice-to-have |
 | `a1-onboarding-wow` | A1 Sign-up and first wow | onboarding | P1 | guest | `/onboarding` | Planned (It6) |
 | `a2-invite-team` | A2 Invite team and roles | org | P1 | admin | `/org/settings`, `/invite/[token]` | Planned (It6) |
 | `b1-create-project` | B1 Create a project | projects | P1 | editor | `/projects/new` | Planned (It1) |
