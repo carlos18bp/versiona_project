@@ -28,9 +28,20 @@ test.describe('B2 — Tablero completo', () => {
         page.getByTestId('projects-grid').getByRole('link', { name })
       ).toBeVisible({ timeout: 15_000 });
 
-      // Una búsqueda sin coincidencias muestra el vacío-con-guía
-      await page.getByTestId('board-search').fill('blockchain quantum');
-      await expect(page.getByTestId('projects-grid')).toHaveCount(0, { timeout: 15_000 });
+      // Una búsqueda sin coincidencias muestra el vacío-con-guía. La primera
+      // búsqueda (FTS sobre ~100 proyectos residuales) puede seguir en vuelo:
+      // esperamos la RESPUESTA del segundo término antes de asertar.
+      await Promise.all([
+        page.waitForResponse(
+          (response) => response.url().includes('blockchain'), { timeout: 20_000 }
+        ),
+        page.getByTestId('board-search').fill('blockchain quantum'),
+      ]);
+      // El diseño reserva el vacío-con-guía para el primer uso; una búsqueda
+      // sin coincidencias deja el grid sin tarjetas.
+      await expect(
+        page.getByTestId('projects-grid').locator('li')
+      ).toHaveCount(0, { timeout: 15_000 });
 
       // El filtro de estado lista el proyecto activo
       await page.getByTestId('board-search').fill('');

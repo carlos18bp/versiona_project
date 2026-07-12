@@ -101,7 +101,7 @@ BLOQUEANTE de It1 (todo lo posterior lo consume).
 | **It5 (cierre 2026-07-12)** | **4** (G01–G03 módulo A · G18/G20–G23 → It7, G25) | 1 (G25) | 1 (H09) | **4** (G05 B2 completo, G06 B3, G19 E3, G30 OCR) |
 | **It6 (cierre 2026-07-12)** | **5** (G18 E2, G20 E4, G21 F1, G22 F2, G23 F3) → It7 | 1 (G25 → It7) | 1 (H09 → It8) | **4** (G01 A1, G02 A2, G03 A3, G29 idioma completo) + B4 UI |
 | **It7 (cierre 2026-07-12)** | **0 bloqueantes de flujo** (queda solo H09 cosmética + hardening It8) | 0 | 1 (H09) | **6** (G18, G20, G21, G22, G23, G25) |
-| It8 | (cierre de misión) | | | |
+| **It8 (cierre 2026-07-12)** | **0** | 0 | 0 (H09 documentada como deuda cosmética aceptada en 05 §7) | Hardening: 5 hallazgos corregidos (05 §6b) + M1 verde ×2 + reina OCR + verificador externo E4 |
 
 ## 7. Preguntas abiertas (DECISIÓN PENDIENTE)
 

@@ -330,8 +330,7 @@
       ],
       "priority": "P1",
       "description": "Sign-up to certificate export in 16 UI-only steps (docs/audit/03 SS7)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 8 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "b4-archive-delete": {
       "name": "B4 - Archive or delete a project",

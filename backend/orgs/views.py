@@ -16,7 +16,9 @@ def my_orgs(request):
     memberships = (
         OrganizationMembership.objects.filter(user=request.user, is_active=True)
         .select_related('organization')
-        .order_by('organization__name')
+        # The team workspace is the daily driver: it comes first, the
+        # personal one after (deterministic default for orgStore).
+        .order_by('-organization__kind', 'organization__name')
     )
     return Response({
         'results': [

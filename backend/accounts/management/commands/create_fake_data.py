@@ -63,8 +63,8 @@ class Command(BaseCommand):
         )
         # The harness org exercises every flow: the free limits would block
         # the specs (7 members, N projects) — F1 has its own dedicated spec.
-        if org.plan != 'pro':
-            org.plan = 'pro'
+        if org.plan != 'enterprise':
+            org.plan = 'enterprise'
             org.save(update_fields=['plan'])
         OrganizationMembership.objects.get_or_create(
             organization=org, user=users['owner'],

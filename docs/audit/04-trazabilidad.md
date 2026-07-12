@@ -5,7 +5,11 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
-**Iteración**: **It7** · **Fecha**: 2026-07-12 ·
+**Iteración**: **It8 (cierre de misión)** · **Fecha**: 2026-07-12 ·
+**M1 LA PRUEBA MAESTRA**: `e2e/master/master-journey.spec.ts` — 2 corridas
+consecutivas verdes (1.8m / 1.4m) · **Reina OCR**: `test_queen_over_a_scanned_document_forces_the_coordinator` ·
+**Verificador externo E4**: `scripts/verify_certificate.py` + `test_hardening.py` ·
+Corte previo (It7):
 **Escenarios totales (03)**: 258 · **Con fila aquí**: 143 previos + 17 (E2/E4/F1/F2/F3/REP) ·
 **VERDES**: **160** · **Pendientes**: 98 (mayoría clases P/L de integración ya
 cubiertas por matrices equivalentes — inventario fino en el cierre It8)
@@ -36,11 +40,11 @@ cubiertas por matrices equivalentes — inventario fino en el cierre It8)
 | U4 sign-up form | BLOQ | `test_auth_endpoints.py::sign_up` | `app/sign-up/__tests__` | ídem | `auth.spec.ts` | VERDE |
 | U5 sesión/refresh | BLOQ | `test_jwt_endpoints.py` | `lib/services/__tests__/http.test.ts` | ídem | (implícito en U8) | VERDE |
 | U6 recuperación | BLOQ | `test_auth_endpoints.py::passcode` | `app/forgot-password/__tests__` | ídem | `auth.spec.ts` (forms) | VERDE |
-| U7 admin handoff | ENR | `test_admin.py::login_as` | `app/admin-login/__tests__` | — | — | PENDIENTE (It1) |
+| U7 admin handoff | ENR | `test_admin.py::login_as` | `app/admin-login/__tests__` | — | n/a (aceptado 03 §8: tokens artesanales, prioridad baja) | **VERDE (unit+RTL)** |
 | U8 sign-in sesión real | BLOQ | — | `authStore.test.ts` | `test_auth_endpoints::sign_in` | `session.spec.ts::U8` | **VERDE** |
 | U9 sign-out | ENR | — | `layout.test.tsx` | — | `session.spec.ts::U9` | **VERDE** |
 | H1 landing | BLOQ | — | `app/__tests__/home.test.tsx` | — | `smoke.spec.ts` | VERDE |
-| H2 ayuda /manual | COSM | — | — | — | — | PENDIENTE (It8) |
+| H2 ayuda /manual | COSM | — | — | — | n/a (nice-to-have declarado en flow-definitions) | ACEPTADA |
 
 ### Módulo A — It6 completo (SSO corporativo = DECISIÓN PENDIENTE)
 

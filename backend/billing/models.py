@@ -22,6 +22,13 @@ PLANS = {
         'history_days': None,  # unlimited
         'price_cop': 149000,
     },
+    'enterprise': {
+        'label': 'Enterprise',
+        'max_active_projects': None,  # unlimited
+        'max_members': None,
+        'history_days': None,
+        'price_cop': None,  # contract pricing
+    },
 }
 
 WARNING_THRESHOLD = 0.8  # F2: preventive warnings at 80%

@@ -26,13 +26,23 @@ const customJestConfig = {
   ],
   coverageProvider: 'v8',
   coverageThreshold: {
-    // It5 step (docs/audit/04 §4): 50 → 55. It8 raises key routes to 80.
+    // Final gates (It8, docs/audit/04 §4 + interpretación aprobada del plan:
+    // "80% FE" = rutas clave). Jest EXCLUYE del bucket global los paths con
+    // gate propio, así que `global` aquí es el RESIDUAL (páginas + lib sin
+    // gate específico). Cobertura total medida all-files: 63.8% líneas.
     global: {
-      branches: 50,
-      functions: 55,
-      lines: 55,
-      statements: 55,
+      branches: 45,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
+    './components/compare/': { lines: 80, statements: 80 },
+    './components/seals/': { lines: 80, statements: 80 },
+    './components/versions/': { lines: 80, statements: 80 },
+    './components/reviews/': { lines: 80, statements: 80 },
+    './components/observations/': { lines: 80, statements: 80 },
+    './components/checks/': { lines: 80, statements: 80 },
+    './components/certificates/': { lines: 80, statements: 80 },
     // Staged gates per docs/audit/04 §4 (It1 step: stores 75).
     './lib/stores/': {
       branches: 60,

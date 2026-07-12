@@ -366,7 +366,7 @@ def versiona_context(db, django_user_model):
 
     # The context org exercises EVERY flow: free limits have their own tests
     # that flip the plan explicitly (F1).
-    org = Organization.objects.create(name='Acme', slug='acme-test', plan='pro')
+    org = Organization.objects.create(name='Acme', slug='acme-test', plan='enterprise')
     OrganizationMembership.objects.create(
         organization=org, user=users['owner'], role=OrganizationMembership.Role.OWNER
     )
