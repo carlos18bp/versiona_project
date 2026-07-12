@@ -216,5 +216,5 @@ venv.
 
 | ID | Question | Recommendation |
 |---|---|---|
-| DP-19 | E2E in CI: GitHub Actions native services + host processes (as today) vs full docker-compose job. | **Native services** (keeps pip/npm caches, ~1 min faster startup); compose stays the dev/staging runtime + optional nightly compose-smoke job (see `07`). |
+| DP-19 | E2E in CI: GitHub Actions native services + host processes (as today) vs full docker-compose job. | **Native services** (keeps pip/npm caches, ~1 min faster startup) — consistent with the no-Docker runtime decision (DP-21, `07` §2.1). |
 | DP-20 | Jest threshold jump. | Progressive (50→55→60); jumping straight to 60 would block It1 on template-inherited code. |

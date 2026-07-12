@@ -244,5 +244,5 @@ hardening, Etapa 3 = "open the doors" (enterprise/API), Etapa 4 = intelligence.
 | ID | Question | Options / Recommendation |
 |---|---|---|
 | DP-13 | **Flow count discrepancy**: the mission prompt says "19 user flows" but the artifact enumerates **23** (A:3, B:4, C:4, D:5, E:4, F:3). This suite follows the artifact (source of truth on the WHAT). | Confirm the artifact governs; if 4 flows were meant to be dropped, name them. |
-| DP-14 | **Launch cut**: the artifact marks 16 flows as MVP (including D5, E3, OCR, F1), but its Etapa 1 (6–8 weeks) says "basic seals" and leaves "the full jewel" to Etapa 2. Is the first public release end-of-Etapa-1 (without full D5) or end of the full MVP roadmap (It0–It7 in `09`)? | Recommendation: treat "MVP" = the 16 flows (the artifact's own MVP rule demands the jewel working); use Etapa 1 as an internal milestone, not a public launch. |
-| DP-01 | F1 payment gateway (blocks It7 detail design). | See `09` — Mercado Pago recommended behind a `PaymentGateway` adapter. |
+| DP-14 | **Launch cut**: Etapa 1 vs full MVP. | **RESOLVED (operator, 2026-07-12)**: the first public release is the **full 16-flow MVP** (roadmap It0–It7); Etapa 1 is an internal milestone, not a public launch. |
+| DP-01 | F1 payment gateway. | **RESOLVED (operator, 2026-07-12): Wompi**, integrated behind the `PaymentGateway` adapter (see `03`). |

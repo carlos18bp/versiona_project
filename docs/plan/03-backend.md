@@ -236,7 +236,7 @@ non-membership. Services receive the actor and re-validate invariants (defense i
 
 | ID | Question | Recommendation |
 |---|---|---|
-| DP-01 | Payment gateway for LATAM (F1): Stripe / Mercado Pago / Wompi / PayU / dLocal. | **Mercado Pago** behind a `PaymentGateway` adapter (LATAM coverage, mature subscriptions + webhooks); Wompi if Colombia-only focus; Stripe does not onboard CO merchants today. Operator must decide before It7. |
+| DP-01 | Payment gateway for LATAM (F1). | **RESOLVED (operator, 2026-07-12): Wompi** (Colombia-first), behind a `PaymentGateway` adapter so the gateway stays swappable; checkout via Wompi's hosted widget, webhook verified with Wompi's event signature. |
 | DP-06 | Upload: presigned PUT vs multipart to the API. | **Presigned PUT** + authoritative `complete/` (hash, parse, limits); `UPLOAD_DIRECT_FALLBACK` flag for test environments. |
 | DP-07 | Coordinator: new role vs capability. | **Capability** `can_confirm_seal_plan` (project admins + designated users). Avoids a sixth role and a matrix rewrite. |
 | DP-08 | Withdraw my seal. | Allowed pre-approval only, as append-only event (see `02`). |

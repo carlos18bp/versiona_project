@@ -162,7 +162,7 @@ the contract the unit-test suite in `06` asserts first.
 
 | ID | Question | Recommendation |
 |---|---|---|
-| DP-04 | Free-plan 30-day retention vs the immutability promise: delete old versions, or lock access? | **Never delete**: versions older than 30 days become `locked` (visible in the timeline, not downloadable/comparable) and unlock on upgrade. Preserves I2/I3 and doubles as a conversion lever. |
+| DP-04 | Free-plan 30-day retention vs the immutability promise. | **RESOLVED (operator, 2026-07-12): never delete** — versions older than 30 days become `locked` (visible in the timeline, not downloadable/comparable) and unlock on upgrade. Preserves I2/I3 and doubles as a conversion lever. |
 | DP-05 | pgvector in MVP? | FTS `spanish` only in MVP; extension + nullable column ready from migration 0001; populate in V2. |
 | DP-08 | "Withdraw my seal": forbidden, allowed pre-approval, or always? | Allowed only while the version is not approved, as an append-only `seal.revoked_by_reviewer` event (Seal never deleted, I4) + approval recompute + audit. Post-approval un-approval is a V2 admin flow. |
 | DP-11 | Maximum PDF size / page count. | 100 MB / 500 pages on paid, 25 MB on free — stored in `Plan.limits` so it is adjustable without deploys. |
