@@ -7,6 +7,7 @@ import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { useNotificationStore } from '@/lib/stores/notificationStore';
+import { useReviewStore } from '@/lib/stores/reviewStore';
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' }).format(
@@ -25,10 +26,16 @@ export default function InboxPage() {
   const fetch = useNotificationStore((s) => s.fetch);
   const markRead = useNotificationStore((s) => s.markRead);
   const markAllRead = useNotificationStore((s) => s.markAllRead);
+  const assignments = useReviewStore((s) => s.assignments);
+  const fetchAssignments = useReviewStore((s) => s.fetchAssignments);
+  const reviews = useDict('reviews');
 
   useEffect(() => {
-    if (isAuthenticated) void fetch();
-  }, [isAuthenticated, fetch]);
+    if (isAuthenticated) {
+      void fetch();
+      void fetchAssignments();
+    }
+  }, [isAuthenticated, fetch, fetchAssignments]);
 
   if (!isAuthenticated) return null;
 
@@ -54,6 +61,39 @@ export default function InboxPage() {
           </button>
         ) : null}
       </div>
+
+      {assignments.length > 0 ? (
+        <section data-testid="inbox-assignments" className="mt-6">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            {reviews.assignments}
+          </h2>
+          <ol className="mt-2 flex flex-col gap-2">
+            {assignments.map((assignment) => (
+              <li key={assignment.review}>
+                <Link
+                  data-testid={`assignment-${assignment.review}`}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-primary/40 bg-primary/5 p-4 hover:bg-primary/10"
+                  href={assignment.link}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">
+                      {assignment.document_title} · v{assignment.version_number}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {assignment.project_name} · {reviews.requestedBy}{' '}
+                      {assignment.requested_by}
+                      {assignment.message ? ` — "${assignment.message}"` : ''}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs text-primary-foreground">
+                    {reviews.goReview}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       <div className="mt-6">
         <AsyncBoundary

@@ -4,6 +4,9 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { ObservationsPanel } from '@/components/observations/ObservationsPanel';
+import { ReviewContextBar } from '@/components/reviews/ReviewContextBar';
+import { ReviewRequestPanel } from '@/components/reviews/ReviewRequestPanel';
 import { SealActionBar } from '@/components/seals/SealActionBar';
 import { SealsPanel } from '@/components/seals/SealsPanel';
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
@@ -16,6 +19,7 @@ import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useSealStore, type SealSummary } from '@/lib/stores/sealStore';
 import { useVersionStore } from '@/lib/stores/versionStore';
+import type { NormalizedBBox } from '@/lib/pdf/coords';
 
 const PdfViewer = dynamic(
   () => import('@/components/pdf/PdfViewer').then((m) => m.PdfViewer),
@@ -24,7 +28,7 @@ const PdfViewer = dynamic(
 
 export default function VersionViewerPage() {
   const { isAuthenticated } = useRequireAuth();
-  const params = useParams<{ versionId: string }>();
+  const params = useParams<{ projectId: string; versionId: string }>();
   const t = useDict('documents');
   const seals = useDict('seals');
   const common = useDict('common');
@@ -38,6 +42,7 @@ export default function VersionViewerPage() {
   const revokeSeal = useSealStore((s) => s.revokeSeal);
   const userEmail = useAuthStore((s) => s.user?.email ?? null);
   const [withdrawing, setWithdrawing] = useState<SealSummary | null>(null);
+  const [anchorHighlights, setAnchorHighlights] = useState<NormalizedBBox[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -72,9 +77,21 @@ export default function VersionViewerPage() {
                 ) : null}
                 <span className="text-sm text-muted-foreground">{detail.message}</span>
               </div>
-              {fileUrl ? <PdfViewer file={fileUrl} /> : <Skeleton className="h-[480px] w-full" />}
+              {fileUrl ? (
+                <PdfViewer
+                  file={fileUrl}
+                  highlights={anchorHighlights}
+                  highlightKind="modified"
+                  scrollToPage={anchorHighlights[0]?.page ?? null}
+                />
+              ) : (
+                <Skeleton className="h-[480px] w-full" />
+              )}
             </div>
             <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
+              {['reviewer', 'admin'].includes(detail.effective_role ?? '') ? (
+                <ReviewContextBar versionId={detail.public_id} />
+              ) : null}
               {canSeal ? (
                 <SealActionBar
                   versionId={detail.public_id}
@@ -82,11 +99,25 @@ export default function VersionViewerPage() {
                   onSealed={() => void fetchDetail(params.versionId)}
                 />
               ) : null}
+              <ReviewRequestPanel
+                versionId={detail.public_id}
+                projectId={params.projectId}
+                canRequest={['editor', 'admin'].includes(detail.effective_role ?? '')}
+              />
               <SealsPanel
                 versionId={detail.public_id}
                 canConfirmPlan={detail.effective_role === 'admin'}
                 currentUserEmail={userEmail}
                 onWithdraw={(seal) => setWithdrawing(seal)}
+              />
+              <ObservationsPanel
+                versionId={detail.public_id}
+                versionNumber={detail.number}
+                sections={detail.sections}
+                canCreate={['reviewer', 'admin'].includes(detail.effective_role ?? '')}
+                canReply={detail.effective_role !== 'viewer'}
+                currentUserEmail={userEmail}
+                onSelectAnchor={(quads) => setAnchorHighlights(quads)}
               />
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground">

@@ -54,6 +54,7 @@ export function NotificationPrefs() {
                   <input
                     data-testid={`pref-${pref.event_key}-in_app`}
                     type="checkbox"
+                    aria-label={`${locale === 'en' ? pref.label_en : pref.label_es} — ${t.channelInApp}`}
                     checked={pref.in_app}
                     disabled={pref.mandatory_in_app}
                     onChange={(event) =>
@@ -65,6 +66,7 @@ export function NotificationPrefs() {
                   <input
                     data-testid={`pref-${pref.event_key}-email`}
                     type="checkbox"
+                    aria-label={`${locale === 'en' ? pref.label_en : pref.label_es} — ${t.channelEmail}`}
                     checked={pref.email}
                     onChange={(event) =>
                       void toggle(pref.event_key, 'email', event.target.checked)

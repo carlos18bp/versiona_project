@@ -199,8 +199,7 @@
       ],
       "priority": "P1",
       "description": "Author opens a review request; reviewers are assigned from section owners and see it in their inbox (docs/plan/01 D1)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 4 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "d2-assisted-review": {
       "name": "D2 - Review with assistance (already reviewed by you)",
@@ -210,8 +209,7 @@
       ],
       "priority": "P1",
       "description": "Reviewer sees traffic light and change summary first, jumps to changed sections, unchanged-since-my-seal sections are marked (docs/plan/01 D2)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 4 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "d3-anchored-observations": {
       "name": "D3 - Anchored observations with state",
@@ -222,8 +220,7 @@
       ],
       "priority": "P1",
       "description": "Reviewer selects a page zone and comments; thread transitions open/answered/resolved and survives across versions (docs/plan/01 D3)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 4 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "d4-seal-approve": {
       "name": "D4 - Approve with a seal",
