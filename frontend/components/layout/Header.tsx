@@ -1,14 +1,26 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ROUTES } from '@/lib/constants';
 import { useAuthStore } from '@/lib/stores/authStore';
+import { useOrgStore } from '@/lib/stores/orgStore';
 
 export default function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const signOut = useAuthStore((s) => s.signOut);
+  const orgs = useOrgStore((s) => s.orgs);
+  const fetchOrgs = useOrgStore((s) => s.fetchOrgs);
+
+  useEffect(() => {
+    if (isAuthenticated && orgs.length === 0) void fetchOrgs();
+  }, [isAuthenticated, orgs.length, fetchOrgs]);
+
+  // The trash is an org-admin surface (docs/plan/03 §3): hide it for everyone
+  // else instead of letting them walk into a 403.
+  const canSeeTrash = orgs.some((org) => org.role === 'owner' || org.role === 'admin');
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur">
@@ -35,12 +47,14 @@ export default function Header() {
               >
                 Panel
               </Link>
-              <Link
-                className="px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                href="/org/trash"
-              >
-                Papelera
-              </Link>
+              {canSeeTrash ? (
+                <Link
+                  className="px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  href="/org/trash"
+                >
+                  Papelera
+                </Link>
+              ) : null}
               <Link
                 className="px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 href="/settings"

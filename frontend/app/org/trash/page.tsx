@@ -36,9 +36,12 @@ export default function TrashPage() {
       const { data } = await api.get(`orgs/${activeOrgId}/trash/`);
       setItems(data.results ?? []);
     } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
       setError(
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
-          common.error
+        status === 403 || status === 404
+          ? 'La papelera es una vista de administración de la organización.'
+          : ((err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
+              common.error)
       );
     } finally {
       setIsLoading(false);
