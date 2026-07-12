@@ -37,17 +37,16 @@ describe('DashboardPage', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders dashboard and triggers sign out', async () => {
+  it('renders panel heading and triggers sign out', async () => {
     const signOut = jest.fn();
     mockUseRequireAuth.mockReturnValue({ isAuthenticated: true });
     setAuthStoreState({ signOut });
 
     render(<DashboardPage />);
 
-    expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Backoffice' })).toHaveAttribute('href', '/backoffice');
+    expect(screen.getByRole('heading', { name: 'Panel' })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Salir' }));
 
     expect(signOut).toHaveBeenCalledTimes(1);
   });

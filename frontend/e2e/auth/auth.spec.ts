@@ -89,12 +89,12 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/dashboard|sign-in/);
   });
 
-  test('should navigate to backoffice page', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
-    await page.goto('/backoffice');
+  test('should navigate to dashboard page', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
+    await page.goto('/dashboard');
     await waitForPageLoad(page);
     
-    // Either redirected to sign-in or the backoffice is shown
-    await expect(page).toHaveURL(/backoffice|sign-in/);
+    // Either redirected to sign-in or the dashboard is shown
+    await expect(page).toHaveURL(/dashboard|sign-in/);
   });
 
   test('should display sign-up page heading', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
