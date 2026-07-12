@@ -75,10 +75,14 @@ def sign_up(request):
         password=make_password(password),
         is_active=True
     )
-    
+
+    # Every user owns a personal organization from day one (A1)
+    from orgs.services import ensure_personal_org
+    ensure_personal_org(user)
+
     # Generate tokens
     tokens = generate_auth_tokens(user)
-    
+
     return Response(tokens, status=status.HTTP_201_CREATED)
 
 
@@ -224,12 +228,16 @@ def google_login(request):
             user.last_name = family_name
         if user.first_name or user.last_name:
             user.save()
-    
+
+    # Every user owns a personal organization from day one (A1); idempotent
+    from orgs.services import ensure_personal_org
+    ensure_personal_org(user)
+
     # Generate tokens
     tokens = generate_auth_tokens(user)
     tokens['created'] = created
     tokens['google_validated'] = payload is not None
-    
+
     return Response(tokens, status=status.HTTP_200_OK)
 
 

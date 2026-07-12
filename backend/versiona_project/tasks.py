@@ -188,3 +188,17 @@ def silk_reports_cleanup():
 
     if deleted:
         logger.info('Silk reports cleanup: deleted %d file(s) older than %s.', deleted, cutoff)
+
+
+@shared_task
+def purge_trashed():
+    """
+    Daily physical purge of trash rows past the grace window (kit 3 —
+    docs/audit/03 B4-A02/C4-A01). The PG trigger guarantees nothing alive or
+    sealed can be deleted through this path.
+    """
+    from documents.services.trash_service import purge_expired
+
+    counts = purge_expired()
+    logger.info('Trash purge completed: %s', counts)
+    return counts

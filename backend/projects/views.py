@@ -1,0 +1,151 @@
+"""Project endpoints (flows B1, B2-mínimo, B4 — docs/plan/03 §3)."""
+
+from django.db.models import Count, Q
+from django.utils.text import slugify
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+
+from audit import services as audit
+from core.permissions import require_org_role, require_project_role, resolve_org_role
+from documents.services.trash_service import (
+    archive_project,
+    restore_project,
+    trash_project,
+    unarchive_project,
+)
+from documents.services.version_service import DomainError
+
+from .models import Project, ProjectMembership
+from .serializers import ProjectCreateUpdateSerializer, ProjectDetailSerializer, ProjectListSerializer
+
+
+def _visible_projects(user, org):
+    """Scoping I12: org owners/admins see every project; members see theirs."""
+    org_role = resolve_org_role(user, org)
+    queryset = Project.objects.filter(organization=org)
+    if org_role not in ('owner', 'admin'):
+        queryset = queryset.filter(memberships__user=user)
+    return queryset.annotate(
+        document_count=Count('documents', filter=Q(documents__deleted_at__isnull=True), distinct=True)
+    ).order_by('-updated_at')
+
+
+@api_view(['GET', 'POST'])
+@require_org_role('member')
+def org_projects(request, org):
+    if request.method == 'GET':
+        queryset = _visible_projects(request.user, request.org)
+        search = request.query_params.get('q', '').strip()
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        status_filter = request.query_params.get('status', '').strip()
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        roles = {
+            membership.project_id: membership.role
+            for membership in ProjectMembership.objects.filter(
+                user=request.user, project__in=[p.pk for p in page]
+            )
+        }
+        if request.org_role in ('owner', 'admin'):
+            roles = {p.pk: 'admin' for p in page}
+        serializer = ProjectListSerializer(page, many=True, context={'roles_by_project': roles})
+        return paginator.get_paginated_response(serializer.data)
+
+    serializer = ProjectCreateUpdateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    name = serializer.validated_data['name'].strip()
+    if not name:
+        return Response({'error': 'El nombre es obligatorio.'}, status=400)
+    base = slugify(name)[:150] or 'proyecto'
+    slug = base
+    suffix = 1
+    while Project.objects.filter(organization=request.org, slug=slug).exists():
+        suffix += 1
+        slug = f'{base}-{suffix}'
+    project = Project.objects.create(
+        organization=request.org,
+        name=name,
+        slug=slug,
+        description=serializer.validated_data.get('description', ''),
+    )
+    ProjectMembership.objects.get_or_create(
+        project=project, user=request.user,
+        defaults={'role': ProjectMembership.Role.ADMIN},
+    )
+    audit.record(org=request.org, project=project, actor=request.user,
+                 event_type='project.created', obj=project,
+                 payload={'name': name}, request=request)
+    project.document_count = 0
+    return Response(
+        ProjectDetailSerializer(project, context={'roles_by_project': {project.pk: 'admin'}}).data,
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(['GET', 'PATCH', 'DELETE'])
+@require_project_role('viewer')
+def project_detail(request, proj):
+    project = request.project
+
+    if request.method == 'GET':
+        project.document_count = project.documents.count()
+        return Response(ProjectDetailSerializer(
+            project, context={'roles_by_project': {project.pk: request.effective_role}}
+        ).data)
+
+    if request.effective_role != 'admin':
+        return Response({'error': 'Se requiere rol admin.'}, status=403)
+
+    if request.method == 'PATCH':
+        serializer = ProjectCreateUpdateSerializer(project, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        before = {'name': project.name, 'description': project.description}
+        serializer.save()
+        audit.record(org=request.org, project=project, actor=request.user,
+                     event_type='project.updated', obj=project,
+                     payload={'before': before}, request=request)
+        project.document_count = project.documents.count()
+        return Response(ProjectDetailSerializer(
+            project, context={'roles_by_project': {project.pk: request.effective_role}}
+        ).data)
+
+    # DELETE → trash (two-step confirmation, B4-F02)
+    try:
+        trash_project(project, request.data.get('confirm_name', ''), request.user, request)
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _project_action(request, action):
+    try:
+        action(request.project, request.user, request)
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    request.project.refresh_from_db()
+    return Response(ProjectDetailSerializer(
+        request.project, context={'roles_by_project': {request.project.pk: 'admin'}}
+    ).data)
+
+
+@api_view(['POST'])
+@require_project_role('admin', include_trashed=True)
+def project_restore(request, proj):
+    return _project_action(request, restore_project)
+
+
+@api_view(['POST'])
+@require_project_role('admin')
+def project_archive(request, proj):
+    return _project_action(request, archive_project)
+
+
+@api_view(['POST'])
+@require_project_role('admin', include_trashed=True)
+def project_unarchive(request, proj):
+    return _project_action(request, unarchive_project)

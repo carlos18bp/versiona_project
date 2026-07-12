@@ -376,6 +376,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'versiona_project.tasks.silk_reports_cleanup',
         'schedule': crontab(day_of_month='1', hour='5', minute='0'),
     },
+    'purge-trashed-daily': {
+        'task': 'versiona_project.tasks.purge_trashed',
+        'schedule': crontab(hour='2', minute='30'),
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -419,3 +423,12 @@ N_PLUS_ONE_THRESHOLD = int(os.getenv('N_PLUS_ONE_THRESHOLD', '10'))
 # Frontend
 # ---------------------------------------------------------------------------
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000').rstrip('/')
+
+# ---------------------------------------------------------------------------
+# Versiona domain settings (kit — nothing hardcoded, docs/plan/07 §2)
+# ---------------------------------------------------------------------------
+TRASH_RETENTION_DAYS = int(os.getenv('TRASH_RETENTION_DAYS', '30'))
+MAX_PDF_SIZE_MB = int(os.getenv('MAX_PDF_SIZE_MB', '25'))
+UPLOAD_SIGNED_URL_TTL_SECONDS = int(os.getenv('UPLOAD_SIGNED_URL_TTL_SECONDS', '900'))
+D5_DEFAULT_MODE = os.getenv('D5_DEFAULT_MODE', 'auto')
+D5_OCR_CONFIDENCE_MIN = float(os.getenv('D5_OCR_CONFIDENCE_MIN', '0.75'))

@@ -10,3 +10,9 @@ urlpatterns = [
     path('update_password/', auth.update_password, name='update_password'),
     path('validate_token/', auth.validate_token, name='validate_token'),
 ]
+
+from accounts.views.profile import me_profile  # noqa: E402
+
+urlpatterns += [
+    path('me/profile/', me_profile, name='me-profile'),
+]

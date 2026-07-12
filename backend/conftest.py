@@ -341,3 +341,104 @@ def admin_client(api_client, admin_user):
     """APIClient pre-authenticated as a staff/admin user."""
     api_client.force_authenticate(user=admin_user)
     return api_client
+
+
+# ---------------------------------------------------------------------------
+# Versiona domain fixtures — one org/project with the 7 audit actors
+# (docs/audit/03 §0.2: owner, admin, editor, reviewer, viewer, non_member,
+# anonymous). Used by the P01–P04 integration matrices.
+# ---------------------------------------------------------------------------
+from types import SimpleNamespace
+
+
+@pytest.fixture
+def versiona_context(db, django_user_model):
+    from orgs.models import Organization, OrganizationMembership
+    from projects.models import Project, ProjectConfigVersion, ProjectMembership
+
+    def make_user(alias):
+        return django_user_model.objects.create_user(
+            email=f'{alias}@versiona.test', password='secreta123', first_name=alias.title()
+        )
+
+    users = {alias: make_user(alias) for alias in
+             ('owner', 'admin', 'editor', 'reviewer', 'viewer', 'non_member')}
+
+    org = Organization.objects.create(name='Acme', slug='acme-test')
+    OrganizationMembership.objects.create(
+        organization=org, user=users['owner'], role=OrganizationMembership.Role.OWNER
+    )
+    for alias in ('admin', 'editor', 'reviewer', 'viewer'):
+        OrganizationMembership.objects.create(
+            organization=org, user=users[alias], role=OrganizationMembership.Role.MEMBER
+        )
+
+    other_org = Organization.objects.create(name='Ajena', slug='ajena-test')
+    OrganizationMembership.objects.create(
+        organization=other_org, user=users['non_member'],
+        role=OrganizationMembership.Role.OWNER,
+    )
+
+    project = Project.objects.create(organization=org, name='Torre Central', slug='torre-central')
+    for alias, role in (
+        ('admin', ProjectMembership.Role.ADMIN),
+        ('editor', ProjectMembership.Role.EDITOR),
+        ('reviewer', ProjectMembership.Role.REVIEWER),
+        ('viewer', ProjectMembership.Role.VIEWER),
+    ):
+        ProjectMembership.objects.create(project=project, user=users[alias], role=role)
+
+    config = ProjectConfigVersion.current_for(project)
+
+    return SimpleNamespace(
+        org=org, other_org=other_org, project=project, config=config, users=users
+    )
+
+
+@pytest.fixture
+def client_as(versiona_context):
+    """client_as('editor') -> APIClient authenticated as that audit actor.
+
+    'anonymous' returns a bare client. Foreign-org actor: 'non_member'.
+    """
+    from rest_framework.test import APIClient
+
+    def _make(alias):
+        client = APIClient()
+        if alias != 'anonymous':
+            client.force_authenticate(user=versiona_context.users[alias])
+        return client
+
+    return _make
+
+
+@pytest.fixture
+def document_with_versions(versiona_context):
+    """Document + N analyzed versions with deterministic fake storage keys.
+
+    Engine-independent (view/permission tests); engine tests use testdata/.
+    """
+    from documents.models import Document, DocumentVersion
+
+    def _make(n_versions=1, document_slug='contrato', **version_overrides):
+        document = Document.objects.create(
+            project=versiona_context.project, title=document_slug.title(), slug=document_slug
+        )
+        versions = []
+        for number in range(1, n_versions + 1):
+            versions.append(DocumentVersion.objects.create(
+                document=document,
+                number=number,
+                message=f'versión {number}',
+                sha256=f'{number:064d}',
+                file_key=f'test/docs/{document.public_id}/v{number}/original.pdf',
+                analysis_status=DocumentVersion.AnalysisStatus.READY,
+                config_version=versiona_context.config,
+                author=versiona_context.users['editor'],
+                **version_overrides,
+            ))
+        document.latest_number = n_versions
+        document.save(update_fields=['latest_number'])
+        return document, versions
+
+    return _make

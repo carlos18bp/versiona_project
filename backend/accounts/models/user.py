@@ -45,6 +45,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
 
+    # User preferences (kit 7 — docs/audit/02 G28). `language` drives the UI
+    # dictionaries and email templates (es/en, operator decision 2026-07-12);
+    # `timezone` (IANA) formats every date shown to this user. Declared after
+    # date_joined: the field name shadows django.utils.timezone inside the
+    # class body.
+    class Language(models.TextChoices):
+        SPANISH = 'es', 'Español'
+        ENGLISH = 'en', 'English'
+
+    language = models.CharField(max_length=5, choices=Language.choices, default=Language.SPANISH)
+    timezone = models.CharField(max_length=64, default='America/Bogota')
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'

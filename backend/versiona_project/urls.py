@@ -18,6 +18,10 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include('accounts.urls')),
     path('api/', include('core.urls')),
+    path('api/', include('orgs.urls')),
+    path('api/', include('projects.urls')),
+    path('api/', include('documents.urls')),
+    path('api/', include('engine.urls')),
 ]
 
 if settings.DEBUG:
