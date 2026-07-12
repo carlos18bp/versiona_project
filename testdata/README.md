@@ -18,6 +18,18 @@ generator and regenerate in a PR that also updates the truth table below.
 | `contrato_v3.pdf` | v2 + ONLY §3 modified (adds prior-written-notice sentence — answers the master-journey observation) | Master journey step 9 (D3-A03) |
 | `contrato_v4.pdf` | v3 + ONLY §3 modified again ("cinco (5) días" → "diez (10) días") | Master journey step 13 (**D5-F01 mirror**) |
 | `escaneado_v1.pdf` | Raster of v1, no text layer | scanned-scenario detection, OCR path |
+
+### OCR truth table — `escaneado_v1.pdf` (It5, tesseract-spa @ 200dpi)
+
+Exact expected results (asserted in `engine/tests/test_analysis_pipeline.py`):
+scenario `scanned_ocr` · degraded `False` · mean word confidence `> 0.9` ·
+7 sections recovered from the OCR text layer, in order: `preambulo`,
+`objeto-del-contrato`, `obligaciones-del-contratista`,
+`obligaciones-del-contratante`, `valor-y-forma-de-pago`, `plazo-de-ejecucion`,
+`resolucion-de-controversias`. (`definiciones` and `confidencialidad` are the
+known OCR losses of the 200dpi raster: their headings do not survive the
+bold+size heuristic — documented, not a bug.) Confidence below **0.75** keeps
+the analysis degraded ⇒ D5 runs in forced coordinator mode (DP-09).
 | `sin_encabezados.pdf` | Headless prose | section-per-page fallback (DP-09) |
 | `protegido.pdf` | Password-protected (`versiona-secreta`) | upload rejection (needs_pass) |
 | `corrupto.pdf` | Invalid magic bytes | upload rejection (magic/parse) |

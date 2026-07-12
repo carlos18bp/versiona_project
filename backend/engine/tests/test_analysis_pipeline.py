@@ -105,11 +105,44 @@ def test_headless_pdf_falls_back_to_page_sections():
 
 
 @pytest.mark.escenario('C1-A02')
-def test_scanned_pdf_is_detected_and_degraded():
+def test_scanned_pdf_goes_through_ocr_with_real_sections():
+    """OCR truth table (It5, DP-02): the rasterized contrato_v1 comes back
+    with REAL sections extracted from the OCR text layer — exact results."""
     result = analyze_bytes(load('escaneado_v1.pdf'))
 
     assert result['scenario'] == 'scanned_ocr'
+    assert result['degraded'] is False  # confidence well above 0.75
+    assert result['ocr_confidence'] > 0.9
+    keys = [s['stable_key'] for s in result['sections']]
+    assert keys == [
+        'preambulo',
+        'objeto-del-contrato',
+        'obligaciones-del-contratista',
+        'obligaciones-del-contratante',
+        'valor-y-forma-de-pago',
+        'plazo-de-ejecucion',
+        'resolucion-de-controversias',
+    ]
+
+
+@pytest.mark.escenario('D5-A03')
+def test_low_ocr_confidence_keeps_the_analysis_degraded(monkeypatch):
+    """DP-09: below the 0.75 threshold the text exists but hash equality over
+    it is a liability — the analysis stays degraded (⇒ D5 coordinator mode)."""
+    from engine.services import analysis as analysis_module
+    from engine.services.ocr import run_ocr as real_run_ocr
+
+    def low_confidence_ocr(data):
+        pdf_with_text, _ = real_run_ocr(data)
+        return pdf_with_text, 0.42
+
+    monkeypatch.setattr('engine.services.ocr.run_ocr', low_confidence_ocr)
+
+    result = analysis_module.analyze_bytes(load('escaneado_v1.pdf'))
+
+    assert result['scenario'] == 'scanned_ocr'
     assert result['degraded'] is True
+    assert result['ocr_confidence'] == 0.42
 
 
 @pytest.mark.escenario('C1-E01')

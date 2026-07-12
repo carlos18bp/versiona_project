@@ -209,11 +209,36 @@ def render_thumbnail(doc: fitz.Document, width: int = 320) -> bytes:
 
 
 def analyze_bytes(data: bytes) -> dict:
-    """Pure pipeline: bytes → structured analysis (asserted vs truth table)."""
+    """Pure pipeline: bytes → structured analysis (asserted vs truth table).
+
+    Scanned PDFs go through OCR first (It5, DP-02): the text layer feeds the
+    SAME sectioning/hashing; confidence below the threshold keeps the result
+    degraded, which downstream forces coordinator mode on D5 (DP-03/DP-09)."""
+    ocr_confidence = None
+    probe = open_pdf(data)
+    try:
+        needs_ocr = detect_scenario(probe) == 'scanned_ocr'
+    finally:
+        probe.close()
+
+    if needs_ocr:
+        from .ocr import OCR_CONFIDENCE_THRESHOLD, OcrError, run_ocr
+
+        try:
+            data, ocr_confidence = run_ocr(data)
+        except OcrError:
+            ocr_confidence = 0.0  # keep the page-fallback path below
+
     doc = open_pdf(data)
     try:
-        scenario = detect_scenario(doc)
+        scenario = 'scanned_ocr' if needs_ocr else detect_scenario(doc)
         sections, degraded = extract_sections(doc)
+        if needs_ocr:
+            from .ocr import OCR_CONFIDENCE_THRESHOLD
+
+            # Low-confidence OCR is a liability: the text exists but nobody
+            # should trust hash equality over it (DP-09).
+            degraded = degraded or (ocr_confidence or 0.0) < OCR_CONFIDENCE_THRESHOLD
         taken: set = set()
         payload_sections = []
         for section in sections:
@@ -233,7 +258,8 @@ def analyze_bytes(data: bytes) -> dict:
             })
         return {
             'scenario': scenario,
-            'degraded': degraded or scenario == 'scanned_ocr',
+            'degraded': degraded,
+            'ocr_confidence': ocr_confidence,
             'page_count': doc.page_count,
             'sections': payload_sections,
             'thumbnail_png': render_thumbnail(doc),
