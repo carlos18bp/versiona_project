@@ -5,6 +5,8 @@
  * the backend profile). Never hardcode user-facing strings in components.
  */
 
+import { useEffect, useState } from 'react';
+
 import { useLocaleStore } from '@/lib/stores/localeStore';
 
 const DICTIONARIES = {
@@ -233,7 +235,14 @@ export function getDict<N extends Namespace>(namespace: N, locale: Locale) {
 
 export function useDict<N extends Namespace>(namespace: N) {
   const locale = useLocaleStore((s) => s.locale) as Locale;
-  return DICTIONARIES[namespace][locale] ?? DICTIONARIES[namespace].es;
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => setIsHydrated(true), []);
+
+  // Server and first client render must agree: the persisted locale is only
+  // applied after hydration (otherwise React reports a text mismatch).
+  const active: Locale = isHydrated ? locale : 'es';
+  return DICTIONARIES[namespace][active] ?? DICTIONARIES[namespace].es;
 }
 
 export function interpolate(template: string, values: Record<string, string | number>) {

@@ -35,10 +35,21 @@ export default function NewProjectPage() {
       setError(t.nameRequired);
       return;
     }
-    if (!activeOrgId) return;
     setIsSubmitting(true);
+    // The org list may still be in flight on a cold load: resolve it inline
+    // instead of silently dropping the submit.
+    let orgId = activeOrgId;
+    if (!orgId) {
+      await fetchOrgs();
+      orgId = useOrgStore.getState().activeOrgId;
+    }
+    if (!orgId) {
+      setError(common.error);
+      setIsSubmitting(false);
+      return;
+    }
     try {
-      const { data } = await api.post(`orgs/${activeOrgId}/projects/`, {
+      const { data } = await api.post(`orgs/${orgId}/projects/`, {
         name: name.trim(),
         description: description.trim(),
       });

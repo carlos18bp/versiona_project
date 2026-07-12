@@ -1,11 +1,13 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "lastUpdated": "2026-07-12",
   "flows": {
     "home-loads": {
       "name": "Landing page loads",
       "module": "home",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P1",
       "description": "Versiona landing renders with the 'El Git de tus documentos' headline",
       "expectedSpecs": 1
@@ -13,7 +15,9 @@
     "auth-sign-in-form": {
       "name": "Sign-in form display and interaction",
       "module": "auth",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P2",
       "description": "Sign-in page renders email/password fields and links to recovery",
       "expectedSpecs": 1
@@ -21,7 +25,9 @@
     "auth-sign-up-form": {
       "name": "Sign-up form display and validation",
       "module": "auth",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P1",
       "description": "Sign-up page renders and validates password confirmation",
       "expectedSpecs": 1
@@ -29,7 +35,9 @@
     "auth-login-invalid": {
       "name": "Invalid credentials are rejected",
       "module": "auth",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P1",
       "description": "Wrong credentials show an error and do not create a session",
       "expectedSpecs": 1
@@ -37,7 +45,9 @@
     "auth-protected-redirect": {
       "name": "Protected routes redirect anonymous users",
       "module": "auth",
-      "roles": ["guest"],
+      "roles": [
+        "guest"
+      ],
       "priority": "P1",
       "description": "Visiting a protected route without a session redirects to sign-in",
       "expectedSpecs": 1
@@ -45,7 +55,9 @@
     "auth-forgot-password-form": {
       "name": "Password recovery form",
       "module": "auth",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P2",
       "description": "Recovery page renders the two-step code + reset form",
       "expectedSpecs": 1
@@ -53,25 +65,31 @@
     "auth-sign-in-success": {
       "name": "Sign-in happy path with a real session",
       "module": "auth",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P1",
       "description": "Valid credentials create a real session (cookies set) and land on /dashboard; header shows Panel/Salir",
       "expectedSpecs": 1,
-      "knownGaps": "Needs seeded users + storageState globalSetup (It1, docs/plan/06 SS5.1) — current auth specs only assert forms/redirects"
+      "knownGaps": "Closed in It1 by the storageState harness + session spec"
     },
     "auth-sign-out": {
       "name": "Sign out ends the session",
       "module": "auth",
-      "roles": ["user"],
+      "roles": [
+        "user"
+      ],
       "priority": "P2",
       "description": "Authenticated user presses Salir; cookies are cleared and protected routes redirect again",
       "expectedSpecs": 1,
-      "knownGaps": "Depends on auth-sign-in-success plumbing (It1)"
+      "knownGaps": "Closed in It1 by the session spec"
     },
     "auth-admin-login-handoff": {
       "name": "Django admin impersonation handoff",
       "module": "auth",
-      "roles": ["staff"],
+      "roles": [
+        "staff"
+      ],
       "priority": "P3",
       "description": "/admin-login consumes access/refresh/redirect query params, stores tokens and redirects",
       "expectedSpecs": 1,
@@ -80,7 +98,9 @@
     "help-manual-browse": {
       "name": "Browse the interactive help",
       "module": "home",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P3",
       "description": "/manual renders Versiona help sections and fuzzy search finds a process",
       "expectedSpecs": 1,
@@ -89,7 +109,9 @@
     "a1-onboarding-wow": {
       "name": "A1 - Sign-up and first wow moment",
       "module": "onboarding",
-      "roles": ["guest"],
+      "roles": [
+        "guest"
+      ],
       "priority": "P1",
       "description": "New user signs up, names their org, the sample project seeds, and they see a working comparison in under 5 minutes without uploading anything (docs/plan/01 A1)",
       "expectedSpecs": 1,
@@ -98,7 +120,9 @@
     "a2-invite-team": {
       "name": "A2 - Invite the team and assign roles",
       "module": "org",
-      "roles": ["admin"],
+      "roles": [
+        "admin"
+      ],
       "priority": "P1",
       "description": "Admin invites an email with a role; invitee accepts and lands directly on the project (docs/plan/01 A2)",
       "expectedSpecs": 1,
@@ -107,7 +131,9 @@
     "b1-create-project": {
       "name": "B1 - Create a project in 30 seconds",
       "module": "projects",
-      "roles": ["editor"],
+      "roles": [
+        "editor"
+      ],
       "priority": "P1",
       "description": "Member creates a project with name only and lands on the empty project with the upload dropzone (docs/plan/01 B1)",
       "expectedSpecs": 1,
@@ -116,7 +142,9 @@
     "b2-projects-board": {
       "name": "B2 - Projects board with states, filters and search",
       "module": "projects",
-      "roles": ["viewer"],
+      "roles": [
+        "viewer"
+      ],
       "priority": "P2",
       "description": "Board shows derived states, filters by state and searches by name and content (docs/plan/01 B2)",
       "expectedSpecs": 1,
@@ -125,7 +153,9 @@
     "b3-project-settings": {
       "name": "B3 - Edit project configuration (never retroactive)",
       "module": "projects",
-      "roles": ["admin"],
+      "roles": [
+        "admin"
+      ],
       "priority": "P2",
       "description": "Admin edits checklist/section owners/approval rules creating a new config version (docs/plan/01 B3)",
       "expectedSpecs": 1,
@@ -134,7 +164,9 @@
     "c1-upload-first": {
       "name": "C1 - Upload the first document",
       "module": "documents",
-      "roles": ["editor"],
+      "roles": [
+        "editor"
+      ],
       "priority": "P1",
       "description": "Editor drags a PDF; analysis indexes sections and version 1 shows its traffic light (docs/plan/01 C1)",
       "expectedSpecs": 1,
@@ -143,7 +175,9 @@
     "c2-upload-version": {
       "name": "C2 - Upload a new version (the commit)",
       "module": "documents",
-      "roles": ["editor"],
+      "roles": [
+        "editor"
+      ],
       "priority": "P1",
       "description": "Editor uploads a re-delivery with a message; within seconds sees what changed, check deltas and affected seals (docs/plan/01 C2)",
       "expectedSpecs": 1,
@@ -152,7 +186,9 @@
     "c3-history": {
       "name": "C3 - Browse the version history",
       "module": "documents",
-      "roles": ["viewer"],
+      "roles": [
+        "viewer"
+      ],
       "priority": "P2",
       "description": "Timeline shows author/date/message per version, downloads via signed URL and jumps to comparison (docs/plan/01 C3)",
       "expectedSpecs": 1,
@@ -161,7 +197,10 @@
     "d1-request-review": {
       "name": "D1 - Request a review (the pull request)",
       "module": "review",
-      "roles": ["editor", "reviewer"],
+      "roles": [
+        "editor",
+        "reviewer"
+      ],
       "priority": "P1",
       "description": "Author opens a review request; reviewers are assigned from section owners and see it in their inbox (docs/plan/01 D1)",
       "expectedSpecs": 1,
@@ -170,7 +209,9 @@
     "d2-assisted-review": {
       "name": "D2 - Review with assistance (already reviewed by you)",
       "module": "review",
-      "roles": ["reviewer"],
+      "roles": [
+        "reviewer"
+      ],
       "priority": "P1",
       "description": "Reviewer sees traffic light and change summary first, jumps to changed sections, unchanged-since-my-seal sections are marked (docs/plan/01 D2)",
       "expectedSpecs": 1,
@@ -179,7 +220,10 @@
     "d3-anchored-observations": {
       "name": "D3 - Anchored observations with state",
       "module": "review",
-      "roles": ["reviewer", "editor"],
+      "roles": [
+        "reviewer",
+        "editor"
+      ],
       "priority": "P1",
       "description": "Reviewer selects a page zone and comments; thread transitions open/answered/resolved and survives across versions (docs/plan/01 D3)",
       "expectedSpecs": 1,
@@ -188,7 +232,9 @@
     "d4-seal-approve": {
       "name": "D4 - Approve with a seal",
       "module": "review",
-      "roles": ["reviewer"],
+      "roles": [
+        "reviewer"
+      ],
       "priority": "P1",
       "description": "Reviewer seals in one click; with all required seals the version freezes as approved (docs/plan/01 D4)",
       "expectedSpecs": 1,
@@ -197,7 +243,11 @@
     "d5-selective-invalidation": {
       "name": "D5 - Re-delivery and selective invalidation (the jewel)",
       "module": "review",
-      "roles": ["editor", "reviewer", "admin"],
+      "roles": [
+        "editor",
+        "reviewer",
+        "admin"
+      ],
       "priority": "P1",
       "description": "New version invalidates only seals over changed sections, preserves the rest with validity records, and notifies only affected reviewers (docs/plan/01 D5; queen test docs/plan/06 SS5.4)",
       "expectedSpecs": 2,
@@ -206,7 +256,9 @@
     "e1-compare": {
       "name": "E1 - Compare any two versions (star screen)",
       "module": "compare",
-      "roles": ["viewer"],
+      "roles": [
+        "viewer"
+      ],
       "priority": "P1",
       "description": "Side-by-side with highlights, modified-section list matching the fixture truth table, and summary view (docs/plan/01 E1)",
       "expectedSpecs": 1,
@@ -215,7 +267,9 @@
     "e3-configurable-checks": {
       "name": "E3 - Configure and run checks (traffic light with evidence)",
       "module": "compare",
-      "roles": ["admin"],
+      "roles": [
+        "admin"
+      ],
       "priority": "P2",
       "description": "Admin adds a check; next version runs it and shows evidence navigable to the page (docs/plan/01 E3)",
       "expectedSpecs": 1,
@@ -224,11 +278,80 @@
     "f1-billing": {
       "name": "F1 - Choose a plan and pay",
       "module": "billing",
-      "roles": ["owner"],
+      "roles": [
+        "owner"
+      ],
       "priority": "P2",
       "description": "Free org hits a plan limit, upgrades self-service via Wompi test mode, and sees the invoice listed (docs/plan/01 F1)",
       "expectedSpecs": 1,
       "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+    },
+    "c4-delete-draft": {
+      "name": "C4 - Delete a draft version (trash + restore)",
+      "module": "documents",
+      "roles": [
+        "editor"
+      ],
+      "priority": "P2",
+      "description": "Latest draft version goes to the trash with two-step confirmation, shows a tombstone and can be restored (docs/audit/03 C4)",
+      "expectedSpecs": 1
+    },
+    "a3-account-security": {
+      "name": "A3 - 2FA and active sessions",
+      "module": "auth",
+      "roles": [
+        "user"
+      ],
+      "priority": "P2",
+      "description": "TOTP enrolment, challenge on login and session revocation (docs/audit/03 A3)",
+      "expectedSpecs": 1,
+      "knownGaps": "Arrives with Iteration 6 (docs/plan/09)"
+    },
+    "e2-saved-comparisons": {
+      "name": "E2 - Saved comparisons",
+      "module": "compare",
+      "roles": [
+        "viewer"
+      ],
+      "priority": "P2",
+      "description": "Save a comparison with a name, list it per project, share an internal link (docs/audit/03 E2)",
+      "expectedSpecs": 1,
+      "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+    },
+    "f2-usage-panel": {
+      "name": "F2 - Usage panel and preventive warnings",
+      "module": "billing",
+      "roles": [
+        "owner"
+      ],
+      "priority": "P2",
+      "description": "Usage vs plan limits with warnings at 80% (docs/audit/03 F2)",
+      "expectedSpecs": 1,
+      "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+    },
+    "e4-constancia": {
+      "name": "E4 - Exportable certificate",
+      "module": "review",
+      "roles": [
+        "admin"
+      ],
+      "priority": "P2",
+      "description": "Issue and download the validity certificate PDF of an approved version (docs/audit/03 E4)",
+      "expectedSpecs": 1,
+      "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+    },
+    "master-e2e-journey": {
+      "name": "M1 - Master end-to-end journey",
+      "module": "master",
+      "roles": [
+        "guest",
+        "editor",
+        "reviewer"
+      ],
+      "priority": "P1",
+      "description": "Sign-up to certificate export in 16 UI-only steps (docs/audit/03 SS7)",
+      "expectedSpecs": 1,
+      "knownGaps": "Arrives with Iteration 8 (docs/plan/09)"
     }
   }
 }

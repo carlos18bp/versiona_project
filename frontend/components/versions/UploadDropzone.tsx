@@ -83,6 +83,8 @@ export function UploadDropzone({ documentId, projectId, compact = false, onUploa
     const result = await uploadVersion(targetDocument, file, message.trim());
     if (result.phase === 'analyzing' && result.jobId) {
       track(result.jobId, () => {
+        // Analysis finished: close the preview and refresh the list/timeline.
+        closePreview();
         onUploaded?.();
       });
     }
@@ -126,7 +128,12 @@ export function UploadDropzone({ documentId, projectId, compact = false, onUploa
         type="file"
         accept="application/pdf,.pdf"
         className="hidden"
-        onChange={(event) => pick(event.target.files?.[0])}
+        onChange={(event) => {
+          pick(event.target.files?.[0]);
+          // Reset the value so picking the SAME file again re-fires change
+          // (browsers skip the event when the value is unchanged).
+          event.target.value = '';
+        }}
       />
       {localError ? (
         <p data-testid="upload-local-error" role="alert" className="mt-2 text-sm text-destructive">

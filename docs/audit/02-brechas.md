@@ -26,14 +26,14 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G01 | A1 registro+wow | Org personal al registrarse; wizard onboarding; job proyecto-ejemplo (fixtures v1/v2); métrica <5 min | vista+endpoint+modelo+tarea | BLOQUEANTE | A1-* | It6 | Abierta |
 | G02 | A2 invitar equipo | Invitation+memberships org/proyecto; emails con token; aceptar→aterrizar en proyecto; gestión de roles | vista+endpoint+modelo+notif | BLOQUEANTE | A2-* | It6 | Abierta |
 | G03 | A3 seguridad de cuenta | 2FA TOTP (enrolar/challenge/códigos de respaldo); sesiones activas + revocación (token_blacklist ya instalado) | vista+endpoint+modelo | BLOQUEANTE | A3-* | It6 | Abierta |
-| G04 | B1 crear proyecto | Project+ProjectMembership+ProjectConfigVersion; POST projects; pantalla /projects/new; límite de plan | vista+endpoint+modelo | BLOQUEANTE | B1-* | It1 | Abierta |
-| G05 | B2 tablero | Lista con estados derivados/filtros/búsqueda nombre; búsqueda por contenido (FTS) | vista+endpoint | BLOQUEANTE | B2-* | It1 (mínimo) / It5 (completo) | Abierta |
+| G04 | B1 crear proyecto | Project+ProjectMembership+ProjectConfigVersion; POST projects; pantalla /projects/new; límite de plan | vista+endpoint+modelo | BLOQUEANTE | B1-* | It1 | **Cerrada It1** |
+| G05 | B2 tablero | Falta: filtro por estado y búsqueda por CONTENIDO (FTS) | vista+endpoint | BLOQUEANTE | B2-A01/A03 | It5 | **Parcial: lista+búsqueda por nombre entregadas en It1** |
 | G06 | B3 config proyecto | ProjectConfigVersion UI (checklist/dueños/reglas/d5_mode); no-retroactividad I8 | vista+endpoint | BLOQUEANTE | B3-* | It5 | Abierta |
-| G07 | B4 archivar/eliminar proyecto | Archivado read-only; papelera con gracia 30d; bloqueo absoluto con sellos (T4) | vista+endpoint+modelo | BLOQUEANTE | B4-* | It6 (mecanismo en It1) | Abierta |
-| G08 | C1 subir primer documento | Document/DocumentVersion/Section/EngineJob; upload_intent+complete (presigned MinIO); AnalysisJob PyMuPDF; semáforo; **preview pre-subida (kit 1)** | vista+endpoint+modelo+tarea | BLOQUEANTE | C1-* | It1 | Abierta |
-| G09 | C2 nueva versión | Secuencia I1; comparación auto; PostUploadSummary; **edición de mensaje en borrador (kit 2, I2b)** | vista+endpoint+tarea | BLOQUEANTE | C2-* | It1 | Abierta |
-| G10 | C3 historial | Timeline con autor/fecha/mensaje/**miniaturas (kit 1)**; descarga firmada auditada; salto a comparar | vista+endpoint | BLOQUEANTE | C3-* | It1 | Abierta |
-| G11 | C4 eliminar versión borrador | Papelera de versión (última+borrador), restore, tombstone I1 | vista+endpoint+modelo | BLOQUEANTE | C4-* | It1 | Abierta |
+| G07 | B4 archivar/eliminar proyecto | Falta la UI (endpoints, papelera y reglas T4 ya operativos desde It1) | vista | BLOQUEANTE | B4-* | It6 | **Parcial: backend + papelera entregados en It1** |
+| G08 | C1 subir primer documento | Document/DocumentVersion/Section/EngineJob; upload_intent+complete (presigned MinIO); AnalysisJob PyMuPDF; semáforo; **preview pre-subida (kit 1)** | vista+endpoint+modelo+tarea | BLOQUEANTE | C1-* | It1 | **Cerrada It1** |
+| G09 | C2 nueva versión | Secuencia I1; comparación auto; PostUploadSummary; **edición de mensaje en borrador (kit 2, I2b)** | vista+endpoint+tarea | BLOQUEANTE | C2-* | It1 | **Cerrada It1** |
+| G10 | C3 historial | Timeline con autor/fecha/mensaje/**miniaturas (kit 1)**; descarga firmada auditada; salto a comparar | vista+endpoint | BLOQUEANTE | C3-* | It1 | **Cerrada It1** |
+| G11 | C4 eliminar versión borrador | Papelera de versión (última+borrador), restore, tombstone I1 | vista+endpoint+modelo | BLOQUEANTE | C4-* | It1 | **Cerrada It1** |
 | G12 | D1 solicitar revisión | ReviewRequest/Assignment; selección manual de revisores (DP-A7); bandeja /inbox; notificación | vista+endpoint+modelo+notif | BLOQUEANTE | D1-* | It4 | Abierta |
 | G13 | D2 revisar con asistencia | Semáforo+resumen primero; salto a cambios; "ya revisado por ti" | vista+endpoint | BLOQUEANTE | D2-* | It4 | Abierta |
 | G14 | D3 observaciones ancladas | Observation+Anchor+Reply; selección de zona (bbox normalizada); re-anclaje entre versiones; estados I14 | vista+endpoint+modelo+tarea | BLOQUEANTE | D3-* | It4 | Abierta |
@@ -46,30 +46,30 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G21 | F1 plan y límites | Plan/Subscription/limits I13; enforcement (proyectos/miembros/historial locked); CTA upgrade informativo (Wompi diferido) | vista+endpoint+modelo | BLOQUEANTE | F1-* | It7 | Abierta |
 | G22 | F2 consumo y avisos | Panel de uso vs límites; avisos preventivos al 80% | vista+endpoint | BLOQUEANTE | F2-* | It7 | Abierta |
 | G23 | F3 auditoría (base UI) | `/org/audit` filtrable + CSV sobre AuditEvent (el registro server-side nace con cada iteración) | vista+endpoint | BLOQUEANTE | F3-* | It7 | Abierta |
-| G24 | Roles de proyecto | `User.role` legacy (customer/admin) ≠ matriz owner/admin/editor/reviewer/viewer; falta OrganizationMembership/ProjectMembership + decoradores `@require_project_role` + 404 anti-enumeración I12 | modelo+permisos | BLOQUEANTE (transversal) | todos los P## | It1 (base) → It6 (gestión UI) | Abierta |
+| G24 | Roles de proyecto | `User.role` legacy (customer/admin) ≠ matriz owner/admin/editor/reviewer/viewer; falta OrganizationMembership/ProjectMembership + decoradores `@require_project_role` + 404 anti-enumeración I12 | modelo+permisos | BLOQUEANTE (transversal) | todos los P## | It1 (base) → It6 (gestión UI) | **Cerrada It1** |
 | G25 | Kit 4 reportes | Estado de proyecto, actividad por rango, CSV de listas | vista+endpoint | ENRIQUECE | F3/REP-* | It7 | Abierta |
 | G26 | Kit 5 notificaciones | Centro in-app + campanita + NotificationPreference + EmailTemplateRegistry bilingüe | vista+endpoint+modelo | BLOQUEANTE (D1/D5 las requieren) | NTF-* | It3–It4 | Abierta |
 | G27 | Kit 6 históricos | ActivityFeed por proyecto (AuditEvent whitelisted sin ip) | vista+endpoint | ENRIQUECE | ACT-* | It4 | Abierta |
-| G28 | Kit 7 configuraciones | `/settings` usuario (perfil, tz, **idioma es/en funcional**, prefs); org settings General | vista+endpoint+modelo | BLOQUEANTE (idioma es alcance resuelto) | SET-* | It1 (perfil/tz/idioma) → It3–6 | Abierta |
-| G29 | i18n es/en | Diccionarios TS por pantalla + emails por idioma; hoy la UI nueva es es-only y las páginas auth del template están en inglés | vista | BLOQUEANTE (alcance resuelto #3) | transversal | It1 base + cada iteración | Abierta |
+| G28 | Kit 7 configuraciones | Faltan prefs de notificación (It3-4) y org settings General (It6) | vista+endpoint | BLOQUEANTE | SET-* | It3–It6 | **Parcial: perfil/idioma/zona horaria entregados en It1** |
+| G29 | i18n es/en | Faltan: traducción de las páginas auth heredadas y emails por idioma | vista | ENRIQUECE | transversal | cada iteración | **Parcial: diccionarios es/en + preferencia funcional entregados en It1** |
 | G30 | OCR escaneados | ocrmypdf+tesseract-spa nativos; confianza por sección; modo degradado + coordinador forzado | tarea+deps sistema | BLOQUEANTE (fixture escaneado con resultados exactos es obligatorio Fase 4) | C1-A02, D5-A03 | It5 | Abierta |
 
 ## 3. Brechas del kit/arnés de pruebas
 
 | # | Elemento | Qué escenario/prueba lo exige | Sev. | It | Estado |
 |---|---|---|---|---|---|
-| H01 | **Worker Celery ausente en `playwright.config.ts`** (webServer solo levanta runserver+next) | Todo E2E con jobs (C1 en adelante, M1) | BLOQUEANTE | It1 | Abierta |
-| H02 | globalSetup: seed determinista + login API + storageState por rol (`e2e/.auth/*.json`) | Todos los specs autenticados; cierra el gap `auth-sign-in-success` | BLOQUEANTE | It1 | Abierta |
-| H03 | Helper mailpit (`waitForEmail`, `assertNoEmailFor` positivo-antes-de-negativo) | A2, D1, D3, D5-F01, M1 paso 13/15 | BLOQUEANTE | It1 | Abierta |
-| H04 | Fixtures `contrato_v3.pdf` y `contrato_v4.pdf` (+tablas de verdad v2→v3 y v3→v4; bytes v1/v2 intactos — DP-A9) | M1 pasos 9 y 13; D3-A04 | BLOQUEANTE | It1 | Abierta |
-| H05 | Marker pytest `escenario(id)` registrado + convención de ids en los 3 niveles | Trazabilidad 04 mecánica | ENRIQUECE | It1 | Abierta |
+| H01 | **Worker Celery ausente en `playwright.config.ts`** (webServer solo levanta runserver+next) | Todo E2E con jobs (C1 en adelante, M1) | BLOQUEANTE | It1 | **Cerrada It1** |
+| H02 | globalSetup: seed determinista + login API + storageState por rol (`e2e/.auth/*.json`) | Todos los specs autenticados; cierra el gap `auth-sign-in-success` | BLOQUEANTE | It1 | **Cerrada It1** |
+| H03 | Helper mailpit (`waitForEmail`, `assertNoEmailFor` positivo-antes-de-negativo) | A2, D1, D3, D5-F01, M1 paso 13/15 | BLOQUEANTE | It1 | **Cerrada It1** |
+| H04 | Fixtures `contrato_v3.pdf` y `contrato_v4.pdf` (+tablas de verdad v2→v3 y v3→v4; bytes v1/v2 intactos — DP-A9) | M1 pasos 9 y 13; D3-A04 | BLOQUEANTE | It1 | **Cerrada It1** |
+| H05 | Marker pytest `escenario(id)` registrado + convención de ids en los 3 niveles | Trazabilidad 04 mecánica | ENRIQUECE | It1 | **Cerrada It1** |
 | H06 | Gates de cobertura escalonados (pytest fail-under 75→78→80; jest rutas clave 60→70→80; motor 95) | Regla "80% backend y componentes clave" | ENRIQUECE | It1→It5 | Abierta |
-| H07 | Service `minio` en CI (backend-tests y e2e) | Primeros tests de storage (upload_intent/complete) | BLOQUEANTE | It1 | Abierta |
+| H07 | Service `minio` en CI (backend-tests y e2e) | Primeros tests de storage (upload_intent/complete) | BLOQUEANTE | It1 | **Cerrada It1** |
 | H08 | `tsc --noEmit` roto (`lib/services/__tests__/http.test.ts`, herencia template) | `next build` de producción | ENRIQUECE | It1 | Abierta |
 | H09 | 29 errores ESLint heredados (auth pages any/entities, scripts require, setState-in-effect) | Higiene; no gatea CI | COSMÉTICA | oportunista | Abierta |
-| H10 | `proxy.ts` protege `/backoffice` inexistente | Residuo | COSMÉTICA | It1 | Abierta |
-| H11 | Flujo `master-e2e-journey` + `e4-constancia` + `a3/e2/f2` ausentes en flow-definitions (bump v2.1.0) | M1 y reporter | ENRIQUECE | It1 (registro) | Abierta |
-| H12 | `e2e/fixtures.ts` referencia usuarios (`test@example.com`) que ningún seed crea | H02 lo resuelve | BLOQUEANTE (parte de H02) | It1 | Abierta |
+| H10 | `proxy.ts` protege `/backoffice` inexistente | Residuo | COSMÉTICA | It1 | **Cerrada It1** |
+| H11 | Flujo `master-e2e-journey` + `e4-constancia` + `a3/e2/f2` ausentes en flow-definitions (bump v2.1.0) | M1 y reporter | ENRIQUECE | It1 (registro) | **Cerrada It1** |
+| H12 | `e2e/fixtures.ts` referencia usuarios (`test@example.com`) que ningún seed crea | H02 lo resuelve | BLOQUEANTE (parte de H02) | It1 | **Cerrada It1** |
 
 ## 4. Flujos fuera de alcance de esta misión
 
@@ -93,8 +93,9 @@ BLOQUEANTE de It1 (todo lo posterior lo consume).
 
 | Corte | BLOQUEANTES abiertas | ENRIQUECE | COSMÉTICAS | Cerradas en la iteración |
 |---|---|---|---|---|
-| It0 (línea base, hoy) | **31** (G01–G24, G26, G28–G30, H01–H04, H07, H12) | 6 (G25, G27, H05, H06, H08, H11) | 3 (H09, H10 + copy) | — |
-| It1..It8 | (se actualiza al cierre de cada iteración) | | | |
+| It0 (línea base) | **31** | 6 | 3 | — |
+| **It1 (cierre 2026-07-12)** | **16** (G01–G03, G06, G12–G23, G26, G30 · con G05/G07/G28 parciales) | 3 (G25, G27, H06, H08) | 1 (H09) | **15** (G04, G08–G11, G24, H01–H05, H07, H10–H12 + 3 parciales) |
+| It2..It8 | (se actualiza al cierre de cada iteración) | | | |
 
 ## 7. Preguntas abiertas (DECISIÓN PENDIENTE)
 

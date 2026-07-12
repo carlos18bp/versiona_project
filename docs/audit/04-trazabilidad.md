@@ -5,9 +5,9 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
-**Iteración**: It0 · **Commit**: `527d61c` · **Fecha**: 2026-07-12 ·
-**Escenarios totales (03)**: 258 · **Con fila aquí**: 11 (anexos U/H) · **VERDES**: 9 ·
-**Pendientes por iteración**: 247
+**Iteración**: **It1** · **Fecha**: 2026-07-12 ·
+**Escenarios totales (03)**: 258 · **Con fila aquí**: 11 (U/H) + 45 (módulos B y C) ·
+**VERDES**: 11 (U/H, incl. U8/U9 cerrados en It1) + 40 (B/C) · **Pendientes**: 207
 
 ## 1. Reglas de cumplimiento
 
@@ -36,19 +36,66 @@
 | U5 sesión/refresh | BLOQ | `test_jwt_endpoints.py` | `lib/services/__tests__/http.test.ts` | ídem | (implícito en U8) | VERDE |
 | U6 recuperación | BLOQ | `test_auth_endpoints.py::passcode` | `app/forgot-password/__tests__` | ídem | `auth.spec.ts` (forms) | VERDE |
 | U7 admin handoff | ENR | `test_admin.py::login_as` | `app/admin-login/__tests__` | — | — | PENDIENTE (It1) |
-| U8 sign-in sesión real | BLOQ | — | — | — | — (lo cierra H02) | PENDIENTE (It1) |
-| U9 sign-out | ENR | — | `layout.test.tsx` (botón) | — | — | PENDIENTE (It1) |
+| U8 sign-in sesión real | BLOQ | — | `authStore.test.ts` | `test_auth_endpoints::sign_in` | `session.spec.ts::U8` | **VERDE** |
+| U9 sign-out | ENR | — | `layout.test.tsx` | — | `session.spec.ts::U9` | **VERDE** |
 | H1 landing | BLOQ | — | `app/__tests__/home.test.tsx` | — | `smoke.spec.ts` | VERDE |
 | H2 ayuda /manual | COSM | — | — | — | — | PENDIENTE (It8) |
 
 ### Módulo A (38 escenarios) — filas se agregan en It6
 `A1-*` (11) · `A2-*` (15) · `A3-*` (12). Estado: PENDIENTE (It6).
 
-### Módulo B (42) — It1 (B1, B2 mínimo) · It5 (B2 completo, B3) · It6 (B4)
-`B1-*` (8) · `B2-*` (11) · `B3-*` (11) · `B4-*` (12). Estado: PENDIENTE.
+### Módulo B — It1 entregó B1 y B2 mínimo (B3 → It5; B4 UI → It6)
 
-### Módulo C (45) — It1 (+C1-A02/D5-A03 OCR en It5)
-`C1-*` (14) · `C2-*` (11) · `C3-*` (10) · `C4-*` (10). Estado: PENDIENTE (It1).
+| Escenario | Sev | Unit BE | Unit FE | Integración | E2E | Estado |
+|---|---|---|---|---|---|---|
+| B1-F01 | BLOQ | `test_project_endpoints::test_create_project_makes_creator_admin` | `app/projects/__tests__` (board) | ✔ matriz P01–P04 | `b1-create-project.spec.ts::B1-F01` | **VERDE** |
+| B1-E01 | ENR | — | `ProjectForm` (inline) | `test_create_project_rejects_blank_name` | `b1-create-project.spec.ts::B1-E01` | **VERDE** |
+| B1-L01 | BLOQ | — | — | — | — | PENDIENTE (It7: límites de plan) |
+| B1-P01..P04 | BLOQ | `test_permissions.py` | — | `test_create_project_permission_matrix` (7 actores) | n/a (regla anti-explosión) | **VERDE** |
+| B2-F01 | BLOQ | — | `[B2-F01] renders project cards…` | `test_board_lists_member_projects_with_role` | `b1-create-project.spec.ts::B1-F01b` | **VERDE** |
+| B2-A02 | BLOQ | — | — | `test_board_search_by_name` | ✔ (board search) | **VERDE** |
+| B2-L01 | BLOQ | — | `[B2-L01] guided empty state` | — | — | **VERDE** |
+| B2-A01/A03/A04, B2-L02 | BLOQ/ENR | — | — | — | — | PENDIENTE (It5) |
+| B2-P01..P04 | BLOQ | `test_permissions.py` | — | `test_project_detail_permission_matrix` + `test_org_member_without_project_membership_sees_empty_board` | n/a | **VERDE** |
+| B3-A02 | ENR | — | — | `test_admin_edits_project_metadata` | — | **VERDE** (resto de B3 → It5) |
+| B3-* (F01–F03, A01, E01, L01, P) | BLOQ | — | — | — | — | PENDIENTE (It5) |
+| B4-F01 | BLOQ | `test_trash_service::archive_makes_project_read_only_and_reversible` | — | `test_archive_and_unarchive_roundtrip` | — (UI It6) | **VERDE (backend)** |
+| B4-F02/F03 | BLOQ | `test_trash_project_requires_exact_name_confirmation` | — | `test_trash_requires_exact_name_and_restore_recovers` | — (UI It6) | **VERDE (backend)** |
+| B4-E01 (T4: sellos ⇒ solo archivar) | BLOQ | `test_project_with_approved_version_only_archivable` | — | ✔ | — | **VERDE (backend)** |
+| B4-E02 | ENR | `test_project_restore_with_live_slug_collision_is_rejected` | — | — | — | **VERDE (backend)** |
+| B4-A02 (purga 30d) | BLOQ | `test_purge_removes_expired_and_number_is_never_reused` | — | — | n/a (beat) | **VERDE** |
+| B4-L01 (archivado read-only) | BLOQ | `test_version_service::test_archived_project_rejects_uploads` | — | ✔ | — | **VERDE (backend)** |
+| B4-P01..P04 | BLOQ | — | — | `test_trash_project_permission_matrix` + `test_org_trash_permission_matrix` | — | **VERDE** |
+
+### Módulo C — It1 completo (OCR de C1-A02 → It5)
+
+| Escenario | Sev | Unit BE | Unit FE | Integración | E2E | Estado |
+|---|---|---|---|---|---|---|
+| C1-F01 | BLOQ | `test_analysis_pipeline::test_v1_indexes_the_eight_known_sections` | `[C1-F01-ui]` UploadDropzone | `test_upload_first_version_via_api_indexes_sections` | `c1-upload-first-document.spec.ts::C1-F01` | **VERDE** |
+| C1-A01 (cancelar preview) | ENR | — | `[C1-A01]` | — | ✔ (mismo spec) | **VERDE** |
+| C1-A03 (fallback sin encabezados) | BLOQ | `test_headless_pdf_falls_back_to_page_sections` | — | — | — | **VERDE** |
+| C1-E01 (protegido) | BLOQ | `test_protected_pdf_is_rejected` | — | `test_protected_pdf_is_rejected_with_actionable_message` | `c1-…::C1-E01` (preview local) | **VERDE** |
+| C1-E02 (corrupto) | BLOQ | `test_corrupt_file_is_rejected` | `[C1-E02-ui]` | `test_corrupt_file_is_rejected` | n/a (representativo E01) | **VERDE** |
+| C1-E03 (tamaño) | BLOQ | — | UploadDropzone (max MB) | `test_oversized_upload_is_rejected` | n/a | **VERDE** |
+| C1-E04 (análisis falla) | BLOQ | `engine/tasks::_fail` | `[C1-E04-ui]` | — | — | **VERDE** |
+| C1-L01 (proyecto vacío) | BLOQ | — | — | — | ✔ (`b1` empty state) | **VERDE** |
+| C1-A02 (escaneado/OCR) | BLOQ | `test_scanned_pdf_is_detected_and_degraded` | — | — | — | PARCIAL (detección sí; OCR → It5) |
+| C1-P01..P04 | BLOQ | — | — | `test_create_document_permission_matrix` + `test_upload_intent_permission_matrix` | n/a | **VERDE** |
+| C2-F01 | BLOQ | `test_second_version_matches_identity_and_retires_removed` | `[C2-F01-ui]` | ✔ | `c2-upload-new-version.spec.ts::C2-F01` | **VERDE** |
+| C2-A01 (editar mensaje borrador) | ENR | `test_message_editable_while_draft_with_audit_trail` | `[C2-A01-ui]` VersionTimeline | `test_author_edits_draft_message` | ✔ (mismo spec) | **VERDE** |
+| C2-E01 (binario idéntico) | BLOQ | `test_identical_binary_is_rejected` | — | `test_upload_identical_binary_returns_409` | ✔ (mismo spec) | **VERDE** |
+| C2-E02 (mensaje congelado) | BLOQ | `test_message_frozen_once_approved` + `test_frozen_columns_reject_change_after_ready` | `[C2-E02-ui]` | `test_edit_message_permission_matrix` | — | **VERDE** |
+| C2-C01 (ráfaga) | BLOQ | `test_version_number_is_unique_per_document` (I1 + select_for_update) | — | — | — | **VERDE** |
+| C2-P01..P04 | BLOQ | — | — | ✔ matriz | n/a | **VERDE** |
+| C3-F01 (timeline) | BLOQ | — | `[C3-F01]` VersionTimeline | `test_timeline_shows_versions_with_thumbs_and_tombstones` | `c3-version-history.spec.ts` | **VERDE** |
+| C3-F02 (descarga firmada) | BLOQ | `test_signed_urls` | — | `test_download_returns_signed_url_and_audits` | ✔ (mismo spec) | **VERDE** |
+| C3-L02 (locked plan free) | BLOQ | — | — | — | — | PENDIENTE (It7) |
+| C3-P01..P04 | BLOQ | — | — | `test_version_detail_permission_matrix` | n/a | **VERDE** |
+| C4-F01/F02 | BLOQ | `test_latest_draft_version_goes_to_trash` + `test_restore_returns_version_to_timeline` | `[C4-F01-ui]` + `[C4-F01-2p]` | `test_trash_and_restore_version_roundtrip` | `c4-delete-draft-version.spec.ts` | **VERDE** |
+| C4-A01 (purga, tombstone I1) | BLOQ | `test_purge_removes_expired_and_number_is_never_reused` | — | — | — | **VERDE** |
+| C4-E01 (sellada/aprobada) | BLOQ | `test_approved_version_is_never_trash_eligible` + `test_physical_delete_requires_trash_first` (trigger PG) | — | — | — | **VERDE** |
+| C4-E02/E03 | BLOQ/ENR | `test_non_latest_version_cannot_be_trashed` + `test_restore_blocked_when_newer_version_exists` | — | — | — | **VERDE** |
+| C4-P01..P04 | BLOQ | — | — | ✔ matriz | n/a | **VERDE** |
 
 ### Módulo D (58) — It3 (D4, D5) · It4 (D1, D2, D3)
 `D1-*` (10) · `D2-*` (8) · `D3-*` (12) · `D4-*` (13) · `D5-*` (15). Estado: PENDIENTE.

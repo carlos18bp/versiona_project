@@ -4,9 +4,10 @@
 > del sistema (no el planeado). Se re-levanta al cierre de cada iteración con los comandos de
 > §7.
 
-**Iteración**: It0 (bootstrap) · **Commit**: `527d61c` · **Fecha**: 2026-07-12 ·
-**Suites**: pytest 123/123 · jest 114/114 (17 suites) · playwright 13/13 ·
-**Cobertura**: backend 83.3% combinada (sin gate) · jest 61.05% líneas / 89.49% ramas
+**Iteración**: **It1 (núcleo documental)** · **Fecha**: 2026-07-12 ·
+**Suites**: pytest **238/238** · jest **146/146** (24 suites) · playwright **23/23** ·
+**Cobertura**: backend **86.7%** combinada (gate `--cov-fail-under=75` activo) ·
+jest global 58.6% líneas (gate 50) · `lib/stores` >75% (gate activo)
 
 ## 1. Rutas frontend
 

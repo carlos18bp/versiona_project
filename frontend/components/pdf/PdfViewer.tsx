@@ -53,6 +53,14 @@ export function PdfViewer({ file, maxPages, width = 760, onLoaded }: PdfViewerPr
           onLoaded?.(doc.numPages);
         }}
         onLoadError={(err) => setError(err.message)}
+        // Without this, pdf.js opens a native prompt() asking for the
+        // password. Protected PDFs are rejected right here — before the
+        // upload is even attempted (kit 1).
+        onPassword={() =>
+          setError(
+            'El PDF está protegido con contraseña: quita la protección y vuelve a subirlo.'
+          )
+        }
       >
         {Array.from({ length: pagesToRender }, (_, index) => (
           <div key={index} className="mb-4 overflow-hidden rounded-xl border border-border shadow-sm">
