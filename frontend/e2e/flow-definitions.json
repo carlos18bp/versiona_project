@@ -268,8 +268,7 @@
       ],
       "priority": "P2",
       "description": "Free org hits a plan limit, upgrades self-service via Wompi test mode, and sees the invoice listed (docs/plan/01 F1)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "c4-delete-draft": {
       "name": "C4 - Delete a draft version (trash + restore)",
@@ -299,8 +298,7 @@
       ],
       "priority": "P2",
       "description": "Save a comparison with a name, list it per project, share an internal link (docs/audit/03 E2)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "f2-usage-panel": {
       "name": "F2 - Usage panel and preventive warnings",
@@ -310,8 +308,7 @@
       ],
       "priority": "P2",
       "description": "Usage vs plan limits with warnings at 80% (docs/audit/03 F2)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "e4-constancia": {
       "name": "E4 - Exportable certificate",
@@ -321,8 +318,7 @@
       ],
       "priority": "P2",
       "description": "Issue and download the validity certificate PDF of an approved version (docs/audit/03 E4)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 7 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "master-e2e-journey": {
       "name": "M1 - Master end-to-end journey",

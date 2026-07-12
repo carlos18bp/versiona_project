@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 
 import { ActivityFeed } from '@/components/activity/ActivityFeed';
 import { ProjectAdminActions } from '@/components/projects/ProjectAdminActions';
+import { SavedComparisons } from '@/components/compare/SavedComparisons';
 import { UploadDropzone } from '@/components/versions/UploadDropzone';
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { useDict } from '@/lib/i18n/dictionaries';
@@ -103,6 +104,7 @@ export default function ProjectPage() {
           </ul>
         </AsyncBoundary>
 
+        <SavedComparisons projectId={projectId} />
         <ProjectAdminActions projectId={projectId} />
         <ActivityFeed projectId={projectId} />
       </div>

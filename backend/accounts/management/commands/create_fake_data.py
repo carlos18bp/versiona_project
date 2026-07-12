@@ -61,6 +61,11 @@ class Command(BaseCommand):
         org, _ = Organization.objects.get_or_create(
             slug='acme-e2e', defaults={'name': 'Acme E2E', 'kind': Organization.Kind.TEAM}
         )
+        # The harness org exercises every flow: the free limits would block
+        # the specs (7 members, N projects) — F1 has its own dedicated spec.
+        if org.plan != 'pro':
+            org.plan = 'pro'
+            org.save(update_fields=['plan'])
         OrganizationMembership.objects.get_or_create(
             organization=org, user=users['owner'],
             defaults={'role': OrganizationMembership.Role.OWNER},

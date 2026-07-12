@@ -17,6 +17,8 @@ import { countsByType, nextChanged, sectionTarget } from '@/lib/compare/sync';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { useCompareStore } from '@/lib/stores/compareStore';
 import { useVersionStore } from '@/lib/stores/versionStore';
+import { api } from '@/lib/services/http';
+import { useToast } from '@/components/ui/toast';
 
 const PdfViewer = dynamic(
   () => import('@/components/pdf/PdfViewer').then((m) => m.PdfViewer),
@@ -41,7 +43,9 @@ export function CompareView({
   onViewChange,
 }: CompareViewProps) {
   const t = useDict('compare');
+  const saved = useDict('savedComparisons');
   const common = useDict('common');
+  const { toast } = useToast();
   const comparison = useCompareStore((s) => s.comparison);
   const isLoading = useCompareStore((s) => s.isLoading);
   const error = useCompareStore((s) => s.error);
@@ -102,6 +106,25 @@ export function CompareView({
           ) : null}
         </div>
         <div className="flex items-center gap-2">
+          {comparison ? (
+            <button
+              data-testid="save-comparison"
+              className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-accent"
+              onClick={() => {
+                const name = window.prompt(saved.name);
+                if (!name?.trim()) return;
+                void api
+                  .post(`comparisons/${comparison.public_id}/save/`, { name: name.trim() })
+                  .then(() => toast(saved.saved, 'success'))
+                  .catch((err) =>
+                    toast(err.response?.data?.error ?? common.error, 'error')
+                  );
+              }}
+              type="button"
+            >
+              {saved.save}
+            </button>
+          ) : null}
           {comparison?.has_changes ? (
             <button
               data-testid="next-change"

@@ -364,7 +364,9 @@ def versiona_context(db, django_user_model):
     users = {alias: make_user(alias) for alias in
              ('owner', 'admin', 'editor', 'reviewer', 'viewer', 'non_member')}
 
-    org = Organization.objects.create(name='Acme', slug='acme-test')
+    # The context org exercises EVERY flow: free limits have their own tests
+    # that flip the plan explicitly (F1).
+    org = Organization.objects.create(name='Acme', slug='acme-test', plan='pro')
     OrganizationMembership.objects.create(
         organization=org, user=users['owner'], role=OrganizationMembership.Role.OWNER
     )

@@ -40,14 +40,14 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G15 | D4 aprobar con sello | Seal+SealSection firmado Ed25519 (I6); congelamiento I5/I10; panel de sellos | vista+endpoint+modelo | BLOQUEANTE | D4-* | It3 | **Cerrada It3** |
 | G16 | D5 invalidación selectiva 💎 | SealValidityRecord+SectionLineage; invalidation_service puro (I7/I11); modos auto/coordinator; notificación selectiva S6 | vista+endpoint+modelo+tarea+notif | BLOQUEANTE | D5-* | It3 | **Cerrada It3** |
 | G17 | E1 comparar versiones ⭐ | Comparison/SectionDiff; matching; CompareView 3 vistas; highlights bbox | vista+endpoint+modelo+tarea | BLOQUEANTE | E1-* | It2 | **Cerrada It2** |
-| G18 | E2 comparaciones guardadas | SavedComparison (nombre, autor); lista por proyecto; enlace interno | vista+endpoint+modelo | BLOQUEANTE | E2-* | It7 | Abierta |
+| G18 | E2 comparaciones guardadas | SavedComparison (nombre, autor); lista por proyecto; enlace interno | vista+endpoint+modelo | BLOQUEANTE | E2-* | It7 | **Cerrada It7** (E2 guardadas) |
 | G19 | E3 checks configurables | CheckDefinition/Run/Result con evidencia; **ChecklistTemplate copy-on-apply (kit 2)** | vista+endpoint+modelo+tarea | BLOQUEANTE | E3-* | It5 | **Cerrada It5** |
-| G20 | E4 constancia exportable | Certificate append-only + PDF con firmas re-verificadas; **la prueba maestra M1 la exige** | vista+endpoint+modelo | BLOQUEANTE | E4-* | It7 | Abierta |
-| G21 | F1 plan y límites | Plan/Subscription/limits I13; enforcement (proyectos/miembros/historial locked); CTA upgrade informativo (Wompi diferido) | vista+endpoint+modelo | BLOQUEANTE | F1-* | It7 | Abierta |
-| G22 | F2 consumo y avisos | Panel de uso vs límites; avisos preventivos al 80% | vista+endpoint | BLOQUEANTE | F2-* | It7 | Abierta |
-| G23 | F3 auditoría (base UI) | `/org/audit` filtrable + CSV sobre AuditEvent (el registro server-side nace con cada iteración) | vista+endpoint | BLOQUEANTE | F3-* | It7 | Abierta |
+| G20 | E4 constancia exportable | Certificate append-only + PDF con firmas re-verificadas; **la prueba maestra M1 la exige** | vista+endpoint+modelo | BLOQUEANTE | E4-* | It7 | **Cerrada It7** (E4 constancia con firmas re-verificadas) |
+| G21 | F1 plan y límites | Plan/Subscription/limits I13; enforcement (proyectos/miembros/historial locked); CTA upgrade informativo (Wompi diferido) | vista+endpoint+modelo | BLOQUEANTE | F1-* | It7 | **Cerrada It7** (F1 límites; Wompi = DECISIÓN PENDIENTE llaves) |
+| G22 | F2 consumo y avisos | Panel de uso vs límites; avisos preventivos al 80% | vista+endpoint | BLOQUEANTE | F2-* | It7 | **Cerrada It7** (F2 panel + avisos 80%) |
+| G23 | F3 auditoría (base UI) | `/org/audit` filtrable + CSV sobre AuditEvent (el registro server-side nace con cada iteración) | vista+endpoint | BLOQUEANTE | F3-* | It7 | **Cerrada It7** (F3 /org/audit + CSV) |
 | G24 | Roles de proyecto | `User.role` legacy (customer/admin) ≠ matriz owner/admin/editor/reviewer/viewer; falta OrganizationMembership/ProjectMembership + decoradores `@require_project_role` + 404 anti-enumeración I12 | modelo+permisos | BLOQUEANTE (transversal) | todos los P## | It1 (base) → It6 (gestión UI) | **Cerrada It1** |
-| G25 | Kit 4 reportes | Estado de proyecto, actividad por rango, CSV de listas | vista+endpoint | ENRIQUECE | F3/REP-* | It7 | Abierta |
+| G25 | Kit 4 reportes | Estado de proyecto, actividad por rango, CSV de listas | vista+endpoint | ENRIQUECE | F3/REP-* | It7 | **Cerrada It7** (kit 4 reporte + actividad por rango + CSV) |
 | G26 | Kit 5 notificaciones | — | vista+endpoint+modelo | BLOQUEANTE | NTF-* | It3–It4 | **Cerrada It4** (registry bilingüe completo) |
 | G27 | Kit 6 históricos | ActivityFeed por proyecto (AuditEvent whitelisted sin ip) | vista+endpoint | ENRIQUECE | ACT-* | It4 | **Cerrada It4** (ActivityFeed whitelisted) |
 | G28 | Kit 7 configuraciones | Faltan prefs de notificación (It3-4) y org settings General (It6) | vista+endpoint | BLOQUEANTE | SET-* | It3–It6 | **Parcial: perfil/idioma/zona horaria entregados en It1** |
@@ -100,7 +100,8 @@ BLOQUEANTE de It1 (todo lo posterior lo consume).
 | **It4 (cierre 2026-07-12)** | **8** (G01–G03, G06, G18–G23, G30 con parciales) | 1 (G25) | 1 (H09) | **5** (G12 D1, G13 D2, G14 D3, G26 kit 5 completo, G27 kit 6) |
 | **It5 (cierre 2026-07-12)** | **4** (G01–G03 módulo A · G18/G20–G23 → It7, G25) | 1 (G25) | 1 (H09) | **4** (G05 B2 completo, G06 B3, G19 E3, G30 OCR) |
 | **It6 (cierre 2026-07-12)** | **5** (G18 E2, G20 E4, G21 F1, G22 F2, G23 F3) → It7 | 1 (G25 → It7) | 1 (H09 → It8) | **4** (G01 A1, G02 A2, G03 A3, G29 idioma completo) + B4 UI |
-| It7..It8 | (se actualiza al cierre de cada iteración) | | | |
+| **It7 (cierre 2026-07-12)** | **0 bloqueantes de flujo** (queda solo H09 cosmética + hardening It8) | 0 | 1 (H09) | **6** (G18, G20, G21, G22, G23, G25) |
+| It8 | (cierre de misión) | | | |
 
 ## 7. Preguntas abiertas (DECISIÓN PENDIENTE)
 

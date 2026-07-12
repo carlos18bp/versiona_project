@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { CertificatePanel } from '@/components/certificates/CertificatePanel';
 import { ChecksPanel } from '@/components/checks/ChecksPanel';
 import { ObservationsPanel } from '@/components/observations/ObservationsPanel';
 import { ReviewContextBar } from '@/components/reviews/ReviewContextBar';
@@ -104,6 +105,11 @@ export default function VersionViewerPage() {
                 versionId={detail.public_id}
                 projectId={params.projectId}
                 canRequest={['editor', 'admin'].includes(detail.effective_role ?? '')}
+              />
+              <CertificatePanel
+                versionId={detail.public_id}
+                isApproved={detail.is_approved}
+                canIssue={detail.effective_role === 'admin'}
               />
               <ChecksPanel versionId={detail.public_id} />
               <SealsPanel

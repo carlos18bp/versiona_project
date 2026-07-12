@@ -5,9 +5,10 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
-**Iteración**: **It6** · **Fecha**: 2026-07-12 ·
-**Escenarios totales (03)**: 258 · **Con fila aquí**: 125 previos + 18 (módulo A + B4 UI) ·
-**VERDES**: **143** · **Pendientes**: 115
+**Iteración**: **It7** · **Fecha**: 2026-07-12 ·
+**Escenarios totales (03)**: 258 · **Con fila aquí**: 143 previos + 17 (E2/E4/F1/F2/F3/REP) ·
+**VERDES**: **160** · **Pendientes**: 98 (mayoría clases P/L de integración ya
+cubiertas por matrices equivalentes — inventario fino en el cierre It8)
 
 ## 1. Reglas de cumplimiento
 
@@ -146,7 +147,21 @@
 | E1-P01..P04 | BLOQ | — | — | `test_compare_permission_matrix` + `test_comparison_detail_permission_matrix` | n/a | **VERDE** |
 | D5-A01 (renumeración ⇒ identidad sobrevive) | BLOQ | `test_truth_table_renumbered_sections_are_not_changes` + `test_persistence::test_renamed_section_reuses_the_same_identity_row` | — | — | ✔ (E1 spec: confidencialidad no aparece como cambio) | **VERDE (base de D5)** |
 | C3-A01 (saltar a comparar desde el timeline) | BLOQ | — | — | — | ✔ (E1 spec: selección de 2 versiones) | **VERDE** |
-| E2-*, E3-*, E4-* | BLOQ | — | — | — | — | PENDIENTE (It5/It7) |
+| E2-F01 (guardar con nombre + reabrir) | BLOQ | — | — | `test_save_and_list_named_comparisons` | `e4-e2-…::E2-F01` | **VERDE** |
+| E2-E01 (nombre duplicado) | BLOQ | — | — | `test_duplicate_name_is_rejected` | — | **VERDE** |
+| E2-P02 (viewer solo lectura) | BLOQ | — | — | `test_viewer_cannot_save_but_can_list` | — | **VERDE** |
+| E4-F01 (PDF real en S3, serial por org) | BLOQ | `test_certificate_pdf_is_real_and_stored` | CertificatePanel | — | `e4-e2-…::E4-F01` (binario %PDF + snapshot verificado) | **VERDE** |
+| E4-F02 (snapshot autocontenido T6: verifica offline) | BLOQ | `test_snapshot_carries_everything_for_offline_verification` | — | — | ✔ (signature_valid_now en spec) | **VERDE** |
+| E4-F03/F04 (seriales incrementales, S3 nunca sobrescrito; descarga firmada) | BLOQ | `test_serials_increment_per_org_and_year` | — | `test_download_endpoint_returns_signed_url_and_snapshot` | ✔ | **VERDE** |
+| E4-E01/E02 (solo aprobada; firma adulterada bloquea) | BLOQ | `test_unapproved_version_cannot_be_certified` + `test_tampered_signature_blocks_issuance` | — | — | — | **VERDE** |
+| E4-P01..P04 | BLOQ | — | — | `test_issue_permission_matrix` | n/a | **VERDE** |
+| F1-L01/L02 (límites proyecto/miembros con CTA 402) | BLOQ | `test_free_plan_allows_one_active_project` + `test_member_limit_blocks_new_invitations` (+pro los levanta) | — | `test_create_project_endpoint_returns_402_with_upgrade_flag` | `f1-f2-…::F1-L01` (cuenta fresca free) | **VERDE** |
+| C3-L02 (historial locked, NUNCA borrado — DP-04) | BLOQ | `test_old_history_is_locked_not_deleted_on_free` (+latest siempre accesible; pro desbloquea) | — | — | — | **VERDE** |
+| F1-X01 (checkout Wompi) | — | — | — | — | — | **DECISIÓN PENDIENTE** (llaves sandbox del operador) |
+| F2-F01/F02 (panel de consumo + avisos 80%) | BLOQ | `test_usage_report_warns_at_capacity` | /org/usage | `test_usage_endpoint_visible_to_members_only` | ✔ (1/1 + CTA Wompi) | **VERDE** |
+| F3-F01/F02 (/org/audit filtros + CSV, solo org admin) | BLOQ | — | /org/audit | `test_org_audit_filters_and_is_admin_only` + `test_org_audit_exports_csv` | — (UI admin; representativo cubierto) | **VERDE** |
+| REP-F01 / ACT-F03 (kit 4: reporte de proyecto; actividad por rango) | ENR | — | — | `test_project_report_summarizes_documents` + `test_activity_accepts_a_date_range` | — | **VERDE** |
+| E3-* | — | — | — | (cerrado en It5) | — | — |
 
 ### Módulo F (26) — It7
 `F1-*` (10) · `F2-*` (7) · `F3-*` (9). Estado: PENDIENTE (It7).

@@ -5,6 +5,16 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
+
+@pytest.fixture(autouse=True)
+def _free_plan(versiona_context):
+    """The shared context org is `pro` (it exercises every flow); the limit
+    tests are exactly about `free`, so they flip it explicitly."""
+    org = versiona_context.org
+    org.plan = 'free'
+    org.save(update_fields=['plan'])
+    return org
+
 from billing.services import (
     check_history_access,
     check_project_limit,
@@ -19,7 +29,6 @@ def test_free_plan_allows_one_active_project(versiona_context):
     """The seeded org already has Torre Central active ⇒ a second project on
     the free plan is rejected with the informative upgrade CTA (402)."""
     org = versiona_context.org
-    assert org.plan == 'free'
 
     with pytest.raises(DomainError) as exc:
         check_project_limit(org)
