@@ -84,15 +84,7 @@ test.describe('Authentication', () => {
   test('should navigate to dashboard page', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
     await page.goto('/dashboard');
     await waitForPageLoad(page);
-    
-    // Either redirected to sign-in or the dashboard is shown
-    await expect(page).toHaveURL(/dashboard|sign-in/);
-  });
 
-  test('should navigate to dashboard page', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
-    await page.goto('/dashboard');
-    await waitForPageLoad(page);
-    
     // Either redirected to sign-in or the dashboard is shown
     await expect(page).toHaveURL(/dashboard|sign-in/);
   });
