@@ -12,13 +12,51 @@ concurrency:
 
 jobs:
   # ───────────────────────────────────────────
-  # Backend — pytest (Django + SQLite)
+  # Backend — pytest (Django + PostgreSQL)
   # ───────────────────────────────────────────
   backend-tests:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: versiona
+          POSTGRES_PASSWORD: versiona-ci
+          POSTGRES_DB: versiona
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U versiona"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      # MinIO joins in It1 together with the first storage-backed tests
+      # (docs/plan/07 §3). Unit/integration tests fall back to
+      # FileSystemStorage while AWS_STORAGE_BUCKET_NAME is unset.
+
+    env:
+      DJANGO_DB_ENGINE: django.db.backends.postgresql
+      DJANGO_DB_NAME: versiona
+      DB_USER: versiona
+      DB_PASSWORD: versiona-ci
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      REDIS_URL: redis://127.0.0.1:6379/1
+      CELERY_TASK_ALWAYS_EAGER: '1'
+      DJANGO_SECRET_KEY: ci-only-secret
 
     steps:
       - name: Checkout
@@ -44,19 +82,17 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq pkg-config default-libmysqlclient-dev
-
       - name: Install Python dependencies
         run: pip install -r requirements.txt
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
 
       - name: Run migrations
         run: python manage.py migrate --no-input
 
       - name: Run pytest with coverage
-        run: pytest -v --tb=short --junitxml=pytest-results.xml --cov=base_feature_app --cov-branch --cov-report=json:coverage-backend.json --cov-report=xml:coverage-backend.xml
+        run: pytest -v --tb=short --junitxml=pytest-results.xml --cov=accounts --cov=core --cov=versiona_project --cov-branch --cov-report=json:coverage-backend.json --cov-report=xml:coverage-backend.xml
 
       - name: Backend coverage summary
         if: always()
@@ -132,6 +168,41 @@ jobs:
       run:
         working-directory: frontend
 
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: versiona
+          POSTGRES_PASSWORD: versiona-ci
+          POSTGRES_DB: versiona
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U versiona"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DJANGO_DB_ENGINE: django.db.backends.postgresql
+      DJANGO_DB_NAME: versiona
+      DB_USER: versiona
+      DB_PASSWORD: versiona-ci
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      REDIS_URL: redis://127.0.0.1:6379/1
+      CELERY_TASK_ALWAYS_EAGER: '1'
+      DJANGO_SECRET_KEY: ci-only-secret
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,11 +226,6 @@ jobs:
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq pkg-config default-libmysqlclient-dev
-
       - name: Create backend venv and install deps
         working-directory: backend
         run: |
@@ -169,6 +235,13 @@ jobs:
       - name: Run backend migrations
         working-directory: backend
         run: venv/bin/python manage.py migrate --no-input
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install Playwright browsers with system deps
         run: npx playwright install --with-deps chromium
@@ -259,4 +332,3 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: coverage-report.md
-
