@@ -20,6 +20,8 @@ class Organization(PublicIdModel, TimestampedModel):
     name = models.CharField(max_length=120)
     slug = models.SlugField(max_length=140, unique=True)
     kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.PERSONAL)
+    # F1: static catalog in billing.models.PLANS; Wompi checkout deferred.
+    plan = models.CharField(max_length=20, default='free')
 
     def __str__(self):
         return self.name

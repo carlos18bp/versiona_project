@@ -87,3 +87,27 @@ class SectionDiff(TimestampedModel):
 
     def __str__(self):
         return f'{self.stable_key}: {self.change_type}'
+
+
+class SavedComparison(PublicIdModel, TimestampedModel):
+    """E2: a named, shareable pointer to a comparison (unique per project)."""
+
+    project = models.ForeignKey(
+        'projects.Project', on_delete=models.CASCADE, related_name='saved_comparisons'
+    )
+    comparison = models.ForeignKey(
+        Comparison, on_delete=models.CASCADE, related_name='saved_as'
+    )
+    name = models.CharField(max_length=150)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='+'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['project', 'name'], name='uniq_saved_comparison_name'),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name} ({self.project})'

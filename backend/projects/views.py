@@ -1,6 +1,7 @@
 """Project endpoints (flows B1, B2-mínimo, B4 — docs/plan/03 §3)."""
 
 from django.db.models import Count, Q
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -76,6 +77,12 @@ def org_projects(request, org):
     name = serializer.validated_data['name'].strip()
     if not name:
         return Response({'error': 'El nombre es obligatorio.'}, status=400)
+    from billing.services import check_project_limit
+
+    try:
+        check_project_limit(request.org)
+    except DomainError as exc:
+        return Response({'error': str(exc), 'upgrade': True}, status=exc.status_code)
     base = slugify(name)[:150] or 'proyecto'
     slug = base
     suffix = 1
@@ -217,6 +224,46 @@ def project_invitation_revoke(request, proj, inv):
     except DomainError as exc:
         return Response({'error': str(exc)}, status=exc.status_code)
     return Response({'status': 'revoked'})
+
+
+@api_view(['GET'])
+@require_project_role('viewer')
+def project_report(request, proj):
+    """Kit 4: the project status report — documents, versions, seals valid at
+    the latest version, open observations and check summaries."""
+    from checks.services import summary_for
+    from documents.models import Document
+    from observations.models import Observation
+    from reviews.models import Seal
+    from reviews.services.seal_service import seal_is_valid_at
+
+    rows = []
+    for document in Document.objects.filter(project=request.project):
+        latest = document.versions.order_by('-number').first()
+        if latest is None:
+            continue
+        valid_seals = sum(
+            1 for seal in Seal.objects.filter(
+                document_version__document=document, revoked_at__isnull=True
+            )
+            if seal_is_valid_at(seal, latest)
+        )
+        rows.append({
+            'document': document.title,
+            'latest_version': latest.number,
+            'approved': latest.is_approved,
+            'valid_seals': valid_seals,
+            'open_observations': Observation.objects.filter(
+                document=document, status='open'
+            ).count(),
+            'checks': summary_for(latest),
+        })
+    return Response({
+        'project': request.project.name,
+        'status': request.project.status,
+        'generated_at': timezone.now(),
+        'documents': rows,
+    })
 
 
 @api_view(['GET'])

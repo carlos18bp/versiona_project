@@ -189,6 +189,12 @@ def version_restore(request, ver):
 @require_project_role('viewer')
 def version_download(request, ver):
     version: DocumentVersion = request.resolved_object
+    from billing.services import check_history_access
+
+    try:
+        check_history_access(version)
+    except DomainError as exc:
+        return Response({'error': str(exc), 'upgrade': True}, status=exc.status_code)
     url = version_service.download_url(version, request.user, request)
     return Response({'url': url})
 

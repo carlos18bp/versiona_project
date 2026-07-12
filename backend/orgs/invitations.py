@@ -38,6 +38,9 @@ def create_invitation(project, invited_by, *, email: str, role: str, request=Non
     ).exists():
         raise DomainError(f'Ya hay una invitación pendiente para {email}.', 409)
 
+    from billing.services import check_member_limit
+
+    check_member_limit(project.organization)
     invitation = Invitation.objects.create(
         organization=project.organization,
         project=project,
@@ -113,6 +116,12 @@ def accept_invitation(token: str, user, request=None) -> dict:
             f'La invitación es para {invitation.email}; inicia sesión con esa cuenta.', 403
         )
 
+    from billing.services import check_member_limit
+
+    if not OrganizationMembership.objects.filter(
+        organization=invitation.organization, user=user
+    ).exists():
+        check_member_limit(invitation.organization)
     OrganizationMembership.objects.get_or_create(
         organization=invitation.organization, user=user,
         defaults={'role': OrganizationMembership.Role.MEMBER},

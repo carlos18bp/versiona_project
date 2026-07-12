@@ -138,3 +138,59 @@ def seal_public_key(request, key_id):
         'algorithm': 'Ed25519',
         'public_key': signing.public_key_b64(),
     })
+
+
+@api_view(['GET', 'POST'])
+@require_project_role('viewer')
+def version_certificates(request, ver):
+    """E4: GET certificates issued for this version; POST (admin) issues one,
+    re-verifying every signature."""
+    from documents.services import storage_service
+
+    from .models import Certificate
+    from .services.certificate_service import issue_certificate
+
+    version = request.resolved_object
+
+    if request.method == 'GET':
+        rows = Certificate.objects.filter(document_version=version).select_related('issued_by')
+        return Response({'results': [
+            {'public_id': str(c.public_id), 'serial': c.serial,
+             'issued_by': c.issued_by.email, 'created_at': c.created_at,
+             'seals': len(c.snapshot.get('seals', []))}
+            for c in rows
+        ]})
+
+    if request.effective_role != 'admin':
+        raise Http404
+    try:
+        certificate = issue_certificate(version, request.user, request=request)
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    return Response({
+        'public_id': str(certificate.public_id),
+        'serial': certificate.serial,
+        'download_url': storage_service.presign_download(
+            certificate.pdf_key, f'{certificate.serial}.pdf'
+        ),
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@require_project_role('viewer')
+def certificate_download(request, ver, cert_id):
+    from documents.services import storage_service
+
+    from .models import Certificate
+
+    certificate = Certificate.objects.filter(
+        document_version=request.resolved_object, public_id=cert_id
+    ).first()
+    if certificate is None:
+        raise Http404
+    return Response({
+        'url': storage_service.presign_download(
+            certificate.pdf_key, f'{certificate.serial}.pdf'
+        ),
+        'snapshot': certificate.snapshot,
+    })

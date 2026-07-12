@@ -95,3 +95,59 @@ def comparison_section_diff(request, cmp, sec):
     if diff is None:
         raise Http404
     return Response(SectionDiffDetailSerializer(diff).data)
+
+
+@api_view(['GET'])
+@require_project_role('viewer')
+def project_saved_comparisons(request, proj):
+    from .models import SavedComparison
+
+    rows = SavedComparison.objects.filter(project=request.project).select_related(
+        'comparison__from_version', 'comparison__to_version',
+        'comparison__document', 'created_by',
+    )
+    return Response({'results': [
+        {
+            'public_id': str(row.public_id),
+            'name': row.name,
+            'created_by': row.created_by.email,
+            'created_at': row.created_at,
+            'document_title': row.comparison.document.title,
+            'summary': row.comparison.summary.get('text', ''),
+            'link': (f'/projects/{request.project.public_id}/documents/'
+                     f'{row.comparison.document.public_id}/compare/'
+                     f'{row.comparison.from_version.public_id}/'
+                     f'{row.comparison.to_version.public_id}'),
+        }
+        for row in rows
+    ]})
+
+
+@api_view(['POST', 'DELETE'])
+def comparison_save(request, cmp):
+    """E2: name (POST {name}) or unsave (DELETE) a comparison."""
+    from core.permissions import resolve_effective_role
+
+    from .models import SavedComparison
+
+    comparison = _load_comparison(request, cmp)
+    project = comparison.document.project
+    role = resolve_effective_role(request.user, project)
+    if role == 'viewer' and request.method != 'GET':
+        raise Http404  # read-only role
+
+    if request.method == 'DELETE':
+        deleted, _ = SavedComparison.objects.filter(
+            project=project, comparison=comparison
+        ).delete()
+        return Response({'deleted': bool(deleted)})
+
+    name = ((request.data or {}).get('name') or '').strip()
+    if not name:
+        return Response({'error': 'La comparación guardada necesita un nombre.'}, status=400)
+    if SavedComparison.objects.filter(project=project, name=name).exists():
+        return Response({'error': f'Ya existe una comparación guardada "{name}".'}, status=409)
+    saved = SavedComparison.objects.create(
+        project=project, comparison=comparison, name=name, created_by=request.user
+    )
+    return Response({'public_id': str(saved.public_id), 'name': saved.name}, status=201)

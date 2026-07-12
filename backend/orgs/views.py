@@ -111,3 +111,19 @@ def invitation_accept(request, token):
         return Response(accept_invitation(token, request.user, request=request))
     except DomainError as exc:
         return Response({'error': str(exc)}, status=exc.status_code)
+
+
+@api_view(['GET'])
+def org_usage(request, org):
+    """F2: usage vs plan limits with 80% warnings (member-visible)."""
+    from billing.services import usage_report
+    from core.permissions import resolve_org_role
+
+    from .models import Organization
+
+    organization = Organization.objects.filter(public_id=org).first()
+    if organization is None or resolve_org_role(request.user, organization) is None:
+        from django.http import Http404
+
+        raise Http404
+    return Response(usage_report(organization))
