@@ -136,8 +136,7 @@
       ],
       "priority": "P1",
       "description": "Member creates a project with name only and lands on the empty project with the upload dropzone (docs/plan/01 B1)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 1 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "b2-projects-board": {
       "name": "B2 - Projects board with states, filters and search",
@@ -169,8 +168,7 @@
       ],
       "priority": "P1",
       "description": "Editor drags a PDF; analysis indexes sections and version 1 shows its traffic light (docs/plan/01 C1)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 1 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "c2-upload-version": {
       "name": "C2 - Upload a new version (the commit)",
@@ -180,8 +178,7 @@
       ],
       "priority": "P1",
       "description": "Editor uploads a re-delivery with a message; within seconds sees what changed, check deltas and affected seals (docs/plan/01 C2)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 1 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "c3-history": {
       "name": "C3 - Browse the version history",
@@ -191,8 +188,7 @@
       ],
       "priority": "P2",
       "description": "Timeline shows author/date/message per version, downloads via signed URL and jumps to comparison (docs/plan/01 C3)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 1 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "d1-request-review": {
       "name": "D1 - Request a review (the pull request)",
@@ -261,8 +257,7 @@
       ],
       "priority": "P1",
       "description": "Side-by-side with highlights, modified-section list matching the fixture truth table, and summary view (docs/plan/01 E1)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 2 (docs/plan/09)"
+      "expectedSpecs": 2
     },
     "e3-configurable-checks": {
       "name": "E3 - Configure and run checks (traffic light with evidence)",

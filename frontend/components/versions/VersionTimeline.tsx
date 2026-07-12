@@ -23,6 +23,9 @@ interface VersionTimelineProps {
   versions: VersionSummary[];
   canEdit: boolean;
   onChanged: () => void;
+  /** C3-A01: selection of two versions to compare (E1 entry point). */
+  selected?: string[];
+  onToggleSelect?: (versionId: string) => void;
 }
 
 function formatDate(iso: string) {
@@ -35,7 +38,15 @@ function formatDate(iso: string) {
   }
 }
 
-export function VersionTimeline({ projectId, documentId, versions, canEdit, onChanged }: VersionTimelineProps) {
+export function VersionTimeline({
+  projectId,
+  documentId,
+  versions,
+  canEdit,
+  onChanged,
+  selected = [],
+  onToggleSelect,
+}: VersionTimelineProps) {
   const t = useDict('documents');
   const common = useDict('common');
   const { toast } = useToast();
@@ -80,6 +91,16 @@ export function VersionTimeline({ projectId, documentId, versions, canEdit, onCh
             </p>
           ) : (
             <div className="flex items-start gap-4">
+              {onToggleSelect && version.analysis_status === 'ready' ? (
+                <input
+                  data-testid={`select-version-${version.number}`}
+                  type="checkbox"
+                  aria-label={`Seleccionar v${version.number} para comparar`}
+                  className="mt-8"
+                  checked={selected.includes(version.public_id)}
+                  onChange={() => onToggleSelect(version.public_id)}
+                />
+              ) : null}
               {version.thumb_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

@@ -59,6 +59,7 @@ def run_analysis(self, job_id: int):
         analysis = analyze_bytes(data)
         with transaction.atomic():
             result = persist_analysis(version, analysis)
+        result['comparison'] = _auto_compare(version)
         EngineJob.objects.filter(pk=job.pk).update(
             status=EngineJob.Status.DONE, result=result, error_detail=''
         )
@@ -72,6 +73,37 @@ def run_analysis(self, job_id: int):
             _fail(job, version, f'Error de análisis tras reintentos: {exc}')
             return None
         raise self.retry(exc=exc)
+
+
+def _auto_compare(version: DocumentVersion) -> dict | None:
+    """C2: compare against the previous analyzed version as soon as the new one
+    is ready — the editor sees what changed without asking (docs/plan/05 §2)."""
+    from comparisons.services import build_comparison
+
+    previous = (
+        DocumentVersion.objects.filter(
+            document=version.document,
+            number__lt=version.number,
+            analysis_status=DocumentVersion.AnalysisStatus.READY,
+        )
+        .order_by('-number')
+        .first()
+    )
+    if previous is None:
+        return None
+    from comparisons.models import Comparison
+
+    comparison = build_comparison(
+        version.document, previous, version, version.author,
+        trigger=Comparison.Trigger.AUTO,
+    )
+    return {
+        'id': str(comparison.public_id),
+        'from': previous.number,
+        'to': version.number,
+        'counts': comparison.summary.get('counts', {}),
+        'text': comparison.summary.get('text', ''),
+    }
 
 
 def _fail(job: EngineJob, version: DocumentVersion, detail: str):

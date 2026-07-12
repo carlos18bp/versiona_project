@@ -6,13 +6,14 @@
  * overlay layers (observations/diff) join in It2–It4.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 import { Skeleton } from '@/components/ui/Skeleton';
+import { bboxToCss, groupByPage, type NormalizedBBox } from '@/lib/pdf/coords';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -24,11 +25,39 @@ interface PdfViewerProps {
   maxPages?: number;
   width?: number;
   onLoaded?: (pages: number) => void;
+  /** Diff/observation overlays (normalized 0–1, top-left) — E1 highlights. */
+  highlights?: NormalizedBBox[];
+  highlightKind?: 'modified' | 'added' | 'removed';
+  /** Page the viewer should scroll to (1-based) — section navigation. */
+  scrollToPage?: number | null;
 }
 
-export function PdfViewer({ file, maxPages, width = 760, onLoaded }: PdfViewerProps) {
+const HIGHLIGHT_CLASS: Record<string, string> = {
+  modified: 'bg-amber-400/30 border border-amber-500/60',
+  added: 'bg-emerald-400/25 border border-emerald-500/60',
+  removed: 'bg-destructive/20 border border-destructive/60',
+};
+
+export function PdfViewer({
+  file,
+  maxPages,
+  width = 760,
+  onLoaded,
+  highlights = [],
+  highlightKind = 'modified',
+  scrollToPage = null,
+}: PdfViewerProps) {
   const [pageCount, setPageCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [pageSize, setPageSize] = useState<{ width: number; height: number } | null>(null);
+  const pageRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const byPage = groupByPage(highlights);
+
+  useEffect(() => {
+    if (!scrollToPage) return;
+    const node = pageRefs.current[scrollToPage];
+    node?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [scrollToPage, pageCount]);
 
   if (error) {
     return (
@@ -62,15 +91,51 @@ export function PdfViewer({ file, maxPages, width = 760, onLoaded }: PdfViewerPr
           )
         }
       >
-        {Array.from({ length: pagesToRender }, (_, index) => (
-          <div key={index} className="mb-4 overflow-hidden rounded-xl border border-border shadow-sm">
-            <Page
-              pageNumber={index + 1}
-              width={width}
-              renderAnnotationLayer={false}
-            />
-          </div>
-        ))}
+        {Array.from({ length: pagesToRender }, (_, index) => {
+          const pageNumber = index + 1;
+          const boxes = byPage.get(pageNumber) ?? [];
+          return (
+            <div
+              key={index}
+              ref={(node) => {
+                pageRefs.current[pageNumber] = node;
+              }}
+              data-testid={`pdf-page-${pageNumber}`}
+              className="relative mb-4 overflow-hidden rounded-xl border border-border shadow-sm"
+            >
+              <Page
+                pageNumber={pageNumber}
+                width={width}
+                renderAnnotationLayer={false}
+                onRenderSuccess={(page) => {
+                  const viewport = page.getViewport({ scale: 1 });
+                  const scale = width / viewport.width;
+                  setPageSize({ width, height: viewport.height * scale });
+                }}
+              />
+              {pageSize && boxes.length > 0 ? (
+                <div className="pointer-events-none absolute inset-0" data-testid="highlight-layer">
+                  {boxes.map((bbox, boxIndex) => {
+                    const css = bboxToCss(bbox, pageSize.width, pageSize.height);
+                    return (
+                      <div
+                        key={boxIndex}
+                        data-testid="diff-highlight"
+                        className={`absolute rounded-sm ${HIGHLIGHT_CLASS[highlightKind]}`}
+                        style={{
+                          left: `${css.left}px`,
+                          top: `${css.top}px`,
+                          width: `${css.width}px`,
+                          height: `${css.height}px`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
       </Document>
       {maxPages && pageCount > maxPages ? (
         <p className="text-xs text-muted-foreground">

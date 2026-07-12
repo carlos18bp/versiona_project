@@ -5,9 +5,9 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
-**Iteración**: **It1** · **Fecha**: 2026-07-12 ·
-**Escenarios totales (03)**: 258 · **Con fila aquí**: 11 (U/H) + 45 (módulos B y C) ·
-**VERDES**: 11 (U/H, incl. U8/U9 cerrados en It1) + 40 (B/C) · **Pendientes**: 207
+**Iteración**: **It2** · **Fecha**: 2026-07-12 ·
+**Escenarios totales (03)**: 258 · **Con fila aquí**: 11 (U/H) + 45 (B/C) + 9 (E1 + D5-A01) ·
+**VERDES**: 11 + 40 + 9 = **60** · **Pendientes**: 198
 
 ## 1. Reglas de cumplimiento
 
@@ -100,8 +100,20 @@
 ### Módulo D (58) — It3 (D4, D5) · It4 (D1, D2, D3)
 `D1-*` (10) · `D2-*` (8) · `D3-*` (12) · `D4-*` (13) · `D5-*` (15). Estado: PENDIENTE.
 
-### Módulo E (37) — It2 (E1) · It5 (E3) · It7 (E2, E4)
-`E1-*` (10) · `E2-*` (8) · `E3-*` (10) · `E4-*` (9). Estado: PENDIENTE.
+### Módulo E — It2 entregó E1 (E3 → It5; E2/E4 → It7)
+
+| Escenario | Sev | Unit BE | Unit FE | Integración | E2E | Estado |
+|---|---|---|---|---|---|---|
+| E1-F01 (3 vistas, tabla de verdad) | BLOQ | `test_comparison_engine::test_truth_table_*` (conteos exactos 2/1/1) | `[E1-F01]` SectionChangeList + `sync.test` + `coords.test` | `test_compare_two_versions_returns_the_truth_table` | `e1-compare-versions.spec.ts::E1-F01` | **VERDE** |
+| E1-F02 (deep-link + navegación entre vistas) | BLOQ | — | `[E1-F02]` SectionChangeList | `test_section_diff_endpoint_returns_word_level_ops` | ✔ (mismo spec: `#sec-…`) | **VERDE** |
+| E1-A01 (par no adyacente v1↔v3) | BLOQ | `test_comparison_of_non_adjacent_versions_accumulates_changes` | — | ✔ | — | **VERDE** |
+| E1-A02 (caché por par) | ENR | — | — | `test_second_request_for_the_same_pair_is_served_from_cache` | — | **VERDE** |
+| E1-E01 (versión fallida / misma versión) | BLOQ | — | — | `test_compare_against_a_failed_version_is_rejected` + `test_compare_with_the_same_version_twice_is_rejected` | — | **VERDE** |
+| E1-L01 (sin cambios) | BLOQ | `test_identical_versions_report_no_changes` | CompareView (`no-changes`) | — | `e1-…::E1-L01` | **VERDE** |
+| E1-P01..P04 | BLOQ | — | — | `test_compare_permission_matrix` + `test_comparison_detail_permission_matrix` | n/a | **VERDE** |
+| D5-A01 (renumeración ⇒ identidad sobrevive) | BLOQ | `test_truth_table_renumbered_sections_are_not_changes` + `test_persistence::test_renamed_section_reuses_the_same_identity_row` | — | — | ✔ (E1 spec: confidencialidad no aparece como cambio) | **VERDE (base de D5)** |
+| C3-A01 (saltar a comparar desde el timeline) | BLOQ | — | — | — | ✔ (E1 spec: selección de 2 versiones) | **VERDE** |
+| E2-*, E3-*, E4-* | BLOQ | — | — | — | — | PENDIENTE (It5/It7) |
 
 ### Módulo F (26) — It7
 `F1-*` (10) · `F2-*` (7) · `F3-*` (9). Estado: PENDIENTE (It7).

@@ -39,7 +39,7 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G14 | D3 observaciones ancladas | Observation+Anchor+Reply; selección de zona (bbox normalizada); re-anclaje entre versiones; estados I14 | vista+endpoint+modelo+tarea | BLOQUEANTE | D3-* | It4 | Abierta |
 | G15 | D4 aprobar con sello | Seal+SealSection firmado Ed25519 (I6); congelamiento I5/I10; panel de sellos | vista+endpoint+modelo | BLOQUEANTE | D4-* | It3 | Abierta |
 | G16 | D5 invalidación selectiva 💎 | SealValidityRecord+SectionLineage; invalidation_service puro (I7/I11); modos auto/coordinator; notificación selectiva S6 | vista+endpoint+modelo+tarea+notif | BLOQUEANTE | D5-* | It3 | Abierta |
-| G17 | E1 comparar versiones ⭐ | Comparison/SectionDiff; matching §4 plan 05; CompareView 3 vistas; highlights bbox | vista+endpoint+modelo+tarea | BLOQUEANTE | E1-* | It2 | Abierta |
+| G17 | E1 comparar versiones ⭐ | Comparison/SectionDiff; matching; CompareView 3 vistas; highlights bbox | vista+endpoint+modelo+tarea | BLOQUEANTE | E1-* | It2 | **Cerrada It2** |
 | G18 | E2 comparaciones guardadas | SavedComparison (nombre, autor); lista por proyecto; enlace interno | vista+endpoint+modelo | BLOQUEANTE | E2-* | It7 | Abierta |
 | G19 | E3 checks configurables | CheckDefinition/Run/Result con evidencia; **ChecklistTemplate copy-on-apply (kit 2)** | vista+endpoint+modelo+tarea | BLOQUEANTE | E3-* | It5 | Abierta |
 | G20 | E4 constancia exportable | Certificate append-only + PDF con firmas re-verificadas; **la prueba maestra M1 la exige** | vista+endpoint+modelo | BLOQUEANTE | E4-* | It7 | Abierta |
@@ -95,7 +95,8 @@ BLOQUEANTE de It1 (todo lo posterior lo consume).
 |---|---|---|---|---|
 | It0 (línea base) | **31** | 6 | 3 | — |
 | **It1 (cierre 2026-07-12)** | **16** (G01–G03, G06, G12–G23, G26, G30 · con G05/G07/G28 parciales) | 3 (G25, G27, H06, H08) | 1 (H09) | **15** (G04, G08–G11, G24, H01–H05, H07, H10–H12 + 3 parciales) |
-| It2..It8 | (se actualiza al cierre de cada iteración) | | | |
+| **It2 (cierre 2026-07-12)** | **15** | 3 | 1 | **1** (G17 ⭐ E1 completo: motor de diff, 3 vistas, highlights, caché por par) |
+| It3..It8 | (se actualiza al cierre de cada iteración) | | | |
 
 ## 7. Preguntas abiertas (DECISIÓN PENDIENTE)
 
