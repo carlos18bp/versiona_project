@@ -26,11 +26,12 @@ const customJestConfig = {
   ],
   coverageProvider: 'v8',
   coverageThreshold: {
+    // It5 step (docs/audit/04 §4): 50 → 55. It8 raises key routes to 80.
     global: {
       branches: 50,
-      functions: 50,
-      lines: 50,
-      statements: 50,
+      functions: 55,
+      lines: 55,
+      statements: 55,
     },
     // Staged gates per docs/audit/04 §4 (It1 step: stores 75).
     './lib/stores/': {

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -23,15 +23,17 @@ export default function ProjectsBoardPage() {
     if (isAuthenticated) void fetchOrgs();
   }, [isAuthenticated, fetchOrgs]);
 
+  const [statusFilter, setStatusFilter] = useState('');
+
   const fetcher = useCallback(
     async ({ page, search }: { page: number; search: string }) => {
       if (!activeOrgId) return { count: 0, next: null, previous: null, results: [] };
       const { data } = await api.get(`orgs/${activeOrgId}/projects/`, {
-        params: { page, q: search || undefined },
+        params: { page, q: search || undefined, status: statusFilter || undefined },
       });
       return data;
     },
-    [activeOrgId]
+    [activeOrgId, statusFilter]
   );
 
   const list = useListController<ProjectSummary>(fetcher);
@@ -43,10 +45,21 @@ export default function ProjectsBoardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">{t.title}</h1>
         <div className="flex items-center gap-2">
+          <select
+            data-testid="board-status-filter"
+            aria-label={t.status.active + '/' + t.status.archived}
+            className="rounded-full border border-border bg-background px-3 py-2 text-sm"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            <option value="">{t.filterAll}</option>
+            <option value="active">{t.status.active}</option>
+            <option value="archived">{t.status.archived}</option>
+          </select>
           <input
             data-testid="board-search"
             className="w-56 rounded-full border border-border bg-background px-4 py-2 text-sm"
-            placeholder={common.search}
+            placeholder={t.searchHint}
             value={list.search}
             onChange={(event) => list.setSearch(event.target.value)}
           />

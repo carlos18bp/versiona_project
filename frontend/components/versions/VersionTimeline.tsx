@@ -139,6 +139,21 @@ export function VersionTimeline({
                   <span className="text-xs text-muted-foreground">
                     {t.scenario[version.source_scenario]} · {version.page_count} {t.pages}
                   </span>
+                  {version.check_summary ? (
+                    <span
+                      data-testid={`check-light-${version.number}`}
+                      className="text-xs"
+                      title="Checks del proyecto"
+                    >
+                      <span className="text-emerald-600">✓{version.check_summary.pass}</span>{' '}
+                      {version.check_summary.warn ? (
+                        <span className="text-amber-600">⚠{version.check_summary.warn}</span>
+                      ) : null}{' '}
+                      {version.check_summary.fail ? (
+                        <span className="text-destructive">✗{version.check_summary.fail}</span>
+                      ) : null}
+                    </span>
+                  ) : null}
                 </div>
                 {editing === version.public_id ? (
                   <div className="mt-2 flex gap-2">

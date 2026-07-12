@@ -5,9 +5,9 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
-**Iteración**: **It4** · **Fecha**: 2026-07-12 ·
-**Escenarios totales (03)**: 258 · **Con fila aquí**: 11 (U/H) + 45 (B/C) + 9 (E1) + 28 (D4/D5/NTF) + 22 (D1/D2/D3/ACT/A11Y) ·
-**VERDES**: 11 + 40 + 9 + 28 + 22 = **110** · **Pendientes**: 148
+**Iteración**: **It5** · **Fecha**: 2026-07-12 ·
+**Escenarios totales (03)**: 258 · **Con fila aquí**: 110 previos + 15 (B3/E3/B2/OCR) ·
+**VERDES**: **125** · **Pendientes**: 133
 
 ## 1. Reglas de cumplimiento
 
@@ -58,7 +58,21 @@
 | B2-A01/A03/A04, B2-L02 | BLOQ/ENR | — | — | — | — | PENDIENTE (It5) |
 | B2-P01..P04 | BLOQ | `test_permissions.py` | — | `test_project_detail_permission_matrix` + `test_org_member_without_project_membership_sees_empty_board` | n/a | **VERDE** |
 | B3-A02 | ENR | — | — | `test_admin_edits_project_metadata` | — | **VERDE** (resto de B3 → It5) |
-| B3-* (F01–F03, A01, E01, L01, P) | BLOQ | — | — | — | — | PENDIENTE (It5) |
+| B3-F01 (editar crea config nueva) | BLOQ | `test_editing_config_creates_a_new_version` | — | ✔ | `b3-e3-governance.spec.ts` | **VERDE** |
+| B3-F02 (**I8 no-retroactividad estructural**) | BLOQ | `test_i8_existing_versions_keep_their_pinned_config` | — | ✔ | ✔ (doc nuevo pina config nueva) | **VERDE** |
+| B3-F03 (aprobación all_assigned por dueños) | BLOQ | `test_owner_based_approval_all_assigned` | — | ✔ | — | **VERDE** |
+| B3-E01/E02 (validaciones checklist/dueños; dueño ajeno no aprueba) | BLOQ | `test_checklist_validation_rejects_bad_items` + `test_owner_seal_by_a_non_owner_does_not_approve` | — | ✔ | — | **VERDE** |
+| B3-A01 (plantilla org copy-on-apply, kit 2) | BLOQ | `test_template_copy_on_apply_is_a_snapshot` | — | `test_template_creation_requires_org_admin` | — | **VERDE** |
+| B3-P01..P04 | BLOQ | — | — | `test_update_config_permission_matrix` + `test_config_is_hidden_from_non_admin_members` | ✔ (`B3-P02` spec viewer) | **VERDE** |
+| E3-F01 (checklist evaluada con el análisis, tabla exacta) | BLOQ | `test_checks_run_with_the_analysis_and_produce_the_truth_table` | — | ✔ | ✔ (mismo spec b3-e3) | **VERDE** |
+| E3-F02 (evidencia sección+página+snippet) | BLOQ | `test_pass_results_carry_evidence_with_section_and_snippet` | — | `test_checks_endpoint_returns_results_with_evidence` | ✔ | **VERDE** |
+| E3-F03 (semáforo en timeline) | BLOQ | `test_summary_feeds_the_traffic_light` | ChecksPanel/timeline | — | ✔ (`check-light-1`) | **VERDE** |
+| E3-A01/A02 (sección faltante con razón; idempotencia I15) | BLOQ | `test_missing_required_section_fails_with_reason` + `test_run_checks_is_idempotent_per_version_and_config` | — | — | — | **VERDE** |
+| E3-L01 (sin checklist ⇒ sin run) | ENR | `test_empty_checklist_produces_no_run` | — | — | — | **VERDE** |
+| B2-A03 (búsqueda por CONTENIDO, FTS spanish+unaccent) | BLOQ | — | — | `test_board_finds_a_project_by_pdf_content` + `test_content_search_uses_spanish_stemming` | `b2-board-search.spec.ts` | **VERDE** |
+| B2-A01 (filtro por estado) | BLOQ | — | — | `test_status_filter_separates_archived_projects` | ✔ | **VERDE** |
+| C1-A02 (OCR escaneado, tabla exacta) | BLOQ | `test_scanned_pdf_goes_through_ocr_with_real_sections` (7 secciones, confianza >0.9) | — | — | — | **VERDE (cerrado It5)** |
+| D5-A03 (OCR baja confianza ⇒ degradado ⇒ coordinador) | BLOQ | `test_low_ocr_confidence_keeps_the_analysis_degraded` | — | — | — | **VERDE** |
 | B4-F01 | BLOQ | `test_trash_service::archive_makes_project_read_only_and_reversible` | — | `test_archive_and_unarchive_roundtrip` | — (UI It6) | **VERDE (backend)** |
 | B4-F02/F03 | BLOQ | `test_trash_project_requires_exact_name_confirmation` | — | `test_trash_requires_exact_name_and_restore_recovers` | — (UI It6) | **VERDE (backend)** |
 | B4-E01 (T4: sellos ⇒ solo archivar) | BLOQ | `test_project_with_approved_version_only_archivable` | — | ✔ | — | **VERDE (backend)** |

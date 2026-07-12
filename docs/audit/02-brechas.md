@@ -27,8 +27,8 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G02 | A2 invitar equipo | Invitation+memberships org/proyecto; emails con token; aceptar→aterrizar en proyecto; gestión de roles | vista+endpoint+modelo+notif | BLOQUEANTE | A2-* | It6 | Abierta |
 | G03 | A3 seguridad de cuenta | 2FA TOTP (enrolar/challenge/códigos de respaldo); sesiones activas + revocación (token_blacklist ya instalado) | vista+endpoint+modelo | BLOQUEANTE | A3-* | It6 | Abierta |
 | G04 | B1 crear proyecto | Project+ProjectMembership+ProjectConfigVersion; POST projects; pantalla /projects/new; límite de plan | vista+endpoint+modelo | BLOQUEANTE | B1-* | It1 | **Cerrada It1** |
-| G05 | B2 tablero | Falta: filtro por estado y búsqueda por CONTENIDO (FTS) | vista+endpoint | BLOQUEANTE | B2-A01/A03 | It5 | **Parcial: lista+búsqueda por nombre entregadas en It1** |
-| G06 | B3 config proyecto | ProjectConfigVersion UI (checklist/dueños/reglas/d5_mode); no-retroactividad I8 | vista+endpoint | BLOQUEANTE | B3-* | It5 | Abierta |
+| G05 | B2 tablero | — | vista+endpoint | BLOQUEANTE | B2-* | It1+It5 | **Cerrada It5** (FTS spanish+unaccent por contenido, filtro de estado) |
+| G06 | B3 config proyecto | ProjectConfigVersion UI (checklist/dueños/reglas/d5_mode); no-retroactividad I8 | vista+endpoint | BLOQUEANTE | B3-* | It5 | **Cerrada It5** |
 | G07 | B4 archivar/eliminar proyecto | Falta la UI (endpoints, papelera y reglas T4 ya operativos desde It1) | vista | BLOQUEANTE | B4-* | It6 | **Parcial: backend + papelera entregados en It1** |
 | G08 | C1 subir primer documento | Document/DocumentVersion/Section/EngineJob; upload_intent+complete (presigned MinIO); AnalysisJob PyMuPDF; semáforo; **preview pre-subida (kit 1)** | vista+endpoint+modelo+tarea | BLOQUEANTE | C1-* | It1 | **Cerrada It1** |
 | G09 | C2 nueva versión | Secuencia I1; comparación auto; PostUploadSummary; **edición de mensaje en borrador (kit 2, I2b)** | vista+endpoint+tarea | BLOQUEANTE | C2-* | It1 | **Cerrada It1** |
@@ -41,7 +41,7 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G16 | D5 invalidación selectiva 💎 | SealValidityRecord+SectionLineage; invalidation_service puro (I7/I11); modos auto/coordinator; notificación selectiva S6 | vista+endpoint+modelo+tarea+notif | BLOQUEANTE | D5-* | It3 | **Cerrada It3** |
 | G17 | E1 comparar versiones ⭐ | Comparison/SectionDiff; matching; CompareView 3 vistas; highlights bbox | vista+endpoint+modelo+tarea | BLOQUEANTE | E1-* | It2 | **Cerrada It2** |
 | G18 | E2 comparaciones guardadas | SavedComparison (nombre, autor); lista por proyecto; enlace interno | vista+endpoint+modelo | BLOQUEANTE | E2-* | It7 | Abierta |
-| G19 | E3 checks configurables | CheckDefinition/Run/Result con evidencia; **ChecklistTemplate copy-on-apply (kit 2)** | vista+endpoint+modelo+tarea | BLOQUEANTE | E3-* | It5 | Abierta |
+| G19 | E3 checks configurables | CheckDefinition/Run/Result con evidencia; **ChecklistTemplate copy-on-apply (kit 2)** | vista+endpoint+modelo+tarea | BLOQUEANTE | E3-* | It5 | **Cerrada It5** |
 | G20 | E4 constancia exportable | Certificate append-only + PDF con firmas re-verificadas; **la prueba maestra M1 la exige** | vista+endpoint+modelo | BLOQUEANTE | E4-* | It7 | Abierta |
 | G21 | F1 plan y límites | Plan/Subscription/limits I13; enforcement (proyectos/miembros/historial locked); CTA upgrade informativo (Wompi diferido) | vista+endpoint+modelo | BLOQUEANTE | F1-* | It7 | Abierta |
 | G22 | F2 consumo y avisos | Panel de uso vs límites; avisos preventivos al 80% | vista+endpoint | BLOQUEANTE | F2-* | It7 | Abierta |
@@ -52,7 +52,7 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G27 | Kit 6 históricos | ActivityFeed por proyecto (AuditEvent whitelisted sin ip) | vista+endpoint | ENRIQUECE | ACT-* | It4 | **Cerrada It4** (ActivityFeed whitelisted) |
 | G28 | Kit 7 configuraciones | Faltan prefs de notificación (It3-4) y org settings General (It6) | vista+endpoint | BLOQUEANTE | SET-* | It3–It6 | **Parcial: perfil/idioma/zona horaria entregados en It1** |
 | G29 | i18n es/en | Faltan: traducción de las páginas auth heredadas y emails por idioma | vista | ENRIQUECE | transversal | cada iteración | **Parcial: diccionarios es/en + preferencia funcional entregados en It1** |
-| G30 | OCR escaneados | ocrmypdf+tesseract-spa nativos; confianza por sección; modo degradado + coordinador forzado | tarea+deps sistema | BLOQUEANTE (fixture escaneado con resultados exactos es obligatorio Fase 4) | C1-A02, D5-A03 | It5 | Abierta |
+| G30 | OCR escaneados | ocrmypdf+tesseract-spa nativos; confianza por sección; modo degradado + coordinador forzado | tarea+deps sistema | BLOQUEANTE (fixture escaneado con resultados exactos es obligatorio Fase 4) | C1-A02, D5-A03 | It5 | **Cerrada It5** (OCR + confianza 0.75 + tabla exacta) |
 
 ## 3. Brechas del kit/arnés de pruebas
 
@@ -98,7 +98,8 @@ BLOQUEANTE de It1 (todo lo posterior lo consume).
 | **It2 (cierre 2026-07-12)** | **15** | 3 | 1 | **1** (G17 ⭐ E1 completo: motor de diff, 3 vistas, highlights, caché por par) |
 | **It3 (cierre 2026-07-12)** | **13** | 3 | 1 | **2** (G15 💎 D4 sellos Ed25519, G16 💎 D5 invalidación selectiva · G26 parcial: kit 5 v1) |
 | **It4 (cierre 2026-07-12)** | **8** (G01–G03, G06, G18–G23, G30 con parciales) | 1 (G25) | 1 (H09) | **5** (G12 D1, G13 D2, G14 D3, G26 kit 5 completo, G27 kit 6) |
-| It5..It8 | (se actualiza al cierre de cada iteración) | | | |
+| **It5 (cierre 2026-07-12)** | **4** (G01–G03 módulo A · G18/G20–G23 → It7, G25) | 1 (G25) | 1 (H09) | **4** (G05 B2 completo, G06 B3, G19 E3, G30 OCR) |
+| It6..It8 | (se actualiza al cierre de cada iteración) | | | |
 
 ## 7. Preguntas abiertas (DECISIÓN PENDIENTE)
 

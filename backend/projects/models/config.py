@@ -30,6 +30,13 @@ class ProjectConfigVersion(TimestampedModel):
     approval_policy = models.JSONField(default=default_approval_policy)
     d5_mode = models.CharField(max_length=12, choices=D5Mode.choices, default=D5Mode.AUTO)
     coordinators = models.JSONField(default=list, blank=True)
+    # E3: [{key, label, type: required_section|required_text|forbidden_text,
+    #       param, severity: fail|warn}] — evaluated against the PINNED config
+    #       of each version (I8), never retroactively.
+    checklist = models.JSONField(default=list, blank=True)
+    # B3: {stable_key: [user_id, ...]} — feeds the 'all_assigned' approval
+    # policy and the reviewer suggestions (D1).
+    section_owners = models.JSONField(default=dict, blank=True)
     created_by = models.ForeignKey(
         django_settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='+'
     )

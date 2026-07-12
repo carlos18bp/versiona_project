@@ -39,7 +39,22 @@ def org_projects(request, org):
         queryset = _visible_projects(request.user, request.org)
         search = request.query_params.get('q', '').strip()
         if search:
-            queryset = queryset.filter(name__icontains=search)
+            from django.contrib.postgres.search import SearchQuery
+            from django.db.models import Exists, F, OuterRef
+
+            from documents.models import SectionVersion
+
+            # B2-A02/A03: match by name OR by CONTENT of each document's
+            # latest version (FTS 'spanish' over the indexed section text).
+            content_match = SectionVersion.objects.filter(
+                document_version__document__project=OuterRef('pk'),
+                document_version__document__deleted_at__isnull=True,
+                document_version__number=F('document_version__document__latest_number'),
+                search_vector=SearchQuery(search, config='spanish_unaccent'),
+            )
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(Exists(content_match))
+            )
         status_filter = request.query_params.get('status', '').strip()
         if status_filter:
             queryset = queryset.filter(status=status_filter)
@@ -85,6 +100,73 @@ def org_projects(request, org):
         ProjectDetailSerializer(project, context={'roles_by_project': {project.pk: 'admin'}}).data,
         status=status.HTTP_201_CREATED,
     )
+
+
+@api_view(['GET', 'POST'])
+@require_project_role('viewer')
+def project_config(request, proj):
+    """B3: GET the current pinned-able config; POST (admin) creates a NEW
+    version — I8 makes retroactivity structurally impossible."""
+    from django.http import Http404 as _Http404
+
+    from projects.models import ProjectConfigVersion
+    from projects.services import config_service
+    from documents.services.version_service import DomainError
+
+    if request.effective_role != 'admin':
+        raise _Http404
+    if request.method == 'GET':
+        config = ProjectConfigVersion.current_for(request.project)
+        return Response({
+            'number': config.number,
+            'd5_mode': config.d5_mode,
+            'approval_policy': config.approval_policy,
+            'checklist': config.checklist,
+            'section_owners': config.section_owners,
+            'history_count': ProjectConfigVersion.objects.filter(
+                project=request.project
+            ).count(),
+        })
+
+    if request.effective_role != 'admin':
+        raise _Http404
+    payload = request.data or {}
+    try:
+        config = config_service.update_config(
+            request.project, request.user,
+            checklist=payload.get('checklist'),
+            d5_mode=payload.get('d5_mode'),
+            approval_policy=payload.get('approval_policy'),
+            section_owners=payload.get('section_owners'),
+            request=request,
+        )
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    return Response({'number': config.number}, status=201)
+
+
+@api_view(['POST'])
+@require_project_role('admin')
+def project_apply_template(request, proj):
+    from checks.models import ChecklistTemplate
+    from django.http import Http404 as _Http404
+
+    from projects.services import config_service
+    from documents.services.version_service import DomainError
+
+    template = ChecklistTemplate.objects.filter(
+        organization=request.project.organization,
+        public_id=(request.data or {}).get('template'),
+    ).first()
+    if template is None:
+        raise _Http404
+    try:
+        config = config_service.apply_template(
+            request.project, request.user, template, request=request
+        )
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    return Response({'number': config.number, 'checklist': config.checklist}, status=201)
 
 
 @api_view(['GET'])

@@ -42,7 +42,7 @@ const baseProps = {
   versionId: 'v2',
   versionNumber: 2,
   sections: [{ stable_key: 's1', heading_text: '1. OBJETO', level: 1, order_index: 0,
-               page_start: 1, page_end: 1, char_count: 10 }],
+               page_start: 1, page_end: 1, char_count: 10, bboxes: [], body_hash: 'h1' }],
   canCreate: true,
   canReply: true,
   currentUserEmail: 'reviewer@versiona.test',

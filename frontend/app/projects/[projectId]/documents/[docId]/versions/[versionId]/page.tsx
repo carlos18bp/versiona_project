@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { ChecksPanel } from '@/components/checks/ChecksPanel';
 import { ObservationsPanel } from '@/components/observations/ObservationsPanel';
 import { ReviewContextBar } from '@/components/reviews/ReviewContextBar';
 import { ReviewRequestPanel } from '@/components/reviews/ReviewRequestPanel';
@@ -104,6 +105,7 @@ export default function VersionViewerPage() {
                 projectId={params.projectId}
                 canRequest={['editor', 'admin'].includes(detail.effective_role ?? '')}
               />
+              <ChecksPanel versionId={detail.public_id} />
               <SealsPanel
                 versionId={detail.public_id}
                 canConfirmPlan={detail.effective_role === 'admin'}

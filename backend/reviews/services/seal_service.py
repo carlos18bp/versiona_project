@@ -144,14 +144,50 @@ def revoke_seal(seal: Seal, actor, request=None) -> Seal:
     return seal
 
 
+def _owner_based_approved(version: DocumentVersion, owners: dict) -> tuple[bool, int]:
+    """'all_assigned' (B3): every OWNED section present in this version must be
+    covered by an ACTIVE seal from one of its owners."""
+    present_keys = set(
+        SectionVersion.objects.filter(document_version=version)
+        .values_list('section__stable_key', flat=True)
+    )
+    owned = {key: ids for key, ids in owners.items() if key in present_keys and ids}
+    if not owned:
+        return False, 0
+    seals = list(
+        Seal.objects.filter(document_version=version, revoked_at__isnull=True)
+        .prefetch_related('covered_sections__section')
+    )
+    satisfied = 0
+    for key, owner_ids in owned.items():
+        for seal in seals:
+            if seal.reviewer_id not in owner_ids:
+                continue
+            if seal.covers_all or any(
+                cover.section.stable_key == key for cover in seal.covered_sections.all()
+            ):
+                satisfied += 1
+                break
+    return satisfied == len(owned), satisfied
+
+
 def _refresh_approval(version: DocumentVersion, request=None):
     """I10: approval derives from the PINNED config's approval_policy (I8).
-    MVP rule until section owners land (It5): an integer `required` counts
-    full-coverage seals; 'all_assigned' resolves to 1 for now."""
-    policy = version.config_version.approval_policy or {}
+    Integer `required` counts full-coverage seals; 'all_assigned' (B3, It5)
+    demands every owned section sealed by one of its owners."""
+    config = version.config_version
+    policy = config.approval_policy or {}
     required = policy.get('required', 1)
+
+    if required == 'all_assigned' and config.section_owners:
+        approved, qualifying = _owner_based_approved(version, config.section_owners)
+        required_display = f'all_assigned ({len(config.section_owners)} secciones)'
+        if approved and not version.is_approved:
+            _mark_approved(version, qualifying, required_display, request)
+        return
+
     if not isinstance(required, int):
-        required = 1  # 'all_assigned' becomes owner-based in It5
+        required = 1  # 'all_assigned' without owners falls back to one full seal
     active = Seal.objects.filter(document_version=version, revoked_at__isnull=True)
     total_sections = SectionVersion.objects.filter(document_version=version).count()
 
@@ -162,27 +198,31 @@ def _refresh_approval(version: DocumentVersion, request=None):
             qualifying += 1
 
     if qualifying >= required and not version.is_approved:
-        DocumentVersion.all_objects.filter(pk=version.pk).update(
-            is_approved=True, approved_at=timezone.now()
+        _mark_approved(version, qualifying, required, request)
+
+
+def _mark_approved(version: DocumentVersion, qualifying, required, request=None):
+    DocumentVersion.all_objects.filter(pk=version.pk).update(
+        is_approved=True, approved_at=timezone.now()
+    )
+    version.refresh_from_db()
+    project = version.document.project
+    audit.record(
+        org=project.organization, project=project, actor=None,
+        event_type='version.approved', obj=version,
+        payload={'version': version.number, 'required': str(required),
+                 'qualifying': qualifying},
+        request=request,
+    )
+    if version.author:
+        notify(
+            user=version.author, event_key='version.approved',
+            org=project.organization, project=project,
+            context={'version': version.number, 'document': version.document.title,
+                     'qualifying': qualifying, 'required': required},
+            link=f'/projects/{project.public_id}/documents/{version.document.public_id}',
+            payload={'version': version.number},
         )
-        version.refresh_from_db()
-        project = version.document.project
-        audit.record(
-            org=project.organization, project=project, actor=None,
-            event_type='version.approved', obj=version,
-            payload={'version': version.number, 'required': required,
-                     'qualifying': qualifying},
-            request=request,
-        )
-        if version.author:
-            notify(
-                user=version.author, event_key='version.approved',
-                org=project.organization, project=project,
-                context={'version': version.number, 'document': version.document.title,
-                         'qualifying': qualifying, 'required': required},
-                link=f'/projects/{project.public_id}/documents/{version.document.public_id}',
-                payload={'version': version.number},
-            )
 
 
 # ── D5: application over a fresh comparison ────────────────────────────────

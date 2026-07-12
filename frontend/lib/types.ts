@@ -38,6 +38,7 @@ export interface VersionSummary {
   is_trashed: boolean;
   author_email: string | null;
   thumb_url: string | null;
+  check_summary?: CheckSummary | null;
   created_at: string;
 }
 
@@ -51,6 +52,12 @@ export interface SectionInfo {
   bboxes: Array<{ page: number; x0: number; y0: number; x1: number; y1: number }>;
   body_hash: string;
   char_count: number;
+}
+
+export interface CheckSummary {
+  pass: number;
+  warn: number;
+  fail: number;
 }
 
 export interface VersionDetail extends VersionSummary {

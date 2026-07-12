@@ -59,6 +59,10 @@ def run_analysis(self, job_id: int):
         analysis = analyze_bytes(data)
         with transaction.atomic():
             result = persist_analysis(version, analysis)
+        # E3: the pinned config's checklist runs with the analysis (I8/I15).
+        from checks.services import run_checks
+
+        run_checks(version)
         result['comparison'] = _auto_compare(version)
         EngineJob.objects.filter(pk=job.pk).update(
             status=EngineJob.Status.DONE, result=result, error_detail=''

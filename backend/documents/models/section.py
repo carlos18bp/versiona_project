@@ -9,6 +9,8 @@ decision.
 Bounding boxes travel normalized 0–1, top-left origin: [{page, x0, y0, x1, y1}].
 """
 
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
 from core.models import TimestampedModel
@@ -57,6 +59,9 @@ class SectionVersion(TimestampedModel):
     order_index = models.PositiveIntegerField()
     ocr_confidence = models.FloatField(null=True, blank=True)
     char_count = models.PositiveIntegerField(default=0)
+    # B2 content search: tsvector('spanish') over normalized_text, populated
+    # by persist_analysis right after the bulk insert.
+    search_vector = SearchVectorField(null=True, editable=False)
 
     class Meta:
         constraints = [
@@ -67,6 +72,7 @@ class SectionVersion(TimestampedModel):
                 fields=['document_version', 'order_index'], name='uniq_snapshot_order'
             ),
         ]
+        indexes = [GinIndex(fields=['search_vector'], name='sectionversion_fts_gin')]
         ordering = ['order_index']
 
     def __str__(self):

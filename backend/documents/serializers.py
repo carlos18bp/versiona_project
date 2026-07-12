@@ -17,18 +17,28 @@ def _thumb_url(version):
         return None
 
 
-class VersionListSerializer(serializers.ModelSerializer):
+class CheckSummaryMixin:
+    def get_check_summary(self, obj):
+        from checks.services import summary_for
+
+        return summary_for(obj)
+
+
+class VersionListSerializer(CheckSummaryMixin, serializers.ModelSerializer):
     author_email = serializers.EmailField(source='author.email', default=None)
     thumb_url = serializers.SerializerMethodField()
     is_draft = serializers.BooleanField(read_only=True)
     is_trashed = serializers.BooleanField(read_only=True)
+    # E3 traffic light: {pass, warn, fail} of the latest check run (or null).
+    check_summary = serializers.SerializerMethodField()
 
     class Meta:
         model = DocumentVersion
         fields = (
             'public_id', 'number', 'message', 'sha256', 'size_bytes', 'page_count',
             'source_scenario', 'analysis_status', 'error_detail', 'is_approved',
-            'is_draft', 'is_trashed', 'author_email', 'thumb_url', 'created_at',
+            'is_draft', 'is_trashed', 'author_email', 'thumb_url', 'check_summary',
+            'created_at',
         )
 
     def get_thumb_url(self, obj):

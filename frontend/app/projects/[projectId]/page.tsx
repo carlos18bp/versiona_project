@@ -38,6 +38,14 @@ export default function ProjectPage() {
     <main className="mx-auto max-w-5xl px-6 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">{t.title}</h1>
+        <div className="flex items-center gap-2">
+        <Link
+          data-testid="project-settings-link"
+          className="rounded-full border border-border px-4 py-2 text-sm hover:bg-accent"
+          href={`/projects/${projectId}/settings`}
+        >
+          ⚙
+        </Link>
         <input
           data-testid="documents-search"
           className="w-56 rounded-full border border-border bg-background px-4 py-2 text-sm"
@@ -45,6 +53,7 @@ export default function ProjectPage() {
           value={list.search}
           onChange={(event) => list.setSearch(event.target.value)}
         />
+        </div>
       </div>
 
       <div className="mt-6 flex flex-col gap-6">

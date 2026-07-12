@@ -38,7 +38,10 @@ describe('ProjectsBoardPage', () => {
     render(<ProjectsBoardPage />);
 
     expect(await screen.findByText('Torre Central')).toBeInTheDocument();
-    expect(screen.getByText('Activo')).toBeInTheDocument();
+    // 'Activo' also lives in the status-filter <option>: assert the card badge
+    expect(
+      screen.getByTestId('projects-grid').querySelector('[class*="rounded-full"]')
+    ).toHaveTextContent('Activo');
     expect(screen.getByText(/Editor/)).toBeInTheDocument();
   });
 

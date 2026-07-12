@@ -4,6 +4,7 @@ docs/plan/05 §4), SectionVersion snapshots, lineage evidence, thumbnail and
 version fields. Runs inside one transaction; deterministic upserts (I15).
 """
 
+from django.contrib.postgres.search import SearchVector
 from django.db import transaction
 
 from documents.models import Document, DocumentVersion, Section, SectionLineage, SectionVersion
@@ -108,6 +109,9 @@ def persist_analysis(version: DocumentVersion, analysis: dict) -> dict:
     except Exception:
         version.thumb_status = DocumentVersion.ThumbStatus.FAILED
 
+    SectionVersion.objects.filter(document_version=version).update(
+        search_vector=SearchVector('normalized_text', config='spanish_unaccent')
+    )
     version.page_count = analysis['page_count']
     version.source_scenario = analysis['scenario']
     version.analysis_status = DocumentVersion.AnalysisStatus.READY

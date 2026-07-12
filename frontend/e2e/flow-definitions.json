@@ -146,8 +146,7 @@
       ],
       "priority": "P2",
       "description": "Board shows derived states, filters by state and searches by name and content (docs/plan/01 B2)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 5 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "b3-project-settings": {
       "name": "B3 - Edit project configuration (never retroactive)",
@@ -157,8 +156,7 @@
       ],
       "priority": "P2",
       "description": "Admin edits checklist/section owners/approval rules creating a new config version (docs/plan/01 B3)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 5 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "c1-upload-first": {
       "name": "C1 - Upload the first document",
@@ -262,8 +260,7 @@
       ],
       "priority": "P2",
       "description": "Admin adds a check; next version runs it and shows evidence navigable to the page (docs/plan/01 E3)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 5 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "f1-billing": {
       "name": "F1 - Choose a plan and pay",
