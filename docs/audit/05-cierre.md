@@ -116,6 +116,12 @@ consola porque el checkout Wompi está diferido (DECISIÓN PENDIENTE, §5).
   tabla exacta en `testdata/README.md` — comportamiento, no bug).
 - Flujos P3 aceptados sin spec E2E dedicado (declarados en flow-definitions):
   `auth-admin-login-handoff` (unit+RTL) y `help-manual-browse` (nice-to-have).
+- **/repo-cleanup (It8)**: la clave dev `backend/.seal_signing_key.pem` quedó
+  trackeada desde It3 (`git add -A`); se retiró del índice y se ignoró
+  (`*.pem`). Persiste en la HISTORIA de la rama: al ser una clave dev
+  auto-regenerable (se recrea sola si falta; producción usa secret manager,
+  DP-24) la recomendación es **rotarla localmente** (borrar el archivo) en vez
+  de reescribir historia compartida — decisión del operador.
 
 ## 8. Cómo verificar este cierre (reproducible)
 
