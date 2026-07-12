@@ -23,9 +23,9 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 
 | # | Flujo | Qué falta | Tipo | Sev. | Escenarios (03) | It destino | Estado |
 |---|---|---|---|---|---|---|---|
-| G01 | A1 registro+wow | Org personal al registrarse; wizard onboarding; job proyecto-ejemplo (fixtures v1/v2); métrica <5 min | vista+endpoint+modelo+tarea | BLOQUEANTE | A1-* | It6 | Abierta |
-| G02 | A2 invitar equipo | Invitation+memberships org/proyecto; emails con token; aceptar→aterrizar en proyecto; gestión de roles | vista+endpoint+modelo+notif | BLOQUEANTE | A2-* | It6 | Abierta |
-| G03 | A3 seguridad de cuenta | 2FA TOTP (enrolar/challenge/códigos de respaldo); sesiones activas + revocación (token_blacklist ya instalado) | vista+endpoint+modelo | BLOQUEANTE | A3-* | It6 | Abierta |
+| G01 | A1 registro+wow | Org personal al registrarse; wizard onboarding; job proyecto-ejemplo (fixtures v1/v2); métrica <5 min | vista+endpoint+modelo+tarea | BLOQUEANTE | A1-* | It6 | **Cerrada It6** (wizard + proyecto ejemplo + wow <5 min) |
+| G02 | A2 invitar equipo | Invitation+memberships org/proyecto; emails con token; aceptar→aterrizar en proyecto; gestión de roles | vista+endpoint+modelo+notif | BLOQUEANTE | A2-* | It6 | **Cerrada It6** (invitaciones token+email, aterrizaje directo) |
+| G03 | A3 seguridad de cuenta | 2FA TOTP (enrolar/challenge/códigos de respaldo); sesiones activas + revocación (token_blacklist ya instalado) | vista+endpoint+modelo | BLOQUEANTE | A3-* | It6 | **Cerrada It6** (TOTP+sesiones; SSO = DECISIÓN PENDIENTE) |
 | G04 | B1 crear proyecto | Project+ProjectMembership+ProjectConfigVersion; POST projects; pantalla /projects/new; límite de plan | vista+endpoint+modelo | BLOQUEANTE | B1-* | It1 | **Cerrada It1** |
 | G05 | B2 tablero | — | vista+endpoint | BLOQUEANTE | B2-* | It1+It5 | **Cerrada It5** (FTS spanish+unaccent por contenido, filtro de estado) |
 | G06 | B3 config proyecto | ProjectConfigVersion UI (checklist/dueños/reglas/d5_mode); no-retroactividad I8 | vista+endpoint | BLOQUEANTE | B3-* | It5 | **Cerrada It5** |
@@ -51,7 +51,7 @@ modelo + pruebas). Se listan con su descomposición gruesa; el detalle por escen
 | G26 | Kit 5 notificaciones | — | vista+endpoint+modelo | BLOQUEANTE | NTF-* | It3–It4 | **Cerrada It4** (registry bilingüe completo) |
 | G27 | Kit 6 históricos | ActivityFeed por proyecto (AuditEvent whitelisted sin ip) | vista+endpoint | ENRIQUECE | ACT-* | It4 | **Cerrada It4** (ActivityFeed whitelisted) |
 | G28 | Kit 7 configuraciones | Faltan prefs de notificación (It3-4) y org settings General (It6) | vista+endpoint | BLOQUEANTE | SET-* | It3–It6 | **Parcial: perfil/idioma/zona horaria entregados en It1** |
-| G29 | i18n es/en | Faltan: traducción de las páginas auth heredadas y emails por idioma | vista | ENRIQUECE | transversal | cada iteración | **Parcial: diccionarios es/en + preferencia funcional entregados en It1** |
+| G29 | i18n es/en | — | vista | ENRIQUECE | transversal | It1–It6 | **Cerrada It6** (auth + header por diccionario; emails por idioma desde It4) |
 | G30 | OCR escaneados | ocrmypdf+tesseract-spa nativos; confianza por sección; modo degradado + coordinador forzado | tarea+deps sistema | BLOQUEANTE (fixture escaneado con resultados exactos es obligatorio Fase 4) | C1-A02, D5-A03 | It5 | **Cerrada It5** (OCR + confianza 0.75 + tabla exacta) |
 
 ## 3. Brechas del kit/arnés de pruebas
@@ -99,7 +99,8 @@ BLOQUEANTE de It1 (todo lo posterior lo consume).
 | **It3 (cierre 2026-07-12)** | **13** | 3 | 1 | **2** (G15 💎 D4 sellos Ed25519, G16 💎 D5 invalidación selectiva · G26 parcial: kit 5 v1) |
 | **It4 (cierre 2026-07-12)** | **8** (G01–G03, G06, G18–G23, G30 con parciales) | 1 (G25) | 1 (H09) | **5** (G12 D1, G13 D2, G14 D3, G26 kit 5 completo, G27 kit 6) |
 | **It5 (cierre 2026-07-12)** | **4** (G01–G03 módulo A · G18/G20–G23 → It7, G25) | 1 (G25) | 1 (H09) | **4** (G05 B2 completo, G06 B3, G19 E3, G30 OCR) |
-| It6..It8 | (se actualiza al cierre de cada iteración) | | | |
+| **It6 (cierre 2026-07-12)** | **5** (G18 E2, G20 E4, G21 F1, G22 F2, G23 F3) → It7 | 1 (G25 → It7) | 1 (H09 → It8) | **4** (G01 A1, G02 A2, G03 A3, G29 idioma completo) + B4 UI |
+| It7..It8 | (se actualiza al cierre de cada iteración) | | | |
 
 ## 7. Preguntas abiertas (DECISIÓN PENDIENTE)
 

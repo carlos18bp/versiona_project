@@ -5,9 +5,9 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
-**Iteración**: **It5** · **Fecha**: 2026-07-12 ·
-**Escenarios totales (03)**: 258 · **Con fila aquí**: 110 previos + 15 (B3/E3/B2/OCR) ·
-**VERDES**: **125** · **Pendientes**: 133
+**Iteración**: **It6** · **Fecha**: 2026-07-12 ·
+**Escenarios totales (03)**: 258 · **Con fila aquí**: 125 previos + 18 (módulo A + B4 UI) ·
+**VERDES**: **143** · **Pendientes**: 115
 
 ## 1. Reglas de cumplimiento
 
@@ -41,8 +41,27 @@
 | H1 landing | BLOQ | — | `app/__tests__/home.test.tsx` | — | `smoke.spec.ts` | VERDE |
 | H2 ayuda /manual | COSM | — | — | — | — | PENDIENTE (It8) |
 
-### Módulo A (38 escenarios) — filas se agregan en It6
-`A1-*` (11) · `A2-*` (15) · `A3-*` (12). Estado: PENDIENTE (It6).
+### Módulo A — It6 completo (SSO corporativo = DECISIÓN PENDIENTE)
+
+| Escenario | Sev | Unit BE | Unit FE | Integración | E2E | Estado |
+|---|---|---|---|---|---|---|
+| A1-F01 (registro → wow con comparación sembrada) | BLOQ | `test_onboarding_seeds_the_sample_with_a_working_comparison` (conteos exactos) | — | `test_state_endpoint_reports_pending_then_done` | `a1-onboarding-wow.spec.ts` (guest sin storageState) | **VERDE** |
+| A1-F02 (seed idempotente I15) | BLOQ | `test_onboarding_is_idempotent` | — | — | — | **VERDE** |
+| A1-F03 (tablero muestra el ejemplo) | ENR | — | — | ✔ | ✔ (mismo spec) | **VERDE** |
+| A2-F01 (invitar email+rol, correo con token) | BLOQ | `test_invitation_sends_the_email_with_the_token_link` | MembersSection | ✔ | `a2-invite-team.spec.ts` (mailpit) | **VERDE** |
+| A2-F02 (aceptar → membresías + aterrizaje directo) | BLOQ | `test_accepting_creates_memberships_and_lands_on_the_project` | — | ✔ | ✔ (mismo spec) | **VERDE** |
+| A2-F03 (landing pública del token) | BLOQ | — | invite/[token] | `test_public_state_endpoint_shows_the_landing_info` | ✔ | **VERDE** |
+| A2-E01 (email exacto o 403) | BLOQ | `test_accept_requires_the_exact_invited_email` | — | — | — | **VERDE** |
+| A2-E02/E03 (vencida/revocada; duplicada/ya-miembro) | BLOQ | `test_expired_and_revoked_invitations_cannot_be_accepted` + `test_duplicate_pending_or_existing_member_is_rejected` | — | — | — | **VERDE** |
+| A2-P01..P04 | BLOQ | — | — | `test_invite_permission_matrix` | n/a | **VERDE** |
+| A3-F01 (setup QR + secreto) | BLOQ | `test_setup_returns_secret_otpauth_and_qr` | SecuritySection | — | `a3-account-security.spec.ts` | **VERDE** |
+| A3-F02 (backup codes una sola vez, hasheados) | BLOQ | `test_enable_verifies_the_code_and_returns_backup_codes_once` | — | — | ✔ (panel una vez) | **VERDE** |
+| A3-F03 (login en dos pasos con challenge firmado) | BLOQ | `test_login_becomes_a_two_step_challenge` | sign-in 2FA step | — | ✔ (código malo rechazado + bueno entra) | **VERDE** |
+| A3-F04/F05 (sesiones: listar, revocar, revocar-otras) | BLOQ | `test_sessions_list_and_selective_revocation` + `test_security_endpoints_roundtrip` | — | — | — | **VERDE** |
+| A3-A01/A02 (backup single-use; disable con código) | BLOQ | `test_backup_code_works_exactly_once` + `test_disable_requires_a_valid_code` | — | — | — | **VERDE** |
+| A3-E01/E02 (códigos malos) | BLOQ | `test_enable_rejects_a_wrong_code` + `test_wrong_totp_code_keeps_the_door_closed` | — | — | ✔ | **VERDE** |
+| A3-X01 (SSO corporativo) | — | — | — | — | — | **DECISIÓN PENDIENTE** (IdP del operador) |
+| B4-F01/F02 **UI** (archivar; papelera nombre exacto; restaurar) | BLOQ | (backend It1) | ProjectAdminActions | ✔ | `b4-archive-trash.spec.ts` | **VERDE (completo)** |
 
 ### Módulo B — It1 entregó B1 y B2 mínimo (B3 → It5; B4 UI → It6)
 

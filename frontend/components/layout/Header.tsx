@@ -8,10 +8,12 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ROUTES } from '@/lib/constants';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useOrgStore } from '@/lib/stores/orgStore';
+import { useDict } from '@/lib/i18n/dictionaries';
 
 export default function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const signOut = useAuthStore((s) => s.signOut);
+  const t = useDict('common');
   const orgs = useOrgStore((s) => s.orgs);
   const fetchOrgs = useOrgStore((s) => s.fetchOrgs);
 
@@ -35,7 +37,7 @@ export default function Header() {
             className="px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             href={ROUTES.HELP}
           >
-            Ayuda
+            {t.help}
           </Link>
 
           <ThemeToggle />
@@ -45,46 +47,36 @@ export default function Header() {
               <Link
                 className="px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 href="/projects"
-              >
-                Panel
-              </Link>
+              >{t.panel}</Link>
               {canSeeTrash ? (
                 <Link
                   className="px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   href="/org/trash"
                 >
-                  Papelera
+                  {t.trash}
                 </Link>
               ) : null}
               <Link
                 className="px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 href="/settings"
-              >
-                Configuración
-              </Link>
+              >{t.settings}</Link>
               <NotificationBell />
               <button
                 className="border border-border rounded-full px-4 py-2 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={signOut}
                 type="button"
-              >
-                Salir
-              </button>
+              >{t.signOut}</button>
             </>
           ) : (
             <>
               <Link
                 className="border border-border rounded-full px-4 py-2 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 href={ROUTES.SIGN_IN}
-              >
-                Iniciar sesión
-              </Link>
+              >{t.signIn}</Link>
               <Link
                 className="bg-primary text-primary-foreground rounded-full px-4 py-2 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 href={ROUTES.SIGN_UP}
-              >
-                Crear cuenta
-              </Link>
+              >{t.signUp}</Link>
             </>
           )}
         </nav>

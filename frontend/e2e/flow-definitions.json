@@ -114,8 +114,7 @@
       ],
       "priority": "P1",
       "description": "New user signs up, names their org, the sample project seeds, and they see a working comparison in under 5 minutes without uploading anything (docs/plan/01 A1)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 6 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "a2-invite-team": {
       "name": "A2 - Invite the team and assign roles",
@@ -125,8 +124,7 @@
       ],
       "priority": "P1",
       "description": "Admin invites an email with a role; invitee accepts and lands directly on the project (docs/plan/01 A2)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 6 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "b1-create-project": {
       "name": "B1 - Create a project in 30 seconds",
@@ -291,8 +289,7 @@
       ],
       "priority": "P2",
       "description": "TOTP enrolment, challenge on login and session revocation (docs/audit/03 A3)",
-      "expectedSpecs": 1,
-      "knownGaps": "Arrives with Iteration 6 (docs/plan/09)"
+      "expectedSpecs": 1
     },
     "e2-saved-comparisons": {
       "name": "E2 - Saved comparisons",
@@ -339,6 +336,16 @@
       "description": "Sign-up to certificate export in 16 UI-only steps (docs/audit/03 SS7)",
       "expectedSpecs": 1,
       "knownGaps": "Arrives with Iteration 8 (docs/plan/09)"
+    },
+    "b4-archive-delete": {
+      "name": "B4 - Archive or delete a project",
+      "module": "projects",
+      "roles": [
+        "admin"
+      ],
+      "priority": "P2",
+      "description": "Archiving locks writes; deletion needs the exact name, lands in the org trash and is restorable; sealed projects only archive (T4) (docs/audit/03 B4)",
+      "expectedSpecs": 1
     }
   }
 }

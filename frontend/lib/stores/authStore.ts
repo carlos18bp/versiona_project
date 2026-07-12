@@ -19,7 +19,8 @@ type AuthState = {
   refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
-  signIn: (args: { email: string; password: string; captcha_token?: string }) => Promise<void>;
+  signIn: (args: { email: string; password: string; captcha_token?: string }) => Promise<{ requires2fa: boolean; challenge?: string }>;
+  signIn2fa: (args: { challenge: string; code: string }) => Promise<void>;
   signUp: (args: { email: string; password: string; first_name?: string; last_name?: string; captcha_token?: string }) => Promise<void>;
   googleLogin: (args: { credential?: string; email?: string; given_name?: string; family_name?: string; picture?: string }) => Promise<void>;
   signOut: () => void;
@@ -46,6 +47,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   
   signIn: async ({ email, password, captcha_token }) => {
     const response = await api.post('sign_in/', { email, password, captcha_token });
+    // A3: with 2FA enabled the password step returns a short-lived challenge.
+    if (response.status === 202 && response.data?.requires_2fa) {
+      return { requires2fa: true, challenge: response.data.challenge };
+    }
     const access = response.data?.access;
     const refresh = response.data?.refresh;
     const user = response.data?.user;
@@ -54,6 +59,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       throw new Error('Invalid token response');
     }
     
+    setTokens({ access, refresh });
+    if (user) localStorage.setItem('user_data', JSON.stringify(user));
+    set({ user, isAuthenticated: true });
+    get().syncFromCookies();
+    return { requires2fa: false };
+  },
+
+  signIn2fa: async ({ challenge, code }) => {
+    const response = await api.post('sign_in/2fa/', { challenge, code });
+    const access = response.data?.access;
+    const refresh = response.data?.refresh;
+    const user = response.data?.user;
+    if (!access || !refresh) throw new Error('Invalid token response');
     setTokens({ access, refresh });
     if (user) localStorage.setItem('user_data', JSON.stringify(user));
     set({ user, isAuthenticated: true });

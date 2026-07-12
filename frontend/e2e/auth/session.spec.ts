@@ -9,7 +9,7 @@ test.describe('Real session', () => {
       await page.goto('/sign-in');
       await page.getByPlaceholder('Email').fill('editor@versiona.test');
       await page.getByPlaceholder('Password').fill('secreta123');
-      await page.getByRole('button', { name: /sign in/i }).click();
+      await page.getByRole('button', { name: 'Entrar' }).click();
 
       await page.waitForURL(/\/(projects|dashboard)/, { timeout: 20_000 });
       await expect(page.getByRole('button', { name: 'Salir' })).toBeVisible();

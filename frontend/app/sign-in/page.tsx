@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import ReCAPTCHA from 'react-google-recaptcha';
 
 import { useAuthStore } from '@/lib/stores/authStore';
+import { useDict } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/services/http';
 
 type GoogleUser = {
@@ -19,7 +20,10 @@ type GoogleUser = {
 
 export default function SignInPage() {
   const router = useRouter();
-  const { signIn, googleLogin } = useAuthStore();
+  const { signIn, signIn2fa, googleLogin } = useAuthStore();
+  const t = useDict('auth');
+  const [challenge, setChallenge] = useState<string | null>(null);
+  const [totpCode, setTotpCode] = useState('');
 
   const hasGoogleClientId = Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
@@ -49,8 +53,14 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      await signIn({ email, password, captcha_token: captchaToken ?? undefined });
-      router.replace('/dashboard');
+      const result = await signIn({ email, password, captcha_token: captchaToken ?? undefined });
+      if (result.requires2fa && result.challenge) {
+        setChallenge(result.challenge);
+        setLoading(false);
+        return;
+      }
+      const next = new URLSearchParams(window.location.search).get('next');
+      router.replace(next && next.startsWith('/') ? next : '/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid credentials');
       recaptchaRef.current?.reset();
@@ -100,9 +110,50 @@ export default function SignInPage() {
   return (
     <main className="min-h-[calc(100vh-72px)] flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Welcome back. Sign in to continue.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.signInTitle}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t.signInSubtitle}</p>
 
+        {challenge ? (
+          <form
+            data-testid="twofa-step"
+            className="mt-6 space-y-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setError('');
+              setLoading(true);
+              try {
+                await signIn2fa({ challenge, code: totpCode });
+                const next = new URLSearchParams(window.location.search).get('next');
+                router.replace(next && next.startsWith('/') ? next : '/dashboard');
+              } catch (err: any) {
+                setError(err.response?.data?.error || 'Código incorrecto');
+                setLoading(false);
+              }
+            }}
+          >
+            <p className="text-sm font-medium">Verificación en dos pasos</p>
+            <p className="text-sm text-muted-foreground">
+              Escribe el código de tu app de autenticación (o un código de respaldo).
+            </p>
+            <input
+              data-testid="twofa-code"
+              className="border border-border rounded-xl px-3 py-2 w-full bg-card text-center tracking-widest"
+              placeholder="000000"
+              value={totpCode}
+              onChange={(e) => setTotpCode(e.target.value)}
+              autoFocus
+            />
+            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+            <button
+              data-testid="twofa-verify"
+              className="w-full bg-primary text-primary-foreground rounded-full px-4 py-2 disabled:opacity-60"
+              disabled={loading || !totpCode.trim()}
+              type="submit"
+            >
+              Verificar
+            </button>
+          </form>
+        ) : (
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <div>
             <input 
@@ -144,15 +195,16 @@ export default function SignInPage() {
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? t.signingIn : t.signIn}
           </button>
 
           {error ? <p className="text-destructive text-sm">{error}</p> : null}
         </form>
+        )}
 
         <div className="mt-4 text-center">
           <Link href="/forgot-password" className="text-sm text-foreground hover:underline">
-            Forgot password?
+            {t.forgot}
           </Link>
         </div>
 
@@ -162,7 +214,7 @@ export default function SignInPage() {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
+              <span className="px-2 bg-card text-muted-foreground">{t.orContinue}</span>
             </div>
           </div>
 
@@ -182,9 +234,9 @@ export default function SignInPage() {
         </div>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-muted-foreground">Don't have an account? </span>
+          <span className="text-muted-foreground">{t.noAccount} </span>
           <Link href="/sign-up" className="text-foreground hover:underline">
-            Sign up
+            {t.signUpLink}
           </Link>
         </div>
       </div>

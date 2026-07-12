@@ -105,9 +105,9 @@ describe('SignUpPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
     fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password456' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
-    expect(await screen.findByText('Passwords do not match')).toBeInTheDocument();
+    expect(await screen.findByText('Las contraseñas no coinciden')).toBeInTheDocument();
     expect(signUp).not.toHaveBeenCalled();
   });
 
@@ -121,7 +121,7 @@ describe('SignUpPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'short' } });
     fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'short' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
     expect(await screen.findByText('Password must be at least 8 characters')).toBeInTheDocument();
     expect(signUp).not.toHaveBeenCalled();
@@ -140,7 +140,7 @@ describe('SignUpPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
     fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
     await waitFor(() => {
       expect(signUp).toHaveBeenCalledWith({
@@ -152,7 +152,7 @@ describe('SignUpPage', () => {
       });
     });
 
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/onboarding');
   });
 
   it('shows error when Google registration fails with response error', async () => {
@@ -203,7 +203,7 @@ describe('SignUpPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
     fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
     expect(await screen.findByText('Registration failed')).toBeInTheDocument();
   });
@@ -218,7 +218,7 @@ describe('SignUpPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
     fireEvent.change(screen.getByPlaceholderText('Confirm Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
     expect(await screen.findByText('Registration failed')).toBeInTheDocument();
   });
@@ -248,7 +248,7 @@ describe('SignUpPage', () => {
         picture: 'pic.png',
       });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/onboarding');
   });
 
   it('shows an error when Google credential is missing', async () => {
@@ -297,6 +297,6 @@ describe('SignUpPage', () => {
         picture: undefined,
       });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/onboarding');
   });
 });

@@ -13,6 +13,7 @@ import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { api } from '@/lib/services/http';
 import { useOrgStore } from '@/lib/stores/orgStore';
 import { useReviewStore } from '@/lib/stores/reviewStore';
+import { MembersSection } from '@/components/projects/MembersSection';
 
 interface CheckItem {
   key: string;
@@ -322,6 +323,8 @@ export default function ProjectSettingsPage() {
           ) : null}
         </AsyncBoundary>
       </div>
+
+      {config ? <MembersSection projectId={params.projectId} /> : null}
     </main>
   );
 }

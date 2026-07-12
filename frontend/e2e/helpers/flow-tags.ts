@@ -48,3 +48,4 @@ export const E2_SAVED_COMPARISONS = ['@flow:e2-saved-comparisons', '@module:comp
 export const F2_USAGE_PANEL = ['@flow:f2-usage-panel', '@module:billing', '@priority:P2'];
 export const E4_CONSTANCIA = ['@flow:e4-constancia', '@module:review', '@priority:P2'];
 export const MASTER_JOURNEY = ['@flow:master-e2e-journey', '@module:master', '@priority:P1'];
+export const B4_ARCHIVE_DELETE = ['@flow:b4-archive-delete', '@module:projects', '@priority:P2'];

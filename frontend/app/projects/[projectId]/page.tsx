@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useCallback } from 'react';
 
 import { ActivityFeed } from '@/components/activity/ActivityFeed';
+import { ProjectAdminActions } from '@/components/projects/ProjectAdminActions';
 import { UploadDropzone } from '@/components/versions/UploadDropzone';
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { useDict } from '@/lib/i18n/dictionaries';
@@ -102,6 +103,7 @@ export default function ProjectPage() {
           </ul>
         </AsyncBoundary>
 
+        <ProjectAdminActions projectId={projectId} />
         <ActivityFeed projectId={projectId} />
       </div>
     </main>

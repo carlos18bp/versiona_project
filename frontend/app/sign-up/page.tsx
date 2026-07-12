@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import ReCAPTCHA from 'react-google-recaptcha';
 
 import { useAuthStore } from '@/lib/stores/authStore';
+import { useDict } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/services/http';
 
 type GoogleUser = {
@@ -20,6 +21,7 @@ type GoogleUser = {
 export default function SignUpPage() {
   const router = useRouter();
   const { signUp, googleLogin } = useAuthStore();
+  const t = useDict('auth');
 
   const hasGoogleClientId = Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
@@ -49,7 +51,7 @@ export default function SignUpPage() {
 
     // Validate passwords match
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t.passwordsMismatch);
       setLoading(false);
       return;
     }
@@ -75,7 +77,7 @@ export default function SignUpPage() {
         last_name: lastName,
         captcha_token: captchaToken ?? undefined,
       });
-      router.replace('/dashboard');
+      router.replace('/onboarding');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed');
       recaptchaRef.current?.reset();
@@ -110,7 +112,7 @@ export default function SignUpPage() {
         picture: decoded?.picture,
       });
       
-      router.replace('/dashboard');
+      router.replace('/onboarding');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Google registration failed');
     } finally {
@@ -125,7 +127,7 @@ export default function SignUpPage() {
   return (
     <main className="min-h-[calc(100vh-72px)] flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold tracking-tight">Create account</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.signUpTitle}</h1>
         <p className="mt-1 text-sm text-muted-foreground">Join and start shopping in minutes.</p>
 
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
@@ -202,7 +204,7 @@ export default function SignUpPage() {
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? t.signingUp : t.signUp}
           </button>
 
           {error ? <p className="text-destructive text-sm">{error}</p> : null}
@@ -234,10 +236,8 @@ export default function SignUpPage() {
         </div>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-muted-foreground">Already have an account? </span>
-          <Link href="/sign-in" className="text-foreground hover:underline">
-            Sign in
-          </Link>
+          <span className="text-muted-foreground">{t.haveAccount} </span>
+          <Link href="/sign-in" className="text-foreground hover:underline">{t.signInLink}</Link>
         </div>
       </div>
     </main>
