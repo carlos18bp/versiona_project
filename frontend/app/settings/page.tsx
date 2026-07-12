@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { NotificationPrefs } from '@/components/notifications/NotificationPrefs';
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { useToast } from '@/components/ui/toast';
 import { useDict } from '@/lib/i18n/dictionaries';
@@ -137,6 +138,8 @@ export default function SettingsPage() {
           </form>
         </AsyncBoundary>
       </div>
+
+      <NotificationPrefs />
     </main>
   );
 }

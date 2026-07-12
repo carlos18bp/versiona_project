@@ -244,6 +244,122 @@ const DICTIONARIES = {
       compareCta: 'Compare selected',
     },
   },
+  seals: {
+    es: {
+      title: 'Sellos',
+      sealVersion: 'Sellar esta versión',
+      sealAll: 'Sellar el documento completo',
+      sealSections: 'Sellar las secciones seleccionadas',
+      pickSections: 'Elige qué secciones cubre tu sello',
+      withdraw: 'Retirar mi sello',
+      withdrawConfirm: 'El retiro queda registrado en la bitácora. Solo es posible antes de la aprobación.',
+      sealed: 'Selló',
+      covers: 'Cubre',
+      allDocument: 'todo el documento',
+      sections: 'secciones',
+      verify: 'Verificar firma',
+      signatureValid: 'Firma Ed25519 válida — vinculada al binario exacto',
+      signatureInvalid: 'FIRMA INVÁLIDA',
+      validity: {
+        valid: 'Vigente',
+        preserved: 'Conservado',
+        invalidated: 'Requiere re-revisión',
+        pending_confirmation: 'Pendiente del coordinador',
+        superseded: 'Reemplazado',
+        revoked: 'Retirado',
+      },
+      reason: {
+        all_sections_unchanged: 'Todas las secciones cubiertas están intactas (igualdad de hash verificada)',
+        section_modified: 'Cambió el contenido de una sección cubierta',
+        section_removed: 'Se eliminó una sección cubierta',
+        renamed_section: 'Una sección cubierta cambió de encabezado',
+        ambiguous_match: 'El emparejamiento de secciones fue ambiguo',
+        document_changed: 'El documento cambió y el sello cubría todo',
+        section_not_found: 'No se pudo verificar una sección cubierta',
+      },
+      empty: 'Esta versión aún no tiene sellos.',
+      emptyBody: 'Un revisor puede sellar secciones específicas o el documento completo.',
+      planTitle: 'Plan de invalidación por confirmar',
+      planBody: 'El análisis fue degradado o el proyecto está en modo coordinador. Decide por cada sello:',
+      proposed: 'Propuesta del motor',
+      keep: 'Conservar',
+      invalidate: 'Invalidar',
+      confirmPlan: 'Confirmar plan',
+      approved: 'Versión aprobada',
+      stillIntact: 'Secciones intactas del sello',
+      changedSections: 'Lo que cambió',
+    },
+    en: {
+      title: 'Seals',
+      sealVersion: 'Seal this version',
+      sealAll: 'Seal the whole document',
+      sealSections: 'Seal the selected sections',
+      pickSections: 'Choose which sections your seal covers',
+      withdraw: 'Withdraw my seal',
+      withdrawConfirm: 'The withdrawal is recorded in the audit log. Only possible before approval.',
+      sealed: 'Sealed',
+      covers: 'Covers',
+      allDocument: 'the whole document',
+      sections: 'sections',
+      verify: 'Verify signature',
+      signatureValid: 'Valid Ed25519 signature — bound to the exact binary',
+      signatureInvalid: 'INVALID SIGNATURE',
+      validity: {
+        valid: 'Valid',
+        preserved: 'Preserved',
+        invalidated: 'Requires re-review',
+        pending_confirmation: 'Awaiting coordinator',
+        superseded: 'Superseded',
+        revoked: 'Withdrawn',
+      },
+      reason: {
+        all_sections_unchanged: 'Every covered section is intact (hash equality verified)',
+        section_modified: 'The content of a covered section changed',
+        section_removed: 'A covered section was removed',
+        renamed_section: 'A covered section changed its heading',
+        ambiguous_match: 'Section matching was ambiguous',
+        document_changed: 'The document changed and the seal covered all of it',
+        section_not_found: 'A covered section could not be verified',
+      },
+      empty: 'This version has no seals yet.',
+      emptyBody: 'A reviewer can seal specific sections or the whole document.',
+      planTitle: 'Invalidation plan awaiting confirmation',
+      planBody: 'The analysis was degraded or the project runs in coordinator mode. Decide per seal:',
+      proposed: 'Engine proposal',
+      keep: 'Preserve',
+      invalidate: 'Invalidate',
+      confirmPlan: 'Confirm plan',
+      approved: 'Version approved',
+      stillIntact: 'Intact sections of the seal',
+      changedSections: 'What changed',
+    },
+  },
+  notifications: {
+    es: {
+      title: 'Notificaciones',
+      empty: 'No tienes notificaciones',
+      emptyBody: 'Aquí verás re-revisiones asignadas, sellos y aprobaciones.',
+      markAll: 'Marcar todo como leído',
+      unread: 'sin leer',
+      prefsTitle: 'Preferencias de notificación',
+      channelInApp: 'En la app',
+      channelEmail: 'Correo',
+      mandatory: 'Obligatoria: es trabajo asignado',
+      viewAll: 'Ver todas',
+    },
+    en: {
+      title: 'Notifications',
+      empty: 'No notifications',
+      emptyBody: 'Assigned re-reviews, seals and approvals will show here.',
+      markAll: 'Mark all as read',
+      unread: 'unread',
+      prefsTitle: 'Notification preferences',
+      channelInApp: 'In app',
+      channelEmail: 'Email',
+      mandatory: 'Mandatory: it is assigned work',
+      viewAll: 'View all',
+    },
+  },
   settings: {
     es: {
       title: 'Configuración',
@@ -272,12 +388,16 @@ const DICTIONARIES = {
 
 export type Namespace = keyof typeof DICTIONARIES;
 export type Locale = 'es' | 'en';
+type Dicts = typeof DICTIONARIES;
 
-export function getDict<N extends Namespace>(namespace: N, locale: Locale) {
-  return DICTIONARIES[namespace][locale];
+// Both locales share the exact key structure, so the Spanish shape IS the
+// dictionary contract — the explicit return keeps the generic narrowed at
+// every call site (plain inference collapses it to the union of namespaces).
+export function getDict<N extends Namespace>(namespace: N, locale: Locale): Dicts[N]['es'] {
+  return DICTIONARIES[namespace][locale] as Dicts[N]['es'];
 }
 
-export function useDict<N extends Namespace>(namespace: N) {
+export function useDict<N extends Namespace>(namespace: N): Dicts[N]['es'] {
   const locale = useLocaleStore((s) => s.locale) as Locale;
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -286,7 +406,7 @@ export function useDict<N extends Namespace>(namespace: N) {
   // Server and first client render must agree: the persisted locale is only
   // applied after hydration (otherwise React reports a text mismatch).
   const active: Locale = isHydrated ? locale : 'es';
-  return DICTIONARIES[namespace][active] ?? DICTIONARIES[namespace].es;
+  return (DICTIONARIES[namespace][active] ?? DICTIONARIES[namespace].es) as Dicts[N]['es'];
 }
 
 export function interpolate(template: string, values: Record<string, string | number>) {

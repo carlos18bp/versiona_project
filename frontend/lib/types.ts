@@ -55,6 +55,8 @@ export interface SectionInfo {
 
 export interface VersionDetail extends VersionSummary {
   sections: SectionInfo[];
+  /** Injected by the endpoint so the screen can hide role-gated actions. */
+  effective_role?: ProjectRole;
 }
 
 export interface DocumentSummary {

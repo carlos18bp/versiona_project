@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ROUTES } from '@/lib/constants';
 import { useAuthStore } from '@/lib/stores/authStore';
@@ -61,6 +62,7 @@ export default function Header() {
               >
                 Configuración
               </Link>
+              <NotificationBell />
               <button
                 className="border border-border rounded-full px-4 py-2 hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={signOut}

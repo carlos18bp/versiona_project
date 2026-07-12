@@ -97,6 +97,11 @@ def _auto_compare(version: DocumentVersion) -> dict | None:
         version.document, previous, version, version.author,
         trigger=Comparison.Trigger.AUTO,
     )
+    # D5: the same event that discovers the changes resolves the seals they
+    # touch (docs/plan/05 §6) — selective, conservative, audited.
+    from reviews.services.seal_service import apply_invalidation
+
+    apply_invalidation(comparison)
     return {
         'id': str(comparison.public_id),
         'from': previous.number,

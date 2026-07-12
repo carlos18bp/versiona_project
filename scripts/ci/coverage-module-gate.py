@@ -15,7 +15,8 @@ GATES = {
     'engine/services/analysis.py': 90,
     'engine/services/comparison.py': 95,
     'engine/services/persistence.py': 90,
-    # It3 adds: reviews/services/invalidation_service.py -> 95
+    'reviews/services/invalidation.py': 95,
+    'reviews/services/seal_service.py': 90,
 }
 
 

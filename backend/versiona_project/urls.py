@@ -23,6 +23,8 @@ urlpatterns = [
     path('api/', include('documents.urls')),
     path('api/', include('engine.urls')),
     path('api/', include('comparisons.urls')),
+    path('api/', include('reviews.urls')),
+    path('api/', include('notifications.urls')),
 ]
 
 if settings.DEBUG:

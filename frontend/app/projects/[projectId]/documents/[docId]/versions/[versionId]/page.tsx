@@ -2,13 +2,19 @@
 
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+import { SealActionBar } from '@/components/seals/SealActionBar';
+import { SealsPanel } from '@/components/seals/SealsPanel';
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TypeToConfirmDialog } from '@/components/ui/TypeToConfirmDialog';
+import { useToast } from '@/components/ui/toast';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
+import { useAuthStore } from '@/lib/stores/authStore';
+import { useSealStore, type SealSummary } from '@/lib/stores/sealStore';
 import { useVersionStore } from '@/lib/stores/versionStore';
 
 const PdfViewer = dynamic(
@@ -20,13 +26,18 @@ export default function VersionViewerPage() {
   const { isAuthenticated } = useRequireAuth();
   const params = useParams<{ versionId: string }>();
   const t = useDict('documents');
+  const seals = useDict('seals');
   const common = useDict('common');
+  const { toast } = useToast();
   const detail = useVersionStore((s) => s.detail);
   const fileUrl = useVersionStore((s) => s.fileUrl);
   const isLoading = useVersionStore((s) => s.isLoading);
   const error = useVersionStore((s) => s.error);
   const fetchDetail = useVersionStore((s) => s.fetchDetail);
   const fetchFileUrl = useVersionStore((s) => s.fetchFileUrl);
+  const revokeSeal = useSealStore((s) => s.revokeSeal);
+  const userEmail = useAuthStore((s) => s.user?.email ?? null);
+  const [withdrawing, setWithdrawing] = useState<SealSummary | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -36,8 +47,11 @@ export default function VersionViewerPage() {
 
   if (!isAuthenticated) return null;
 
+  const canSeal =
+    ['reviewer', 'admin'].includes(detail?.effective_role ?? '') && !detail?.is_approved;
+
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
+    <main className="mx-auto max-w-7xl px-6 py-10">
       <AsyncBoundary
         isLoading={isLoading && !detail}
         error={!detail ? error : null}
@@ -60,28 +74,60 @@ export default function VersionViewerPage() {
               </div>
               {fileUrl ? <PdfViewer file={fileUrl} /> : <Skeleton className="h-[480px] w-full" />}
             </div>
-            <aside className="w-full shrink-0 lg:w-72">
-              <h2 className="text-sm font-semibold text-muted-foreground">
-                {detail.sections.length} {t.sections}
-              </h2>
-              <ol data-testid="sections-list" className="mt-3 flex flex-col gap-1">
-                {detail.sections.map((section) => (
-                  <li
-                    key={section.stable_key}
-                    className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                  >
-                    <p className="truncate font-medium">{section.heading_text}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {common.page} {section.page_start}
-                      {section.page_end !== section.page_start ? `–${section.page_end}` : ''}
-                    </p>
-                  </li>
-                ))}
-              </ol>
+            <aside className="flex w-full shrink-0 flex-col gap-6 lg:w-80">
+              {canSeal ? (
+                <SealActionBar
+                  versionId={detail.public_id}
+                  sections={detail.sections}
+                  onSealed={() => void fetchDetail(params.versionId)}
+                />
+              ) : null}
+              <SealsPanel
+                versionId={detail.public_id}
+                canConfirmPlan={detail.effective_role === 'admin'}
+                currentUserEmail={userEmail}
+                onWithdraw={(seal) => setWithdrawing(seal)}
+              />
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground">
+                  {detail.sections.length} {t.sections}
+                </h2>
+                <ol data-testid="sections-list" className="mt-3 flex flex-col gap-1">
+                  {detail.sections.map((section) => (
+                    <li
+                      key={section.stable_key}
+                      className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                    >
+                      <p className="truncate font-medium">{section.heading_text}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {common.page} {section.page_start}
+                        {section.page_end !== section.page_start ? `–${section.page_end}` : ''}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </aside>
           </div>
         ) : null}
       </AsyncBoundary>
+
+      <TypeToConfirmDialog
+        open={withdrawing !== null}
+        title={seals.withdraw}
+        description={seals.withdrawConfirm}
+        expectedText={`v${detail?.number ?? ''}`}
+        confirmLabel={seals.withdraw}
+        cancelLabel={common.cancel}
+        onClose={() => setWithdrawing(null)}
+        onConfirm={async () => {
+          if (!withdrawing || !detail) return;
+          const ok = await revokeSeal(detail.public_id, withdrawing.public_id);
+          setWithdrawing(null);
+          toast(ok ? common.saved : (useSealStore.getState().error ?? common.error),
+            ok ? 'success' : 'error');
+        }}
+      />
     </main>
   );
 }

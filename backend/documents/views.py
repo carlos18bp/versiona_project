@@ -139,7 +139,10 @@ def version_detail(request, ver):
     version: DocumentVersion = request.resolved_object
 
     if request.method == 'GET':
-        return Response(VersionDetailSerializer(version).data)
+        data = VersionDetailSerializer(version).data
+        # The screen decides what to render by role (seal bar, plan card).
+        data['effective_role'] = request.effective_role
+        return Response(data)
 
     if request.method == 'PATCH':
         is_author = version.author_id == request.user.pk

@@ -1,49 +1,50 @@
-asgiref==3.11.1
+
+
+
+
+
+
+
+# Database (PostgreSQL + pgvector)
+# Object storage (S3/MinIO)
+# PDF engine & test fixtures
+# Production server
+# Seal signing (Ed25519)
+# Security pins (transitive deps con CVEs en versiones previas)
+# Task queue (Celery — broker and result backend on Redis)
 Django==6.0.5
+Faker==40.18.0
+PyMuPDF>=1.24,<2
+asgiref==3.11.1
+celery[redis]>=5.5,<6
+coverage==7.14.0
+cryptography>=44,<46
 django-cleanup==9.0.0
 django-cors-headers==4.9.0
 django-dbbackup>=4.0.0
 django-silk>=5.0.0
-djangorestframework==3.17.1
+django-storages[s3]>=1.14,<2
 djangorestframework-simplejwt==5.5.1
-python-dotenv==1.2.2
-Faker==40.18.0
+djangorestframework==3.17.1
+factory-boy==3.3.3
+freezegun==1.5.5
+gunicorn>=23.0,<24.0
+hypothesis==6.156.6
+pgvector>=0.3,<1
 pillow==12.2.0
-pytest==9.0.3
+psycopg[binary]>=3.2,<4
+pygments>=2.20.0
+pyjwt>=2.12.1
 pytest-cov==7.1.0
 pytest-django==4.12.0
-freezegun==1.5.5
-coverage==7.14.0
-factory-boy==3.3.3
-redis>=4.0.0
-ruff==0.15.13
-requests==2.34.2
+pytest==9.0.3
 python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
+redis>=4.0.0
+reportlab>=4.2,<5
+requests==2.34.2
+ruff==0.15.13
 six==1.17.0
 sqlparse==0.5.5
 typing_extensions==4.15.0
-
-# Task queue (Celery — broker and result backend on Redis)
-celery[redis]>=5.5,<6
-
-# Database (PostgreSQL + pgvector)
-psycopg[binary]>=3.2,<4
-pgvector>=0.3,<1
-
-# Object storage (S3/MinIO)
-django-storages[s3]>=1.14,<2
-
-# PDF engine & test fixtures
-PyMuPDF>=1.24,<2
-reportlab>=4.2,<5
-
-# Seal signing (Ed25519)
-cryptography>=44,<46
-
-# Production server
-gunicorn>=23.0,<24.0
-
-# Security pins (transitive deps con CVEs en versiones previas)
 urllib3>=2.7.0
-pygments>=2.20.0
-pyjwt>=2.12.1
