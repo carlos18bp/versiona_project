@@ -57,6 +57,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     language = models.CharField(max_length=5, choices=Language.choices, default=Language.SPANISH)
     timezone = models.CharField(max_length=64, default='America/Bogota')
 
+    # A3 — TOTP 2FA: secret set at setup, enabled_at marks activation, backup
+    # codes stored as sha256 (plaintext shown exactly once).
+    totp_secret = models.CharField(max_length=64, blank=True, default='')
+    totp_enabled_at = models.DateTimeField(null=True, blank=True)
+    totp_backup_codes = models.JSONField(default=list, blank=True)
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'

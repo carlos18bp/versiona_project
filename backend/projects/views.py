@@ -169,6 +169,56 @@ def project_apply_template(request, proj):
     return Response({'number': config.number, 'checklist': config.checklist}, status=201)
 
 
+@api_view(['GET', 'POST'])
+@require_project_role('admin')
+def project_invitations(request, proj):
+    """A2: list + create invitations (admin)."""
+    from django.http import Http404 as _Http404  # noqa: F401
+
+    from orgs.invitations import create_invitation
+    from orgs.models import Invitation
+
+    if request.method == 'GET':
+        rows = Invitation.objects.filter(project=request.project).select_related('invited_by')
+        return Response({'results': [
+            {'public_id': str(i.public_id), 'email': i.email, 'role': i.role,
+             'status': i.status, 'invited_by': i.invited_by.email,
+             'expires_at': i.expires_at, 'created_at': i.created_at}
+            for i in rows
+        ]})
+
+    payload = request.data or {}
+    try:
+        invitation = create_invitation(
+            request.project, request.user,
+            email=payload.get('email', ''), role=payload.get('role', ''),
+            request=request,
+        )
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    return Response({'public_id': str(invitation.public_id), 'email': invitation.email,
+                     'role': invitation.role, 'status': invitation.status},
+                    status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@require_project_role('admin')
+def project_invitation_revoke(request, proj, inv):
+    from django.http import Http404 as _Http404
+
+    from orgs.invitations import revoke_invitation
+    from orgs.models import Invitation
+
+    invitation = Invitation.objects.filter(project=request.project, public_id=inv).first()
+    if invitation is None:
+        raise _Http404
+    try:
+        revoke_invitation(invitation, request.user, request=request)
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    return Response({'status': 'revoked'})
+
+
 @api_view(['GET'])
 @require_project_role('viewer')
 def project_members(request, proj):

@@ -132,6 +132,15 @@ def sign_in(request):
             status=status.HTTP_403_FORBIDDEN
         )
     
+    # A3: with 2FA on, the password step only earns a short-lived challenge.
+    if user.totp_enabled_at:
+        from accounts.twofactor import issue_challenge
+
+        return Response(
+            {'requires_2fa': True, 'challenge': issue_challenge(user)},
+            status=status.HTTP_202_ACCEPTED,
+        )
+
     # Generate tokens
     tokens = generate_auth_tokens(user)
     
@@ -400,3 +409,19 @@ def validate_token(request):
             'is_staff': user.is_staff,
         }
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def sign_in_2fa(request):
+    """Second step: challenge + TOTP (or backup) code → tokens."""
+    from accounts.twofactor import resolve_challenge, verify_code
+    from documents.services.version_service import DomainError
+
+    try:
+        user = resolve_challenge((request.data or {}).get('challenge', ''))
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    if not verify_code(user, (request.data or {}).get('code', '')):
+        return Response({'error': 'Código incorrecto.'}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response(generate_auth_tokens(user), status=status.HTTP_200_OK)

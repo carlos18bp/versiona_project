@@ -71,6 +71,13 @@ NOTIFICATION_CATALOG = {
         'default_in_app': True,
         'mandatory_in_app': False,
     },
+    'invitation.accepted': {
+        'label_es': 'Aceptaron tu invitación',
+        'label_en': 'Your invitation was accepted',
+        'default_email': False,
+        'default_in_app': True,
+        'mandatory_in_app': False,
+    },
     'seal_plan.pending': {
         'label_es': 'Hay un plan de invalidación por confirmar',
         'label_en': 'An invalidation plan awaits confirmation',

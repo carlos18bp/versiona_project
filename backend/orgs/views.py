@@ -2,7 +2,8 @@
 
 from itertools import chain
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.permissions import require_org_role
@@ -68,3 +69,45 @@ def org_trash(request, org):
     ))
     items.sort(key=lambda entry: entry['deleted_at'], reverse=True)
     return Response({'results': TrashItemSerializer(items, many=True).data})
+
+
+@api_view(['GET', 'POST'])
+def my_onboarding(request):
+    """A1 wizard: GET the state; POST {org_name} renames the personal org and
+    seeds the sample project — the response carries the wow link."""
+    from documents.services.version_service import DomainError
+    from orgs.onboarding import complete_onboarding, onboarding_state
+
+    if request.method == 'GET':
+        return Response(onboarding_state(request.user))
+    try:
+        state = complete_onboarding(
+            request.user, (request.data or {}).get('org_name', ''), request=request
+        )
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+    return Response(state, status=201)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def invitation_state(request, token):
+    """Public: what the /invite/[token] landing may show pre-auth."""
+    from documents.services.version_service import DomainError
+    from orgs.invitations import invitation_public_state
+
+    try:
+        return Response(invitation_public_state(token))
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)
+
+
+@api_view(['POST'])
+def invitation_accept(request, token):
+    from documents.services.version_service import DomainError
+    from orgs.invitations import accept_invitation
+
+    try:
+        return Response(accept_invitation(token, request.user, request=request))
+    except DomainError as exc:
+        return Response({'error': str(exc)}, status=exc.status_code)

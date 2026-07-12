@@ -88,6 +88,16 @@ TEMPLATES = {
             'body': '{excerpt}',
         },
     },
+    'invitation.accepted': {
+        'es': {
+            'title': '{email} aceptó tu invitación a "{project}"',
+            'body': 'Ya puede trabajar en el proyecto.',
+        },
+        'en': {
+            'title': '{email} accepted your invitation to "{project}"',
+            'body': 'They can now work on the project.',
+        },
+    },
     'observation.resolved': {
         'es': {
             'title': 'Tu observación en "{document}" fue resuelta',

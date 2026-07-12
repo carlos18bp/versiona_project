@@ -59,3 +59,47 @@ class OrganizationMembership(TimestampedModel):
 
     def __str__(self):
         return f'{self.user} @ {self.organization} ({self.role})'
+
+
+class Invitation(PublicIdModel, TimestampedModel):
+    """A2: email + role + signed token; accepting creates the memberships and
+    lands the invitee straight on the project (docs/plan/01 A2)."""
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        ACCEPTED = 'accepted', 'Accepted'
+        REVOKED = 'revoked', 'Revoked'
+
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name='invitations'
+    )
+    project = models.ForeignKey(
+        'projects.Project', null=True, blank=True,
+        on_delete=models.CASCADE, related_name='invitations',
+    )
+    email = models.EmailField()
+    role = models.CharField(max_length=10)  # project role: admin|editor|reviewer|viewer
+    token = models.CharField(max_length=64, unique=True)
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='invitations_sent'
+    )
+    status = models.CharField(max_length=8, choices=Status.choices, default=Status.PENDING)
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    accepted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='+',
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'email'],
+                condition=models.Q(status='pending'),
+                name='uniq_pending_invitation_per_email',
+            ),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.email} → {self.project or self.organization} [{self.status}]'
