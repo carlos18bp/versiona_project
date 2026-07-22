@@ -2,10 +2,10 @@
 
 import pyotp
 import pytest
+from documents.services.version_service import DomainError
 from rest_framework.test import APIClient
 
 from accounts import twofactor
-from documents.services.version_service import DomainError
 
 
 @pytest.fixture
@@ -75,7 +75,8 @@ def test_login_becomes_a_two_step_challenge(client_as, enabled_user):
     }, format='json')
 
     assert second.status_code == 200
-    assert 'access' in second.data and 'refresh' in second.data
+    assert 'access' in second.data
+    assert 'refresh' in second.data
 
 
 @pytest.mark.django_db

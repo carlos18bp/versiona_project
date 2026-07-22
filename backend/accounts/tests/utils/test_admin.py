@@ -1,11 +1,11 @@
 import pytest
+from core.admin_site import admin_site
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory
 
 from accounts.admin import PasswordCodeAdmin, VersionaUserAdmin
 from accounts.models import PasswordCode, User
-from core.admin_site import admin_site
 
 
 def _request_with_messages(user):
