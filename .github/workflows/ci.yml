@@ -82,6 +82,9 @@ jobs:
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
 
+      - name: Install OCR system deps (ocrmypdf: tesseract + spa + ghostscript)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa ghostscript
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -226,6 +229,16 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports:
+          - 1025:1025
+          - 8025:8025
+        options: >-
+          --health-cmd "wget -q --spider http://localhost:8025/livez"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
       DJANGO_DB_ENGINE: django.db.backends.postgresql
@@ -241,6 +254,12 @@ jobs:
       AWS_ACCESS_KEY_ID: versiona-minio
       AWS_SECRET_ACCESS_KEY: versiona-minio-ci
       AWS_STORAGE_BUCKET_NAME: versiona-media
+      DJANGO_EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      DJANGO_EMAIL_HOST: 127.0.0.1
+      DJANGO_EMAIL_PORT: '1025'
+      DJANGO_EMAIL_USE_TLS: 'false'
+      DJANGO_DEFAULT_FROM_EMAIL: versiona@localhost
+      MAILPIT_API: http://127.0.0.1:8025
 
     steps:
       - name: Checkout
