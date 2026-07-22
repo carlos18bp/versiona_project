@@ -97,6 +97,30 @@ def test_delete_fake_data_keeps_orgs_with_remaining_members(django_user_model):
 
 
 @pytest.mark.django_db
+@pytest.mark.escenario('FD-08')
+def test_delete_fake_data_preserves_users_woven_into_protected_evidence():
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from orgs.models import Invitation
+
+    run('create_users', 2)
+    inviter, other = User.objects.filter(is_superuser=False).order_by('pk')
+    org = OrganizationMembership.objects.get(user=inviter).organization
+    Invitation.objects.create(
+        organization=org, email='externa@ejemplo.co', role='viewer',
+        token='fd08-token', invited_by=inviter,
+        expires_at=timezone.now() + timedelta(days=7),
+    )
+
+    run('delete_fake_data', confirm=True)
+
+    assert User.objects.filter(pk=inviter.pk).exists()  # protected evidence
+    assert not User.objects.filter(pk=other.pk).exists()
+
+
+@pytest.mark.django_db
 @pytest.mark.escenario('FD-07')
 def test_e2e_scenario_reseed_is_idempotent():
     run('create_fake_data', scenario='e2e')
