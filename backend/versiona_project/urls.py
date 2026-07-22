@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/', include('audit.urls')),
     path('api/', include('checks.urls')),
     path('api/', include('billing.urls')),
+    path('api/public/', include('public_tools.urls')),
 ]
 
 if settings.DEBUG:

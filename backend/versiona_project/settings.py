@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'notifications',
     'billing',
     'audit',
+    'public_tools',
 ]
 
 if ENABLE_SILK:
@@ -127,6 +128,9 @@ REST_FRAMEWORK = {
         'upload': os.getenv('THROTTLE_UPLOAD', '20/hour'),
         'webhook': os.getenv('THROTTLE_WEBHOOK', '60/min'),
         'public': os.getenv('THROTTLE_PUBLIC', '30/min'),
+        'public_compare': os.getenv('THROTTLE_PUBLIC_COMPARE', '10/hour'),
+        'public_compare_daily': os.getenv('THROTTLE_PUBLIC_COMPARE_DAILY', '30/day'),
+        'public_compare_status': os.getenv('THROTTLE_PUBLIC_COMPARE_STATUS', '60/min'),
     },
 }
 
@@ -387,6 +391,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'billing.tasks.expire_trials_and_notify',
         'schedule': crontab(hour='13', minute='0'),
     },
+    # Anonymous public comparisons: purge expired results + stray files.
+    'purge-public-comparisons-hourly': {
+        'task': 'public_tools.tasks.purge_expired_public_comparisons',
+        'schedule': crontab(minute='20'),
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -440,3 +449,6 @@ UPLOAD_SIGNED_URL_TTL_SECONDS = int(os.getenv('UPLOAD_SIGNED_URL_TTL_SECONDS', '
 D5_DEFAULT_MODE = os.getenv('D5_DEFAULT_MODE', 'auto')
 D5_OCR_CONFIDENCE_MIN = float(os.getenv('D5_OCR_CONFIDENCE_MIN', '0.75'))
 BILLING_TRIAL_DAYS = int(os.getenv('BILLING_TRIAL_DAYS', '14'))
+PUBLIC_COMPARE_MAX_PDF_SIZE_MB = int(os.getenv('PUBLIC_COMPARE_MAX_PDF_SIZE_MB', '10'))
+PUBLIC_COMPARE_MAX_PAGES = int(os.getenv('PUBLIC_COMPARE_MAX_PAGES', '100'))
+PUBLIC_COMPARE_TTL_HOURS = int(os.getenv('PUBLIC_COMPARE_TTL_HOURS', '24'))

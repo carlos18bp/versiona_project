@@ -41,6 +41,10 @@ class EncryptedPdfError(Exception):
     """Password-protected PDF (C1-E01)."""
 
 
+class OcrRequiredError(Exception):
+    """Scanned PDF rejected because the caller disallowed OCR (public tools)."""
+
+
 @dataclass
 class ExtractedSection:
     heading: str
@@ -208,18 +212,22 @@ def render_thumbnail(doc: fitz.Document, width: int = 320) -> bytes:
     return pix.tobytes('png')
 
 
-def analyze_bytes(data: bytes) -> dict:
+def analyze_bytes(data: bytes, allow_ocr: bool = True) -> dict:
     """Pure pipeline: bytes → structured analysis (asserted vs truth table).
 
     Scanned PDFs go through OCR first (It5, DP-02): the text layer feeds the
     SAME sectioning/hashing; confidence below the threshold keeps the result
-    degraded, which downstream forces coordinator mode on D5 (DP-03/DP-09)."""
+    degraded, which downstream forces coordinator mode on D5 (DP-03/DP-09).
+    `allow_ocr=False` (anonymous public tools) refuses scanned PDFs instead."""
     ocr_confidence = None
     probe = open_pdf(data)
     try:
         needs_ocr = detect_scenario(probe) == 'scanned_ocr'
     finally:
         probe.close()
+
+    if needs_ocr and not allow_ocr:
+        raise OcrRequiredError('scanned PDF requires OCR')
 
     if needs_ocr:
         from .ocr import OCR_CONFIDENCE_THRESHOLD, OcrError, run_ocr
