@@ -126,6 +126,7 @@ REST_FRAMEWORK = {
         'auth': os.getenv('THROTTLE_AUTH', '5/min'),
         'upload': os.getenv('THROTTLE_UPLOAD', '20/hour'),
         'webhook': os.getenv('THROTTLE_WEBHOOK', '60/min'),
+        'public': os.getenv('THROTTLE_PUBLIC', '30/min'),
     },
 }
 
@@ -381,6 +382,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'versiona_project.tasks.purge_trashed',
         'schedule': crontab(hour='2', minute='30'),
     },
+    # F1 trials: expiry bookkeeping + owner notices (~08:00 America/Bogota).
+    'billing-trials-daily': {
+        'task': 'billing.tasks.expire_trials_and_notify',
+        'schedule': crontab(hour='13', minute='0'),
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -433,3 +439,4 @@ MAX_PDF_SIZE_MB = int(os.getenv('MAX_PDF_SIZE_MB', '25'))
 UPLOAD_SIGNED_URL_TTL_SECONDS = int(os.getenv('UPLOAD_SIGNED_URL_TTL_SECONDS', '900'))
 D5_DEFAULT_MODE = os.getenv('D5_DEFAULT_MODE', 'auto')
 D5_OCR_CONFIDENCE_MIN = float(os.getenv('D5_OCR_CONFIDENCE_MIN', '0.75'))
+BILLING_TRIAL_DAYS = int(os.getenv('BILLING_TRIAL_DAYS', '14'))

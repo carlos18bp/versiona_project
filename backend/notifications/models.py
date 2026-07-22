@@ -71,6 +71,20 @@ NOTIFICATION_CATALOG = {
         'default_in_app': True,
         'mandatory_in_app': False,
     },
+    'billing.trial_ending': {
+        'label_es': 'Tu prueba Pro está por terminar',
+        'label_en': 'Your Pro trial is about to end',
+        'default_email': True,
+        'default_in_app': True,
+        'mandatory_in_app': False,
+    },
+    'billing.trial_ended': {
+        'label_es': 'Tu prueba Pro terminó',
+        'label_en': 'Your Pro trial ended',
+        'default_email': True,
+        'default_in_app': True,
+        'mandatory_in_app': False,
+    },
     'invitation.accepted': {
         'label_es': 'Aceptaron tu invitación',
         'label_en': 'Your invitation was accepted',

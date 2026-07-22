@@ -108,6 +108,34 @@ TEMPLATES = {
             'body': 'Section: {section}. Resolved in v{version}.',
         },
     },
+    'billing.trial_ending': {
+        'es': {
+            'title': 'Tu prueba Pro termina en {days} día(s)',
+            'body': 'El {date} tu organización "{org}" vuelve al plan Gratis. '
+                    'Nada se borra: el historial antiguo queda bloqueado hasta '
+                    'que mejores tu plan.',
+        },
+        'en': {
+            'title': 'Your Pro trial ends in {days} day(s)',
+            'body': 'On {date} your organization "{org}" returns to the Free '
+                    'plan. Nothing is deleted: old history stays locked until '
+                    'you upgrade.',
+        },
+    },
+    'billing.trial_ended': {
+        'es': {
+            'title': 'Tu prueba Pro terminó: volviste al plan Gratis',
+            'body': 'Tu organización "{org}" está de nuevo en el plan Gratis. '
+                    'Nada se borra: el historial antiguo queda bloqueado hasta '
+                    'que mejores tu plan.',
+        },
+        'en': {
+            'title': 'Your Pro trial ended: you are back on the Free plan',
+            'body': 'Your organization "{org}" is on the Free plan again. '
+                    'Nothing is deleted: old history stays locked until you '
+                    'upgrade.',
+        },
+    },
 }
 
 

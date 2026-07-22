@@ -63,9 +63,24 @@ class Command(BaseCommand):
         )
         # The harness org exercises every flow: the free limits would block
         # the specs (7 members, N projects) — F1 has its own dedicated spec.
+        # A non-free Organization.plan is the CONSOLE OVERRIDE: it outranks
+        # any Subscription trial (billing.services.effective_plan).
         if org.plan != 'enterprise':
             org.plan = 'enterprise'
             org.save(update_fields=['plan'])
+
+        # Trial demo actor (It9): a personal org whose signup trial is live,
+        # so staging can demo the trial banner + usage panel.
+        trial_user, created = User.objects.get_or_create(
+            email='trial@versiona.test',
+            defaults={'first_name': 'Trial', 'is_active': True},
+        )
+        if created:
+            trial_user.set_password('secreta123')
+            trial_user.save(update_fields=['password'])
+        from orgs.services import ensure_personal_org
+
+        ensure_personal_org(trial_user)
         OrganizationMembership.objects.get_or_create(
             organization=org, user=users['owner'],
             defaults={'role': OrganizationMembership.Role.OWNER},

@@ -31,4 +31,7 @@ def ensure_personal_org(user) -> Organization:
     OrganizationMembership.objects.create(
         organization=org, user=user, role=OrganizationMembership.Role.OWNER
     )
+    from billing.services import start_trial  # local import, as in invitations
+
+    start_trial(org)
     return org
