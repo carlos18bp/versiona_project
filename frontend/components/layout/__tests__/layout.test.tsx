@@ -31,13 +31,30 @@ describe('layout components', () => {
     expect(screen.getByText(/Versiona — El Git de tus documentos/i)).toBeInTheDocument();
   });
 
-  it('renders header links for signed out users', () => {
+  it('renders the public header links for signed out users', () => {
     renderHeader({ isAuthenticated: false, signOut: jest.fn() });
 
     expect(screen.getByRole('link', { name: 'Versiona' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'Ayuda' })).toHaveAttribute('href', '/manual');
-    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in');
-    expect(screen.getByRole('link', { name: 'Crear cuenta' })).toHaveAttribute('href', '/sign-up');
+    expect(screen.getAllByRole('link', { name: 'Comparar PDFs' })[0]).toHaveAttribute(
+      'href',
+      '/comparar'
+    );
+    expect(screen.getAllByRole('link', { name: 'Precios' })[0]).toHaveAttribute(
+      'href',
+      '/precios'
+    );
+    expect(screen.getAllByRole('link', { name: 'Manual' })[0]).toHaveAttribute(
+      'href',
+      '/manual'
+    );
+    expect(screen.getAllByRole('link', { name: 'Iniciar sesión' })[0]).toHaveAttribute(
+      'href',
+      '/sign-in'
+    );
+    expect(screen.getAllByRole('link', { name: 'Crear cuenta gratis' })[0]).toHaveAttribute(
+      'href',
+      '/sign-up'
+    );
     expect(screen.queryByRole('button', { name: 'Salir' })).not.toBeInTheDocument();
   });
 

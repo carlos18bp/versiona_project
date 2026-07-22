@@ -39,7 +39,27 @@ describe('OrgUsagePage (F2)', () => {
     expect(screen.getByText('2 / 2')).toBeInTheDocument();
     expect(screen.getAllByText('Límite alcanzado')).toHaveLength(2);
     expect(screen.getByText(/30 días/)).toBeInTheDocument();
-    expect(screen.getByTestId('upgrade-cta')).toHaveTextContent('Wompi');
+    expect(screen.getByTestId('upgrade-plans-link')).toHaveAttribute('href', '/precios');
+    expect(screen.getByTestId('upgrade-contact')).toBeInTheDocument();
+  });
+
+  it('[F2-F03] renders the trial line when the org is on trial', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        plan: 'pro',
+        plan_label: 'Pro',
+        limits: { max_active_projects: 20, max_members: 25, history_days: null },
+        usage: { active_projects: 1, members: 1 },
+        warnings: [],
+        upgrade_available: true,
+        effective_plan: 'pro',
+        trial: { on_trial: true, trial_ends_at: '2026-08-05T13:00:00Z', days_left: 12 },
+      },
+    });
+
+    render(<OrgUsagePage />);
+
+    expect(await screen.findByTestId('usage-trial-line')).toHaveTextContent('12');
   });
 
   it('[F2-F02] pro plan hides the upgrade CTA', async () => {

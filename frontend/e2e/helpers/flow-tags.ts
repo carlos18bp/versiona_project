@@ -49,3 +49,8 @@ export const F2_USAGE_PANEL = ['@flow:f2-usage-panel', '@module:billing', '@prio
 export const E4_CONSTANCIA = ['@flow:e4-constancia', '@module:review', '@priority:P2'];
 export const MASTER_JOURNEY = ['@flow:master-e2e-journey', '@module:master', '@priority:P1'];
 export const B4_ARCHIVE_DELETE = ['@flow:b4-archive-delete', '@module:projects', '@priority:P2'];
+
+// ── It9: public surfaces + trial ──
+export const PUBLIC_PRICING = ['@flow:public-pricing', '@module:billing', '@priority:P1'];
+export const TRIAL_VISIBILITY = ['@flow:trial-visibility', '@module:billing', '@priority:P2'];
+export const PUBLIC_COMPARE = ['@flow:public-compare', '@module:public', '@priority:P1'];

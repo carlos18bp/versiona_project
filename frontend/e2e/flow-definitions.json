@@ -1,6 +1,6 @@
 {
-  "version": "2.1.0",
-  "lastUpdated": "2026-07-12",
+  "version": "2.2.0",
+  "lastUpdated": "2026-07-22",
   "flows": {
     "home-loads": {
       "name": "Landing page loads",
@@ -9,7 +9,7 @@
         "shared"
       ],
       "priority": "P1",
-      "description": "Versiona landing renders with the 'El Git de tus documentos' headline",
+      "description": "Versiona landing renders the 'El Git de tus documentos' headline, dual CTA (public comparator + free signup with the 14-day Pro trial), how-it-works, honest features/tech sections, pricing preview, FAQ and the public header/footer",
       "expectedSpecs": 1
     },
     "auth-sign-in-form": {
@@ -69,7 +69,7 @@
         "shared"
       ],
       "priority": "P1",
-      "description": "Valid credentials create a real session (cookies set) and land on /dashboard; header shows Panel/Salir",
+      "description": "Valid credentials create a real session (cookies set) and land on /projects directly (no /dashboard hop); header shows Panel/Salir",
       "expectedSpecs": 1,
       "knownGaps": "Closed in It1 by the storageState harness + session spec"
     },
@@ -261,14 +261,15 @@
       "expectedSpecs": 1
     },
     "f1-billing": {
-      "name": "F1 - Choose a plan and pay",
+      "name": "F1 - Plan limits and upgrade path (contact - no online payment)",
       "module": "billing",
       "roles": [
         "owner"
       ],
       "priority": "P2",
-      "description": "Free org hits a plan limit, upgrades self-service via Wompi test mode, and sees the invoice listed (docs/plan/01 F1)",
-      "expectedSpecs": 1
+      "description": "Free org hits a plan limit (402 + upgrade flag) and gets the reusable upgrade dialog linking to /precios; Pro beyond the trial is activated by contact",
+      "expectedSpecs": 1,
+      "knownGaps": "Wompi/online checkout not shipped - upgrade is manual via hola@versiona.app; every new signup auto-starts a 14-day Pro trial"
     },
     "c4-delete-draft": {
       "name": "C4 - Delete a draft version (trash + restore)",
@@ -307,7 +308,7 @@
         "owner"
       ],
       "priority": "P2",
-      "description": "Usage vs plan limits with warnings at 80% (docs/audit/03 F2)",
+      "description": "Usage vs plan limits with warnings at 80%, trial status line, reachable from the authed header (Plan y uso) and settings; upgrade CTA links to /precios with a contact fallback",
       "expectedSpecs": 1
     },
     "e4-constancia": {
@@ -340,6 +341,36 @@
       ],
       "priority": "P2",
       "description": "Archiving locks writes; deletion needs the exact name, lands in the org trash and is restorable; sealed projects only archive (T4) (docs/audit/03 B4)",
+      "expectedSpecs": 1
+    },
+    "public-pricing": {
+      "name": "Public pricing page",
+      "module": "billing",
+      "roles": [
+        "guest"
+      ],
+      "priority": "P1",
+      "description": "/precios renders the 3-plan catalog from GET /api/public/plans/ (silent static fallback), COP prices, comparison table, trial badge on Pro and honest CTAs (signup / contact - no online checkout)",
+      "expectedSpecs": 1
+    },
+    "trial-visibility": {
+      "name": "Trial banner visibility",
+      "module": "billing",
+      "roles": [
+        "user"
+      ],
+      "priority": "P2",
+      "description": "Fresh signup auto-starts the 14-day Pro trial; the authed app shows a dismissable banner with days left linking to /precios and the usage panel shows the trial line",
+      "expectedSpecs": 1
+    },
+    "public-compare": {
+      "name": "Anonymous public PDF comparison",
+      "module": "public",
+      "roles": [
+        "guest"
+      ],
+      "priority": "P1",
+      "description": "Visitor compares two PDFs on /comparar without an account (10MB/100-page caps, no OCR), sees the truth-table result on a shareable 24h page and the persistent signup CTA",
       "expectedSpecs": 1
     }
   }

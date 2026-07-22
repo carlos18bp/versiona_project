@@ -111,7 +111,7 @@ describe('SignInPage', () => {
     await waitFor(() => {
       expect(signIn).toHaveBeenCalledWith({ email: 'user@example.com', password: 'password123', captcha_token: undefined });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/projects');
   });
 
   it('shows an error when sign in fails', async () => {
@@ -139,7 +139,7 @@ describe('SignInPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
-    expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    expect(await screen.findByText('Credenciales inválidas')).toBeInTheDocument();
   });
 
   it('shows default error when sign in error payload is missing', async () => {
@@ -153,7 +153,7 @@ describe('SignInPage', () => {
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
-    expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    expect(await screen.findByText('Credenciales inválidas')).toBeInTheDocument();
   });
 
   it('handles Google login success', async () => {
@@ -181,7 +181,7 @@ describe('SignInPage', () => {
         picture: 'pic.png',
       });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/projects');
   });
 
   it('shows an error when Google credential is missing', async () => {
@@ -193,7 +193,7 @@ describe('SignInPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Google Login' }));
 
-    expect(await screen.findByText('Google login failed')).toBeInTheDocument();
+    expect(await screen.findByText('No pudimos iniciar sesión con Google')).toBeInTheDocument();
   });
 
   it('shows error when Google login fails with response error', async () => {
@@ -231,7 +231,7 @@ describe('SignInPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Google Login' }));
 
-    expect(await screen.findByText('Google login failed')).toBeInTheDocument();
+    expect(await screen.findByText('No pudimos iniciar sesión con Google')).toBeInTheDocument();
   });
 
   it('handles Google login error callback', async () => {
@@ -243,7 +243,7 @@ describe('SignInPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Google Login' }));
 
-    expect(await screen.findByText('Google login failed')).toBeInTheDocument();
+    expect(await screen.findByText('No pudimos iniciar sesión con Google')).toBeInTheDocument();
   });
 
   it('continues when jwt decode fails', async () => {
@@ -268,6 +268,6 @@ describe('SignInPage', () => {
         picture: undefined,
       });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/projects');
   });
 });

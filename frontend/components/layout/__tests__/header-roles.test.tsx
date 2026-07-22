@@ -40,4 +40,12 @@ describe('Header role-based navigation', () => {
 
     expect(screen.getByRole('link', { name: 'Papelera' })).toBeInTheDocument();
   });
+
+  it('[Header-R4] shows the plan-and-usage link for any authed member', () => {
+    orgsState.orgs = [{ role: 'member' }];
+
+    render(<Header />);
+
+    expect(screen.getByTestId('nav-plan-usage')).toHaveAttribute('href', '/org/usage');
+  });
 });
