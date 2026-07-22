@@ -26,12 +26,12 @@ describe('CertificatePanel (E4)', () => {
   it('[E4-L01] renders nothing for an unapproved version without certificates', async () => {
     mockGet.mockResolvedValueOnce({ data: { results: [] } });
 
-    const { container } = render(
+    render(
       <CertificatePanel versionId="v1" isApproved={false} canIssue={false} />
     );
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(container.querySelector('[data-testid="certificate-panel"]')).toBeNull();
+    expect(screen.queryByTestId('certificate-panel')).not.toBeInTheDocument();
   });
 
   it('[E4-F01-ui] admin issues and the PDF opens', async () => {

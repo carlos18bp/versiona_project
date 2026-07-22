@@ -137,7 +137,7 @@ test.describe('M1 — La prueba maestra', () => {
           `http://127.0.0.1:8025/api/v1/message/${email.ID}`
         );
         const token = ((await detail.json()).Text as string).match(/\/invite\/([\w-]+)/)?.[1];
-        expect(token).toBeTruthy();
+        expect(token).toMatch(/^[\w-]{20,64}$/);
 
         const context = await browser.newContext();
         const page = await context.newPage();
@@ -261,7 +261,7 @@ test.describe('M1 — La prueba maestra', () => {
         editor.waitForEvent('popup', { timeout: 30_000 }),
         editor.getByTestId('issue-certificate').click(),
       ]);
-      expect(popup).toBeTruthy();
+      await popup.close();
 
       const versionId = v3Url.split('/versions/')[1].split(/[/?#]/)[0];
       const access = (await editorContext.cookies()).find(

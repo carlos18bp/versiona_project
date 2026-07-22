@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 import ProjectsBoardPage from '../page';
 import { api } from '../../../lib/services/http';
@@ -38,10 +38,9 @@ describe('ProjectsBoardPage', () => {
     render(<ProjectsBoardPage />);
 
     expect(await screen.findByText('Torre Central')).toBeInTheDocument();
-    // 'Activo' also lives in the status-filter <option>: assert the card badge
     expect(
-      screen.getByTestId('projects-grid').querySelector('[class*="rounded-full"]')
-    ).toHaveTextContent('Activo');
+      within(screen.getByTestId('projects-grid')).getByText('Activo')
+    ).toBeInTheDocument();
     expect(screen.getByText(/Editor/)).toBeInTheDocument();
   });
 

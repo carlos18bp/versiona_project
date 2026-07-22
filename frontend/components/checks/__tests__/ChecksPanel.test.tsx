@@ -62,8 +62,8 @@ describe('ChecksPanel (E3)', () => {
   it('renders nothing while loading or on failure', async () => {
     mockGet.mockRejectedValueOnce(new Error('500'));
 
-    const { container } = render(<ChecksPanel versionId="v1" />);
+    render(<ChecksPanel versionId="v1" />);
 
-    expect(container.querySelector('[data-testid="checks-panel"]')).toBeNull();
+    expect(screen.queryByTestId('checks-panel')).not.toBeInTheDocument();
   });
 });

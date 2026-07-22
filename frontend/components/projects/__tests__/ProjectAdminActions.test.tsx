@@ -38,10 +38,10 @@ describe('ProjectAdminActions (B4)', () => {
   it('[B4-P02] renders nothing for non-admins', async () => {
     prime('editor');
 
-    const { container } = render(<ProjectAdminActions projectId="p1" />);
+    render(<ProjectAdminActions projectId="p1" />);
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(container.querySelector('[data-testid="project-admin-actions"]')).toBeNull();
+    expect(screen.queryByTestId('project-admin-actions')).not.toBeInTheDocument();
   });
 
   it('[B4-F01-ui] archives and shows the read-only banner', async () => {

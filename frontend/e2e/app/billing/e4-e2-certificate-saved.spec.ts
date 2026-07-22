@@ -48,7 +48,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
         adminPage.waitForEvent('popup', { timeout: 30_000 }),
         adminPage.getByTestId('issue-certificate').click(),
       ]);
-      expect(popup).toBeTruthy(); // la UX abre el PDF en una pestaña
+      await popup.close();
 
       // Verificación determinista del binario: API + URL firmada
       const versionId = versionUrl.split('/versions/')[1].split(/[/?#]/)[0];

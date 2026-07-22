@@ -2,14 +2,17 @@
 gets a personal org + trial via the real signup path, and delete cleans the
 domain without touching superusers."""
 
+from datetime import timedelta
 from io import StringIO
 
 import pytest
+from billing.models import Subscription
 from django.core.management import CommandError, call_command
+from django.utils import timezone
+from freezegun import freeze_time
+from orgs.models import Invitation, Organization, OrganizationMembership
 
 from accounts.models import User
-from billing.models import Subscription
-from orgs.models import Organization, OrganizationMembership
 
 
 def run(command, *args, **options):
@@ -98,13 +101,8 @@ def test_delete_fake_data_keeps_orgs_with_remaining_members(django_user_model):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('FD-08')
+@freeze_time('2026-07-22 12:00:00')
 def test_delete_fake_data_preserves_users_woven_into_protected_evidence():
-    from datetime import timedelta
-
-    from django.utils import timezone
-
-    from orgs.models import Invitation
-
     run('create_users', 2)
     inviter, other = User.objects.filter(is_superuser=False).order_by('pk')
     org = OrganizationMembership.objects.get(user=inviter).organization

@@ -24,12 +24,13 @@ test.describe('B3 + E3 — Gobernanza del proyecto', () => {
       await adminPage.waitForURL(/\/settings$/);
       await expect(adminPage.getByTestId('project-config')).toBeVisible({ timeout: 20_000 });
 
+      const checkLabel = uniqueName('Regula el anticipo');
       const checkRows = adminPage.locator('[data-testid^="check-label-"]');
       const initialCount = await checkRows.count();
       await adminPage.getByTestId('add-check').click();
       await expect(checkRows).toHaveCount(initialCount + 1);
       const index = initialCount;
-      await adminPage.getByTestId(`check-label-${index}`).fill('Regula el anticipo');
+      await adminPage.getByTestId(`check-label-${index}`).fill(checkLabel);
       await adminPage.getByTestId(`check-type-${index}`).selectOption('required_text');
       await adminPage.getByTestId(`check-param-${index}`).fill('anticipo');
       await adminPage.getByTestId('save-config').click();
@@ -59,8 +60,7 @@ test.describe('B3 + E3 — Gobernanza del proyecto', () => {
       await expect(editorPage.getByTestId('checks-panel')).toBeVisible({ timeout: 20_000 });
       const anticipoCheck = editorPage
         .locator('[data-testid^="check-"][data-outcome]')
-        .filter({ hasText: 'Regula el anticipo' })
-        .first();
+        .filter({ hasText: checkLabel });
       await expect(anticipoCheck).toHaveAttribute('data-outcome', 'pass');
       await expect(anticipoCheck).toContainText('valor-y-forma-de-pago');
 
