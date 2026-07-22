@@ -14,6 +14,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TypeToConfirmDialog } from '@/components/ui/TypeToConfirmDialog';
 import { useToast } from '@/components/ui/toast';
 import { interpolate, useDict } from '@/lib/i18n/dictionaries';
+import { useUpgradeDialogStore } from '@/lib/stores/upgradeDialogStore';
 import { useVersionStore } from '@/lib/stores/versionStore';
 import type { VersionSummary } from '@/lib/types';
 
@@ -59,7 +60,15 @@ export function VersionTimeline({
 
   const download = async (version: VersionSummary) => {
     const url = await downloadUrl(version.public_id);
-    if (url) window.open(url, '_blank', 'noopener');
+    if (url) {
+      window.open(url, '_blank', 'noopener');
+      return;
+    }
+    // 402 plan locks open the upgrade dialog (store-side); every other
+    // failure used to die silently — surface it.
+    if (!useUpgradeDialogStore.getState().isOpen) {
+      toast(useVersionStore.getState().error ?? common.error, 'error');
+    }
   };
 
   const saveMessage = async (version: VersionSummary) => {

@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/toast';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { api } from '@/lib/services/http';
+import { maybeShowUpgradeDialog } from '@/lib/stores/upgradeDialogStore';
 import { useOrgStore } from '@/lib/stores/orgStore';
 
 export default function NewProjectPage() {
@@ -56,6 +57,10 @@ export default function NewProjectPage() {
       toast(common.saved, 'success');
       router.push(`/projects/${data.public_id}`);
     } catch (err) {
+      if (maybeShowUpgradeDialog(err)) {
+        setIsSubmitting(false);
+        return;
+      }
       setError(
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
           common.error

@@ -10,6 +10,12 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+// Bare client for AllowAny endpoints: no token attach (a stale token would
+// 401 an anonymous call and trigger the refresh dance), no interceptors.
+export const publicApi = axios.create({
+  baseURL: API_BASE_URL,
+});
+
 api.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token) {

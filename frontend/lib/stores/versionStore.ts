@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 
 import { api } from '@/lib/services/http';
+import { maybeShowUpgradeDialog } from '@/lib/stores/upgradeDialogStore';
 import type { VersionDetail } from '@/lib/types';
 
 interface VersionState {
@@ -58,6 +59,7 @@ export const useVersionStore = create<VersionState>((set) => ({
       const { data } = await api.get(`versions/${versionId}/download/`);
       return data.url as string;
     } catch (err) {
+      maybeShowUpgradeDialog(err); // DP-04 history lock → upgrade path
       set({ error: extractError(err) });
       return null;
     }

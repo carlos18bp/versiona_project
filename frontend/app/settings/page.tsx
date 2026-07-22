@@ -1,11 +1,14 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 
 import { NotificationPrefs } from '@/components/notifications/NotificationPrefs';
 import { SecuritySection } from '@/components/security/SecuritySection';
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { useToast } from '@/components/ui/toast';
+import { ROUTES } from '@/lib/constants';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { useProfileStore } from '@/lib/stores/profileStore';
@@ -62,7 +65,15 @@ export default function SettingsPage() {
   return (
     <main className="mx-auto max-w-xl px-6 py-10">
       <h1 className="text-2xl font-semibold">{t.title}</h1>
-      <h2 className="mt-2 text-sm text-muted-foreground">{t.profile}</h2>
+      <Link
+        data-testid="settings-usage-link"
+        className="mt-3 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-sm hover:bg-accent hover:text-accent-foreground"
+        href={ROUTES.ORG_USAGE}
+      >
+        {common.planUsage}
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
+      <h2 className="mt-6 text-sm text-muted-foreground">{t.profile}</h2>
 
       <div className="mt-6">
         <AsyncBoundary

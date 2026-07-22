@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useToast } from '@/components/ui/toast';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/services/http';
+import { maybeShowUpgradeDialog } from '@/lib/stores/upgradeDialogStore';
 import { useReviewStore } from '@/lib/stores/reviewStore';
 
 interface InvitationRow {
@@ -53,6 +54,7 @@ export function MembersSection({ projectId }: { projectId: string }) {
       setEmail('');
       void load();
     } catch (err) {
+      if (maybeShowUpgradeDialog(err)) return;
       toast(
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
           common.error,

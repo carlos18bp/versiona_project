@@ -46,7 +46,7 @@ export default function SignInPage() {
     setError('');
 
     if (siteKey && !captchaToken) {
-      setError('Please complete the captcha');
+      setError(t.errorCaptcha);
       return;
     }
 
@@ -60,9 +60,9 @@ export default function SignInPage() {
         return;
       }
       const next = new URLSearchParams(window.location.search).get('next');
-      router.replace(next && next.startsWith('/') ? next : '/dashboard');
+      router.replace(next && next.startsWith('/') ? next : '/projects');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Invalid credentials');
+      setError(err.response?.data?.error || t.errorInvalidCredentials);
       recaptchaRef.current?.reset();
       setCaptchaToken(null);
     } finally {
@@ -76,7 +76,7 @@ export default function SignInPage() {
       setError('');
 
       if (!credentialResponse.credential) {
-        setError('Google login failed');
+        setError(t.errorGoogle);
         return;
       }
 
@@ -95,16 +95,16 @@ export default function SignInPage() {
         picture: decoded?.picture,
       });
       
-      router.replace('/dashboard');
+      router.replace('/projects');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Google login failed');
+      setError(err.response?.data?.error || t.errorGoogle);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleError = () => {
-    setError('Google login failed');
+    setError(t.errorGoogle);
   };
 
   return (
@@ -124,17 +124,15 @@ export default function SignInPage() {
               try {
                 await signIn2fa({ challenge, code: totpCode });
                 const next = new URLSearchParams(window.location.search).get('next');
-                router.replace(next && next.startsWith('/') ? next : '/dashboard');
+                router.replace(next && next.startsWith('/') ? next : '/projects');
               } catch (err: any) {
-                setError(err.response?.data?.error || 'Código incorrecto');
+                setError(err.response?.data?.error || t.twofaInvalid);
                 setLoading(false);
               }
             }}
           >
-            <p className="text-sm font-medium">Verificación en dos pasos</p>
-            <p className="text-sm text-muted-foreground">
-              Escribe el código de tu app de autenticación (o un código de respaldo).
-            </p>
+            <p className="text-sm font-medium">{t.twofaTitle}</p>
+            <p className="text-sm text-muted-foreground">{t.twofaHint}</p>
             <input
               data-testid="twofa-code"
               className="border border-border rounded-xl px-3 py-2 w-full bg-card text-center tracking-widest"
@@ -150,7 +148,7 @@ export default function SignInPage() {
               disabled={loading || !totpCode.trim()}
               type="submit"
             >
-              Verificar
+              {t.twofaVerify}
             </button>
           </form>
         ) : (

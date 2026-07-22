@@ -5,6 +5,9 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   DASHBOARD: '/dashboard',
   HELP: '/manual',
+  PRECIOS: '/precios',
+  COMPARAR: '/comparar',
+  ORG_USAGE: '/org/usage',
 } as const;
 
 export const COOKIE_KEYS = {

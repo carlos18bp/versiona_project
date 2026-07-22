@@ -1,12 +1,14 @@
 'use client';
 
-/** F2 — usage vs plan limits with 80% warnings and the informative upgrade
- * CTA (Wompi deferred: DECISIÓN PENDIENTE until the operator's keys). */
+/** F2 — usage vs plan limits with 80% warnings, the trial status line and the
+ * upgrade path (online payment pending: /precios + contact fallback). */
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { AsyncBoundary } from '@/components/ui/AsyncBoundary';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { ROUTES } from '@/lib/constants';
 import { interpolate, useDict } from '@/lib/i18n/dictionaries';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 import { api } from '@/lib/services/http';
@@ -23,6 +25,12 @@ interface UsageResponse {
   usage: { active_projects: number; members: number };
   warnings: Array<{ limit: string; used: number; max: number; at_capacity: boolean }>;
   upgrade_available: boolean;
+  effective_plan?: string;
+  trial?: {
+    on_trial: boolean;
+    trial_ends_at: string | null;
+    days_left: number | null;
+  };
 }
 
 function Meter({ label, used, max, warning }: {
@@ -98,6 +106,16 @@ export default function OrgUsagePage() {
               <p className="text-sm">
                 {t.plan}: <StatusBadge variant="in_review">{data.plan_label}</StatusBadge>
               </p>
+              {data.trial?.on_trial ? (
+                <p
+                  data-testid="usage-trial-line"
+                  className="text-sm text-primary"
+                >
+                  {interpolate(t.usageTrialLine, {
+                    days: data.trial.days_left ?? 0,
+                  })}
+                </p>
+              ) : null}
               <Meter
                 label={t.projects}
                 used={data.usage.active_projects}
@@ -124,12 +142,22 @@ export default function OrgUsagePage() {
                 >
                   <h2 className="font-medium">{t.upgradeTitle}</h2>
                   <p className="mt-1 text-sm text-muted-foreground">{t.upgradeBody}</p>
-                  <a
-                    className="mt-3 inline-block rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground"
-                    href="mailto:hola@versiona.app?subject=Plan%20Pro"
-                  >
-                    {t.upgradeCta}
-                  </a>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <Link
+                      data-testid="upgrade-plans-link"
+                      className="inline-block rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
+                      href={ROUTES.PRECIOS}
+                    >
+                      {t.upgradeCta}
+                    </Link>
+                    <a
+                      data-testid="upgrade-contact"
+                      className="text-sm text-muted-foreground hover:text-foreground underline"
+                      href="mailto:hola@versiona.app?subject=Plan%20Pro"
+                    >
+                      {t.contactUs}
+                    </a>
+                  </div>
                 </div>
               ) : null}
             </div>

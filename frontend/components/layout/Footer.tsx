@@ -1,9 +1,5 @@
+import { PublicFooter } from '@/components/marketing/PublicFooter';
+
 export default function Footer() {
-  return (
-    <footer className="border-t border-border mt-16">
-      <div className="max-w-6xl mx-auto px-6 py-10 text-sm text-muted-foreground">
-        © 2026 Versiona — El Git de tus documentos
-      </div>
-    </footer>
-  );
+  return <PublicFooter />;
 }
