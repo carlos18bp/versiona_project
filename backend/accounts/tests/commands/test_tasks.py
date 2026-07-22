@@ -1,8 +1,11 @@
-"""Tests for Silk-related Celery tasks: silk_garbage_collection, weekly_slow_queries_report."""
+"""Tests for operational Celery tasks: scheduled_backup, silk_garbage_collection,
+weekly_slow_queries_report, silk_reports_cleanup, purge_trashed."""
 
+import sys
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import pytest
 from freezegun import freeze_time
 
 
@@ -31,6 +34,33 @@ def _setup_silk_mocks(mock_request_cls, mock_sql_query_cls, *, slow_queries, n_p
         .order_by.return_value
         .__getitem__
     ) = MagicMock(return_value=n1_qs)
+
+
+# ---------------------------------------------------------------------------
+# scheduled_backup
+# ---------------------------------------------------------------------------
+
+def test_scheduled_backup_runs_db_and_media_backups():
+    """scheduled_backup calls dbbackup then mediabackup with --compress --clean and returns True."""
+    from versiona_project.tasks import scheduled_backup
+
+    with patch('django.core.management.call_command') as mock_call_command:
+        result = scheduled_backup()
+
+    assert result is True
+    assert mock_call_command.call_count == 2
+    first_call, second_call = mock_call_command.call_args_list
+    assert first_call.args == ('dbbackup', '--compress', '--clean')
+    assert second_call.args == ('mediabackup', '--compress', '--clean')
+
+
+def test_scheduled_backup_reraises_when_a_backup_command_fails():
+    """scheduled_backup propagates the exception raised by a failing backup command."""
+    from versiona_project.tasks import scheduled_backup
+
+    with patch('django.core.management.call_command', side_effect=RuntimeError('disco lleno')):
+        with pytest.raises(RuntimeError):
+            scheduled_backup()
 
 
 # ---------------------------------------------------------------------------
@@ -215,3 +245,106 @@ def test_weekly_slow_queries_report_includes_n_plus_one_suspects(settings, tmp_p
     content = (tmp_path / 'logs' / 'silk-reports' / 'silk-report-2025-06-09.log').read_text()
     assert '/api/sales/' in content
     assert '25 queries' in content
+
+
+def test_weekly_slow_queries_report_skips_when_silk_import_fails(settings, tmp_path):
+    """weekly_slow_queries_report returns early without a report when silk cannot be imported."""
+    settings.ENABLE_SILK = True
+    settings.BASE_DIR = tmp_path
+    from versiona_project.tasks import weekly_slow_queries_report
+
+    with patch.dict(sys.modules, {'silk.models': None}):
+        result = weekly_slow_queries_report()
+
+    assert result is None
+    assert not (tmp_path / 'logs' / 'silk-reports').exists()
+
+
+# ---------------------------------------------------------------------------
+# silk_reports_cleanup
+# ---------------------------------------------------------------------------
+
+def _reports_dir(base_dir):
+    path = base_dir / 'logs' / 'silk-reports'
+    path.mkdir(parents=True)
+    return path
+
+
+def test_silk_reports_cleanup_skips_when_silk_disabled(settings, tmp_path):
+    """silk_reports_cleanup leaves every report untouched when ENABLE_SILK is False."""
+    settings.ENABLE_SILK = False
+    settings.BASE_DIR = tmp_path
+    old_report = _reports_dir(tmp_path) / 'silk-report-2020-01-01.log'
+    old_report.write_text('viejo')
+    from versiona_project.tasks import silk_reports_cleanup
+
+    silk_reports_cleanup()
+
+    assert old_report.exists()
+
+
+def test_silk_reports_cleanup_returns_when_reports_dir_is_missing(settings, tmp_path):
+    """silk_reports_cleanup exits without creating anything when the reports dir does not exist."""
+    settings.ENABLE_SILK = True
+    settings.BASE_DIR = tmp_path
+    from versiona_project.tasks import silk_reports_cleanup
+
+    silk_reports_cleanup()
+
+    assert not (tmp_path / 'logs' / 'silk-reports').exists()
+
+
+@freeze_time('2025-06-09')
+def test_silk_reports_cleanup_deletes_reports_older_than_six_months(settings, tmp_path):
+    """silk_reports_cleanup deletes report files dated before the 180-day cutoff."""
+    settings.ENABLE_SILK = True
+    settings.BASE_DIR = tmp_path
+    old_report = _reports_dir(tmp_path) / 'silk-report-2024-11-01.log'
+    old_report.write_text('viejo')
+    from versiona_project.tasks import silk_reports_cleanup
+
+    silk_reports_cleanup()
+
+    assert not old_report.exists()
+
+
+@freeze_time('2025-06-09')
+def test_silk_reports_cleanup_keeps_recent_reports(settings, tmp_path):
+    """silk_reports_cleanup keeps report files dated within the 180-day window."""
+    settings.ENABLE_SILK = True
+    settings.BASE_DIR = tmp_path
+    recent_report = _reports_dir(tmp_path) / 'silk-report-2025-06-01.log'
+    recent_report.write_text('reciente')
+    from versiona_project.tasks import silk_reports_cleanup
+
+    silk_reports_cleanup()
+
+    assert recent_report.exists()
+
+
+@freeze_time('2025-06-09')
+def test_silk_reports_cleanup_ignores_files_with_unparseable_dates(settings, tmp_path):
+    """silk_reports_cleanup skips files whose name does not carry a YYYY-MM-DD date."""
+    settings.ENABLE_SILK = True
+    settings.BASE_DIR = tmp_path
+    odd_report = _reports_dir(tmp_path) / 'silk-report-legacy.log'
+    odd_report.write_text('sin fecha')
+    from versiona_project.tasks import silk_reports_cleanup
+
+    silk_reports_cleanup()
+
+    assert odd_report.exists()
+
+
+# ---------------------------------------------------------------------------
+# purge_trashed
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_purge_trashed_returns_zero_counts_on_a_clean_database():
+    """purge_trashed reports zero purged rows when nothing is in the trash."""
+    from versiona_project.tasks import purge_trashed
+
+    result = purge_trashed()
+
+    assert result == {'versions': 0, 'documents': 0, 'projects': 0}
