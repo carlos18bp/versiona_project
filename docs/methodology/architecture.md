@@ -19,8 +19,9 @@ flowchart LR
     W -- selective emails --> MP[mailpit dev / SMTP prod]
 ```
 
-- **Bounded contexts** (each a Django app): core, accounts, orgs, projects, documents,
-  reviews, observations, checks, comparisons, engine, notifications, billing, audit.
+- **Bounded contexts** (each a Django app, 14): core, accounts, orgs, projects,
+  documents, reviews, observations, checks, comparisons, engine, notifications,
+  billing, audit, public_tools (anonymous AllowAny surface, It9).
   Engine imports nothing from reviews/billing (extractable to a service later).
 - **Conventions**: FBV `@api_view` + services layer; triple serializers; `public_id`
   (UUIDv7) in routes; non-members get 404 (I12); DRF pagination 25.

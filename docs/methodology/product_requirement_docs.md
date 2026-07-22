@@ -29,6 +29,11 @@ control, with no answer to "which approvals still stand after this change?".
 
 - **MVP** = 16 flows: A1, A2, B1, B2, B3, C1, C2, C3, D1, D2, D3, D4, D5, E1, E3, F1
   (full public launch cut — DP-14 resolved). Engine MVP: native-text PDF + OCR for scans.
+- **Go-public layer (It9, 2026-07-22)** — freemium à la iLovePDF: 14-day Pro trial
+  auto-started on signup (no card; console override always wins), public landing +
+  `/precios` (COP catalog, no online checkout yet — upgrade by contact), and the
+  anonymous acquisition hook `/comparar` (two PDFs, no account, ephemeral files,
+  scanned PDFs answered with an OCR upsell). 36 registered user flows total.
 - **Not in v1**: branches, external legal e-signature, drawings/CAD, document editing,
   interpretive AI, public API/SSO, deleting history (see `docs/plan/00` §4).
 
