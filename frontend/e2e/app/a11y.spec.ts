@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import type { Locator, Page } from '@playwright/test';
 
 import { expect, test } from '../test-with-coverage';
 
@@ -10,10 +11,10 @@ import { expect, test } from '../test-with-coverage';
 
 test.use({ storageState: 'e2e/.auth/editor.json' });
 
-const SCREENS = [
-  { path: '/projects', name: 'tablero' },
-  { path: '/inbox', name: 'inbox' },
-  { path: '/settings', name: 'settings' },
+const SCREENS: { path: string; name: string; ready: (page: Page) => Locator }[] = [
+  { path: '/projects', name: 'tablero', ready: (page) => page.getByTestId('board-search') },
+  { path: '/inbox', name: 'inbox', ready: (page) => page.getByRole('heading', { level: 1 }) },
+  { path: '/settings', name: 'settings', ready: (page) => page.getByTestId('settings-save') },
 ];
 
 for (const screen of SCREENS) {
@@ -22,7 +23,7 @@ for (const screen of SCREENS) {
     { tag: ['@flow:home-loads', '@scenario:a11y-01', '@states'] },
     async ({ page }) => {
       await page.goto(screen.path);
-      await page.waitForLoadState('networkidle');
+      await expect(screen.ready(page)).toBeVisible({ timeout: 20_000 });
 
       const results = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa'])

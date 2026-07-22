@@ -24,8 +24,11 @@ test.describe('B3 + E3 — Gobernanza del proyecto', () => {
       await adminPage.waitForURL(/\/settings$/);
       await expect(adminPage.getByTestId('project-config')).toBeVisible({ timeout: 20_000 });
 
+      const checkRows = adminPage.locator('[data-testid^="check-label-"]');
+      const initialCount = await checkRows.count();
       await adminPage.getByTestId('add-check').click();
-      const index = await adminPage.locator('[data-testid^="check-label-"]').count() - 1;
+      await expect(checkRows).toHaveCount(initialCount + 1);
+      const index = initialCount;
       await adminPage.getByTestId(`check-label-${index}`).fill('Regula el anticipo');
       await adminPage.getByTestId(`check-type-${index}`).selectOption('required_text');
       await adminPage.getByTestId(`check-param-${index}`).fill('anticipo');
