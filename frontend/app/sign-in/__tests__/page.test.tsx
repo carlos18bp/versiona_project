@@ -88,7 +88,7 @@ describe('SignInPage', () => {
 
   it('renders missing Google Client ID message when env var not set', () => {
     delete process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    setAuthStoreState({ signIn: jest.fn(), googleLogin: jest.fn() });
+    setAuthStoreState({ signIn: jest.fn().mockResolvedValue({ requires2fa: false }), googleLogin: jest.fn() });
     mockUseRouter.mockReturnValue({ replace: jest.fn() });
 
     render(<SignInPage />);
@@ -97,7 +97,7 @@ describe('SignInPage', () => {
   });
 
   it('signs in successfully and redirects', async () => {
-    const signIn = jest.fn().mockResolvedValue(undefined);
+    const signIn = jest.fn().mockResolvedValue({ requires2fa: false });
     setAuthStoreState({ signIn, googleLogin: jest.fn() });
     const replace = jest.fn();
     mockUseRouter.mockReturnValue({ replace });
@@ -106,12 +106,12 @@ describe('SignInPage', () => {
 
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
     await waitFor(() => {
       expect(signIn).toHaveBeenCalledWith({ email: 'user@example.com', password: 'password123', captcha_token: undefined });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/projects');
   });
 
   it('shows an error when sign in fails', async () => {
@@ -123,7 +123,7 @@ describe('SignInPage', () => {
 
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
     expect(await screen.findByText('Invalid')).toBeInTheDocument();
   });
@@ -137,9 +137,9 @@ describe('SignInPage', () => {
 
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
-    expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    expect(await screen.findByText('Credenciales inválidas')).toBeInTheDocument();
   });
 
   it('shows default error when sign in error payload is missing', async () => {
@@ -151,14 +151,14 @@ describe('SignInPage', () => {
 
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
-    expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    expect(await screen.findByText('Credenciales inválidas')).toBeInTheDocument();
   });
 
   it('handles Google login success', async () => {
     const googleLogin = jest.fn().mockResolvedValue(undefined);
-    setAuthStoreState({ signIn: jest.fn(), googleLogin });
+    setAuthStoreState({ signIn: jest.fn().mockResolvedValue({ requires2fa: false }), googleLogin });
     const replace = jest.fn();
     mockUseRouter.mockReturnValue({ replace });
     mockJwtDecode.mockReturnValue({
@@ -181,26 +181,26 @@ describe('SignInPage', () => {
         picture: 'pic.png',
       });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/projects');
   });
 
   it('shows an error when Google credential is missing', async () => {
     mockGoogleCredential = null;
-    setAuthStoreState({ signIn: jest.fn(), googleLogin: jest.fn() });
+    setAuthStoreState({ signIn: jest.fn().mockResolvedValue({ requires2fa: false }), googleLogin: jest.fn() });
     mockUseRouter.mockReturnValue({ replace: jest.fn() });
 
     render(<SignInPage />);
 
     await user.click(screen.getByRole('button', { name: 'Google Login' }));
 
-    expect(await screen.findByText('Google login failed')).toBeInTheDocument();
+    expect(await screen.findByText('No pudimos iniciar sesión con Google')).toBeInTheDocument();
   });
 
   it('shows error when Google login fails with response error', async () => {
     const googleLogin = jest
       .fn()
       .mockRejectedValue({ response: { data: { error: 'Google auth error' } } });
-    setAuthStoreState({ signIn: jest.fn(), googleLogin });
+    setAuthStoreState({ signIn: jest.fn().mockResolvedValue({ requires2fa: false }), googleLogin });
     mockUseRouter.mockReturnValue({ replace: jest.fn() });
     mockJwtDecode.mockReturnValue({
       email: 'google@example.com',
@@ -218,7 +218,7 @@ describe('SignInPage', () => {
 
   it('shows default error when Google login throws without response', async () => {
     const googleLogin = jest.fn().mockRejectedValue(new Error('boom'));
-    setAuthStoreState({ signIn: jest.fn(), googleLogin });
+    setAuthStoreState({ signIn: jest.fn().mockResolvedValue({ requires2fa: false }), googleLogin });
     mockUseRouter.mockReturnValue({ replace: jest.fn() });
     mockJwtDecode.mockReturnValue({
       email: 'google@example.com',
@@ -231,24 +231,24 @@ describe('SignInPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Google Login' }));
 
-    expect(await screen.findByText('Google login failed')).toBeInTheDocument();
+    expect(await screen.findByText('No pudimos iniciar sesión con Google')).toBeInTheDocument();
   });
 
   it('handles Google login error callback', async () => {
     mockGoogleError = true;
-    setAuthStoreState({ signIn: jest.fn(), googleLogin: jest.fn() });
+    setAuthStoreState({ signIn: jest.fn().mockResolvedValue({ requires2fa: false }), googleLogin: jest.fn() });
     mockUseRouter.mockReturnValue({ replace: jest.fn() });
 
     render(<SignInPage />);
 
     await user.click(screen.getByRole('button', { name: 'Google Login' }));
 
-    expect(await screen.findByText('Google login failed')).toBeInTheDocument();
+    expect(await screen.findByText('No pudimos iniciar sesión con Google')).toBeInTheDocument();
   });
 
   it('continues when jwt decode fails', async () => {
     const googleLogin = jest.fn().mockResolvedValue(undefined);
-    setAuthStoreState({ signIn: jest.fn(), googleLogin });
+    setAuthStoreState({ signIn: jest.fn().mockResolvedValue({ requires2fa: false }), googleLogin });
     const replace = jest.fn();
     mockUseRouter.mockReturnValue({ replace });
     mockJwtDecode.mockImplementation(() => {
@@ -268,6 +268,6 @@ describe('SignInPage', () => {
         picture: undefined,
       });
     });
-    expect(replace).toHaveBeenCalledWith('/dashboard');
+    expect(replace).toHaveBeenCalledWith('/projects');
   });
 });

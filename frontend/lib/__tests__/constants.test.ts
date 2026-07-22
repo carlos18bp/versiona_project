@@ -1,18 +1,8 @@
 import { describe, it, expect } from '@jest/globals';
 
-import { API_ENDPOINTS, COOKIE_KEYS, PAGINATION, ROUTES } from '../constants';
+import { COOKIE_KEYS, PAGINATION, ROUTES } from '../constants';
 
 describe('constants', () => {
-  describe('API_ENDPOINTS', () => {
-    it('BLOG_DETAIL returns the correct API path for a given id', () => {
-      expect(API_ENDPOINTS.BLOG_DETAIL(42)).toBe('/blogs-data/42/');
-    });
-
-    it('PRODUCT_DETAIL returns the correct API path for a given id', () => {
-      expect(API_ENDPOINTS.PRODUCT_DETAIL(7)).toBe('/products/7/');
-    });
-  });
-
   describe('ROUTES', () => {
     it('exposes HOME route as "/"', () => {
       expect(ROUTES.HOME).toBe('/');
@@ -24,6 +14,10 @@ describe('constants', () => {
 
     it('exposes DASHBOARD route', () => {
       expect(ROUTES.DASHBOARD).toBe('/dashboard');
+    });
+
+    it('exposes HELP route pointing to the manual', () => {
+      expect(ROUTES.HELP).toBe('/manual');
     });
   });
 
@@ -38,8 +32,8 @@ describe('constants', () => {
   });
 
   describe('PAGINATION', () => {
-    it('exposes DEFAULT_PAGE_SIZE as 20', () => {
-      expect(PAGINATION.DEFAULT_PAGE_SIZE).toBe(20);
+    it('exposes DEFAULT_PAGE_SIZE matching the DRF page size', () => {
+      expect(PAGINATION.DEFAULT_PAGE_SIZE).toBe(25);
     });
   });
 });

@@ -1,0 +1,159 @@
+"""Seal endpoints: happy paths + permission matrices (docs/audit/03 D4/D5 P)."""
+
+from pathlib import Path
+
+import pytest
+
+from documents.services import storage_service, version_service
+from reviews.services import seal_service
+
+TESTDATA = Path(__file__).resolve().parents[3] / 'testdata' / 'pdfs'
+
+
+@pytest.fixture(autouse=True)
+def _test_env(settings, tmp_path):
+    settings.DJANGO_ENV = 'test'
+    settings.SEAL_SIGNING_KEY_PATH = str(tmp_path / 'seal_key.pem')
+
+
+@pytest.fixture
+def analyzed_v1(versiona_context):
+    editor = versiona_context.users['editor']
+    document = version_service.create_document(versiona_context.project, 'Sellable', editor)
+    intent = version_service.create_upload_intent(document, editor)
+    storage_service.put_bytes(
+        intent.key, (TESTDATA / 'contrato_v1.pdf').read_bytes(), 'application/pdf'
+    )
+    version, _ = version_service.complete_upload(document, intent.upload_id, 'v1', editor)
+    return versiona_context, document, version
+
+
+def seals_url(version):
+    return f'/api/versions/{version.public_id}/seals/'
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D4-F01')
+def test_reviewer_places_a_section_seal_via_api(client_as, analyzed_v1):
+    _, _, version = analyzed_v1
+
+    response = client_as('reviewer').post(
+        seals_url(version),
+        {'covers_all': False, 'section_keys': ['objeto-del-contrato']},
+        format='json',
+    )
+
+    assert response.status_code == 201
+    assert response.data['covered_keys'] == ['objeto-del-contrato']
+    assert response.data['is_active'] is True
+    assert response.data['key_id']
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D4-E02')
+def test_sealing_unknown_sections_is_rejected(client_as, analyzed_v1):
+    _, _, version = analyzed_v1
+
+    response = client_as('reviewer').post(
+        seals_url(version),
+        {'covers_all': False, 'section_keys': ['seccion-fantasma']},
+        format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'fantasma' in response.data['error']
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D4-E03')
+def test_double_active_seal_by_the_same_reviewer_is_rejected(client_as, analyzed_v1):
+    _, _, version = analyzed_v1
+    client = client_as('reviewer')
+    client.post(seals_url(version), {'covers_all': True}, format='json')
+
+    response = client.post(seals_url(version), {'covers_all': True}, format='json')
+
+    assert response.status_code == 409
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D4-F03')
+def test_verify_endpoint_returns_offline_verification_material(client_as, analyzed_v1):
+    context, _, version = analyzed_v1
+    seal = seal_service.create_seal(version, context.users['reviewer'], covers_all=True)
+
+    response = client_as('viewer').get(
+        f'{seals_url(version)}{seal.public_id}/verify/'
+    )
+
+    assert response.status_code == 200
+    assert response.data['signature_valid'] is True
+    assert response.data['binds_version_sha256'] is True
+    assert response.data['algorithm'] == 'Ed25519'
+    assert response.data['public_key']
+
+
+@pytest.mark.django_db
+def test_public_key_endpoint_serves_the_current_key(client_as, analyzed_v1):
+    from reviews.services import signing
+
+    response = client_as('viewer').get(f'/api/seal_keys/{signing.key_id()}/')
+
+    assert response.status_code == 200
+    assert response.data['public_key'] == signing.public_key_b64()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('actor, expected', [
+    pytest.param('reviewer', 201, id='d4-p01-reviewer'),
+    pytest.param('admin', 201, id='d4-p01-admin'),
+    pytest.param('editor', 404, id='d4-p02-editor-hidden'),
+    pytest.param('viewer', 404, id='d4-p02-viewer-hidden'),
+    pytest.param('anonymous', 401, id='d4-p03-anonymous'),
+    pytest.param('non_member', 404, id='d4-p04-non-member'),
+])
+def test_place_seal_permission_matrix(client_as, analyzed_v1, actor, expected):
+    _, _, version = analyzed_v1
+
+    response = client_as(actor).post(
+        seals_url(version), {'covers_all': True}, format='json'
+    )
+
+    assert response.status_code == expected
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('actor, expected', [
+    pytest.param('viewer', 200, id='d4-list-p01-viewer'),
+    pytest.param('anonymous', 401, id='d4-list-p03-anonymous'),
+    pytest.param('non_member', 404, id='d4-list-p04-non-member'),
+])
+def test_list_seals_permission_matrix(client_as, analyzed_v1, actor, expected):
+    _, _, version = analyzed_v1
+
+    response = client_as(actor).get(seals_url(version))
+
+    assert response.status_code == expected
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D5-F07')
+def test_seals_listing_includes_validity_records_of_incoming_version(client_as, analyzed_v1):
+    context, document, v1 = analyzed_v1
+    editor = context.users['editor']
+    seal_service.create_seal(v1, context.users['reviewer'],
+                             section_keys=['obligaciones-del-contratista'])
+    intent = version_service.create_upload_intent(document, editor)
+    storage_service.put_bytes(
+        intent.key, (TESTDATA / 'contrato_v2.pdf').read_bytes(), 'application/pdf'
+    )
+    v2, _ = version_service.complete_upload(document, intent.upload_id, 'v2', editor)
+
+    response = client_as('viewer').get(seals_url(v2))
+
+    assert response.status_code == 200
+    records = response.data['validity_records']
+    assert len(records) == 1
+    assert records[0]['decision'] == 'invalidated'
+    assert records[0]['reason_code'] == 'section_modified'
+    assert records[0]['seal']['reviewer_email'] == context.users['reviewer'].email

@@ -84,17 +84,9 @@ test.describe('Authentication', () => {
   test('should navigate to dashboard page', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
     await page.goto('/dashboard');
     await waitForPageLoad(page);
-    
+
     // Either redirected to sign-in or the dashboard is shown
     await expect(page).toHaveURL(/dashboard|sign-in/);
-  });
-
-  test('should navigate to backoffice page', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
-    await page.goto('/backoffice');
-    await waitForPageLoad(page);
-    
-    // Either redirected to sign-in or the backoffice is shown
-    await expect(page).toHaveURL(/backoffice|sign-in/);
   });
 
   test('should display sign-up page heading', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
@@ -102,7 +94,7 @@ test.describe('Authentication', () => {
     await waitForPageLoad(page);
 
     await expect(page).toHaveURL(/.*sign-up/);
-    await expect(page.getByRole('heading', { name: 'Create account' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Crear cuenta' })).toBeVisible();
   });
 
   test('should show all required sign-up form fields', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
@@ -114,7 +106,7 @@ test.describe('Authentication', () => {
     await expect(page.getByPlaceholder('Email')).toBeVisible();
     await expect(page.getByPlaceholder('Password', { exact: true })).toBeVisible();
     await expect(page.getByPlaceholder('Confirm Password')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Crear cuenta' })).toBeVisible();
   });
 
   test('should validate password mismatch on sign-up', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
@@ -128,10 +120,10 @@ test.describe('Authentication', () => {
     await page.getByPlaceholder('Password', { exact: true }).fill('password123');
     await page.getByPlaceholder('Confirm Password').fill('different456');
 
-    await page.getByRole('button', { name: 'Create account' }).click();
+    await page.getByRole('button', { name: 'Crear cuenta' }).click();
 
     // Should show password mismatch error and stay on sign-up page
-    await expect(page.getByText('Passwords do not match')).toBeVisible();
+    await expect(page.getByText('Las contraseñas no coinciden')).toBeVisible();
     await expect(page).toHaveURL(/.*sign-up/);
   });
 
@@ -155,7 +147,7 @@ test.describe('Authentication', () => {
     await waitForPageLoad(page);
 
     // Click forgot password link
-    const forgotLink = page.getByRole('link', { name: 'Forgot password?' });
+    const forgotLink = page.getByRole('link', { name: '¿Olvidaste tu contraseña?' });
     await expect(forgotLink).toBeVisible();
     await forgotLink.click();
     await page.waitForURL(/.*forgot-password/, { timeout: 10_000 });

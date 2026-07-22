@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_PREFIXES = ['/backoffice', '/dashboard'];
+const PROTECTED_PREFIXES = ['/dashboard', '/projects', '/org', '/settings', '/inbox', '/onboarding'];
 
 const AUTH_ROUTES = ['/sign-in', '/sign-up', '/forgot-password'];
 

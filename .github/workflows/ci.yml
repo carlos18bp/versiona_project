@@ -12,13 +12,64 @@ concurrency:
 
 jobs:
   # ───────────────────────────────────────────
-  # Backend — pytest (Django + SQLite)
+  # Backend — pytest (Django + PostgreSQL)
   # ───────────────────────────────────────────
   backend-tests:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: versiona
+          POSTGRES_PASSWORD: versiona-ci
+          POSTGRES_DB: versiona
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U versiona"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      minio:
+        image: minio/minio:edge-cicd
+        env:
+          MINIO_ROOT_USER: versiona-minio
+          MINIO_ROOT_PASSWORD: versiona-minio-ci
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DJANGO_DB_ENGINE: django.db.backends.postgresql
+      DJANGO_DB_NAME: versiona
+      DB_USER: versiona
+      DB_PASSWORD: versiona-ci
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      REDIS_URL: redis://127.0.0.1:6379/1
+      CELERY_TASK_ALWAYS_EAGER: '1'
+      DJANGO_SECRET_KEY: ci-only-secret
+      AWS_S3_ENDPOINT_URL: http://127.0.0.1:9000
+      AWS_ACCESS_KEY_ID: versiona-minio
+      AWS_SECRET_ACCESS_KEY: versiona-minio-ci
+      AWS_STORAGE_BUCKET_NAME: versiona-media
 
     steps:
       - name: Checkout
@@ -30,6 +81,9 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
+
+      - name: Install OCR system deps (tesseract + spa + ghostscript for ocrmypdf)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa ghostscript
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -44,19 +98,27 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq pkg-config default-libmysqlclient-dev
-
       - name: Install Python dependencies
         run: pip install -r requirements.txt
+
+      - name: Create MinIO bucket
+        run: |
+          curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+          chmod +x /usr/local/bin/mc
+          mc alias set ci http://127.0.0.1:9000 versiona-minio versiona-minio-ci
+          mc mb --ignore-existing ci/versiona-media
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
 
       - name: Run migrations
         run: python manage.py migrate --no-input
 
       - name: Run pytest with coverage
-        run: pytest -v --tb=short --junitxml=pytest-results.xml --cov=base_feature_app --cov-branch --cov-report=json:coverage-backend.json --cov-report=xml:coverage-backend.xml
+        run: pytest -v --tb=short --junitxml=pytest-results.xml --cov=accounts --cov=core --cov=orgs --cov=projects --cov=documents --cov=engine --cov=comparisons --cov=audit --cov=versiona_project --cov-branch --cov-report=json:coverage-backend.json --cov-report=xml:coverage-backend.xml
+
+      - name: Engine module coverage gate (95% on the D5 ground)
+        run: python3 "$GITHUB_WORKSPACE/scripts/ci/coverage-module-gate.py" coverage-backend.json >> "$GITHUB_STEP_SUMMARY"
 
       - name: Backend coverage summary
         if: always()
@@ -132,6 +194,73 @@ jobs:
       run:
         working-directory: frontend
 
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: versiona
+          POSTGRES_PASSWORD: versiona-ci
+          POSTGRES_DB: versiona
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U versiona"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      minio:
+        image: minio/minio:edge-cicd
+        env:
+          MINIO_ROOT_USER: versiona-minio
+          MINIO_ROOT_PASSWORD: versiona-minio-ci
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports:
+          - 1025:1025
+          - 8025:8025
+        options: >-
+          --health-cmd "wget -q --spider http://localhost:8025/livez"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DJANGO_DB_ENGINE: django.db.backends.postgresql
+      DJANGO_DB_NAME: versiona
+      DB_USER: versiona
+      DB_PASSWORD: versiona-ci
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      REDIS_URL: redis://127.0.0.1:6379/1
+      CELERY_TASK_ALWAYS_EAGER: '1'
+      DJANGO_SECRET_KEY: ci-only-secret
+      AWS_S3_ENDPOINT_URL: http://127.0.0.1:9000
+      AWS_ACCESS_KEY_ID: versiona-minio
+      AWS_SECRET_ACCESS_KEY: versiona-minio-ci
+      AWS_STORAGE_BUCKET_NAME: versiona-media
+      DJANGO_EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
+      DJANGO_EMAIL_HOST: 127.0.0.1
+      DJANGO_EMAIL_PORT: '1025'
+      DJANGO_EMAIL_USE_TLS: 'false'
+      DJANGO_DEFAULT_FROM_EMAIL: versiona@localhost
+      MAILPIT_API: http://127.0.0.1:8025
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,20 +284,29 @@ jobs:
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq pkg-config default-libmysqlclient-dev
-
       - name: Create backend venv and install deps
         working-directory: backend
         run: |
           python -m venv venv
           venv/bin/pip install -r requirements.txt
 
+      - name: Create MinIO bucket
+        run: |
+          curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+          chmod +x /usr/local/bin/mc
+          mc alias set ci http://127.0.0.1:9000 versiona-minio versiona-minio-ci
+          mc mb --ignore-existing ci/versiona-media
+
       - name: Run backend migrations
         working-directory: backend
         run: venv/bin/python manage.py migrate --no-input
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install Playwright browsers with system deps
         run: npx playwright install --with-deps chromium
@@ -259,4 +397,3 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: coverage-report.md
-

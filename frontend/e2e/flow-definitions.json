@@ -1,269 +1,376 @@
 {
-  "version": "1.0.0",
-  "lastUpdated": "2026-02-24",
+  "version": "2.2.0",
+  "lastUpdated": "2026-07-22",
   "flows": {
     "home-loads": {
-      "name": "Home page loads",
+      "name": "Landing page loads",
       "module": "home",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P1",
-      "description": "Home page renders with main heading visible",
-      "expectedSpecs": 1
-    },
-    "home-to-blog": {
-      "name": "Navigate from home to blog detail",
-      "module": "home",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User clicks 'Read blogs' on home page and navigates to a blog detail",
-      "expectedSpecs": 1
-    },
-    "home-to-catalog": {
-      "name": "Navigate from home to catalog/product",
-      "module": "home",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User clicks 'Shop now' on home page and navigates to catalog then product detail",
-      "expectedSpecs": 1
-    },
-    "home-product-carousel": {
-      "name": "Navigate through product carousel",
-      "module": "home",
-      "roles": ["shared"],
-      "priority": "P3",
-      "description": "User clicks a product from the home page carousel and reaches the detail page",
+      "description": "Versiona landing renders the 'El Git de tus documentos' headline, dual CTA (public comparator + free signup with the 14-day Pro trial), how-it-works, honest features/tech sections, pricing preview, FAQ and the public header/footer",
       "expectedSpecs": 1
     },
     "auth-sign-in-form": {
       "name": "Sign-in form display and interaction",
       "module": "auth",
-      "roles": ["shared"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P2",
-      "description": "User navigates to sign-in page, sees form fields and can type in them",
-      "expectedSpecs": 1
-    },
-    "auth-login-invalid": {
-      "name": "Login with invalid credentials",
-      "module": "auth",
-      "roles": ["shared"],
-      "priority": "P1",
-      "description": "User submits invalid credentials and stays on sign-in page",
-      "expectedSpecs": 1
-    },
-    "auth-protected-redirect": {
-      "name": "Protected route redirect",
-      "module": "auth",
-      "roles": ["shared"],
-      "priority": "P1",
-      "description": "Unauthenticated user accessing /dashboard or /backoffice is redirected to sign-in",
-      "expectedSpecs": 1
-    },
-    "blog-list-view": {
-      "name": "View blog listing",
-      "module": "blog",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User views the /blogs page and sees blog cards",
-      "expectedSpecs": 1
-    },
-    "blog-detail-view": {
-      "name": "View blog detail",
-      "module": "blog",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User clicks a blog card and views the detail page with matching title",
-      "expectedSpecs": 1
-    },
-    "blog-detail-back": {
-      "name": "Navigate back from blog detail",
-      "module": "blog",
-      "roles": ["shared"],
-      "priority": "P3",
-      "description": "User uses browser back from blog detail and returns to blogs list",
-      "expectedSpecs": 1
-    },
-    "navigation-between-pages": {
-      "name": "Navigate between main sections",
-      "module": "navigation",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User navigates across home, catalog, blogs, checkout, and sign-in pages",
-      "expectedSpecs": 1
-    },
-    "navigation-header": {
-      "name": "Working header navigation",
-      "module": "navigation",
-      "roles": ["shared"],
-      "priority": "P3",
-      "description": "Header/nav element exists and contains navigation links",
-      "expectedSpecs": 1
-    },
-    "navigation-footer": {
-      "name": "Working footer",
-      "module": "navigation",
-      "roles": ["shared"],
-      "priority": "P4",
-      "description": "Footer element is visible on the home page",
-      "expectedSpecs": 1
-    },
-    "catalog-browse": {
-      "name": "Browse product catalog",
-      "module": "catalog",
-      "roles": ["shared"],
-      "priority": "P1",
-      "description": "User visits /catalog and sees product cards",
-      "expectedSpecs": 1
-    },
-    "catalog-product-detail": {
-      "name": "View product detail",
-      "module": "catalog",
-      "roles": ["shared"],
-      "priority": "P1",
-      "description": "User navigates to a product detail page and sees title and price",
-      "expectedSpecs": 1
-    },
-    "catalog-product-gallery": {
-      "name": "Product gallery images",
-      "module": "catalog",
-      "roles": ["shared"],
-      "priority": "P3",
-      "description": "Product detail page displays at least one image",
-      "expectedSpecs": 1
-    },
-    "catalog-back-navigation": {
-      "name": "Navigate back to catalog",
-      "module": "catalog",
-      "roles": ["shared"],
-      "priority": "P3",
-      "description": "User uses browser back from product detail and returns to /catalog",
-      "expectedSpecs": 1
-    },
-    "cart-add": {
-      "name": "Add product to cart",
-      "module": "cart",
-      "roles": ["shared"],
-      "priority": "P1",
-      "description": "User adds a product from detail page to cart; cart is not empty on checkout",
-      "expectedSpecs": 1
-    },
-    "cart-empty": {
-      "name": "Empty cart state",
-      "module": "cart",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "Checkout page shows 'Your cart is empty' when no items are in cart",
-      "expectedSpecs": 1
-    },
-    "cart-update-qty": {
-      "name": "Update product quantity in cart",
-      "module": "cart",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User updates the quantity input for a cart item",
-      "expectedSpecs": 1
-    },
-    "cart-remove": {
-      "name": "Remove product from cart",
-      "module": "cart",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User removes a product from cart and sees empty cart message",
-      "expectedSpecs": 1
-    },
-    "cart-subtotal": {
-      "name": "Cart subtotal calculation",
-      "module": "cart",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "Checkout page shows a visible Subtotal label when cart has items",
-      "expectedSpecs": 1
-    },
-    "cart-persist": {
-      "name": "Cart persists across page reloads",
-      "module": "cart",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "Cart items survive a full page reload",
-      "expectedSpecs": 1
-    },
-    "cart-multiple-products": {
-      "name": "Add multiple different products",
-      "module": "cart",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User adds two different products; both appear in checkout cart",
-      "expectedSpecs": 1
-    },
-    "checkout-form-display": {
-      "name": "Checkout form display",
-      "module": "checkout",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "Checkout page renders with form fields visible",
-      "expectedSpecs": 1
-    },
-    "checkout-form-validation": {
-      "name": "Checkout form required field validation",
-      "module": "checkout",
-      "roles": ["shared"],
-      "priority": "P1",
-      "description": "Submit button is disabled when checkout form is empty",
-      "expectedSpecs": 1
-    },
-    "checkout-form-fill": {
-      "name": "Accept valid checkout data",
-      "module": "checkout",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User fills all checkout form fields with valid data",
-      "expectedSpecs": 1
-    },
-    "purchase-complete-flow": {
-      "name": "Complete full purchase flow",
-      "module": "purchase",
-      "roles": ["shared"],
-      "priority": "P1",
-      "description": "End-to-end: home → catalog → product detail → add to cart → checkout → fill form → submit enabled",
-      "expectedSpecs": 1
-    },
-    "purchase-multiple-items": {
-      "name": "Checkout with multiple cart items",
-      "module": "purchase",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "User adds two products and both appear in checkout with subtotal visible",
-      "expectedSpecs": 1
-    },
-    "purchase-disabled-empty-cart": {
-      "name": "Checkout disabled when cart is empty",
-      "module": "purchase",
-      "roles": ["shared"],
-      "priority": "P2",
-      "description": "Even with form filled, checkout button is disabled when cart is empty",
-      "expectedSpecs": 1
-    },
-    "purchase-loading-state": {
-      "name": "Loading state during form submission",
-      "module": "purchase",
-      "roles": ["shared"],
-      "priority": "P3",
-      "description": "Submit button triggers loading/navigation state after click",
+      "description": "Sign-in page renders email/password fields and links to recovery",
       "expectedSpecs": 1
     },
     "auth-sign-up-form": {
       "name": "Sign-up form display and validation",
       "module": "auth",
-      "roles": ["guest"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P1",
-      "description": "User navigates to /sign-up and sees registration form with client-side validation",
+      "description": "Sign-up page renders and validates password confirmation",
+      "expectedSpecs": 1
+    },
+    "auth-login-invalid": {
+      "name": "Invalid credentials are rejected",
+      "module": "auth",
+      "roles": [
+        "shared"
+      ],
+      "priority": "P1",
+      "description": "Wrong credentials show an error and do not create a session",
+      "expectedSpecs": 1
+    },
+    "auth-protected-redirect": {
+      "name": "Protected routes redirect anonymous users",
+      "module": "auth",
+      "roles": [
+        "guest"
+      ],
+      "priority": "P1",
+      "description": "Visiting a protected route without a session redirects to sign-in",
       "expectedSpecs": 1
     },
     "auth-forgot-password-form": {
-      "name": "Forgot password form display",
+      "name": "Password recovery form",
       "module": "auth",
-      "roles": ["guest"],
+      "roles": [
+        "shared"
+      ],
       "priority": "P2",
-      "description": "User navigates to /forgot-password and sees email input and send code button",
+      "description": "Recovery page renders the two-step code + reset form",
+      "expectedSpecs": 1
+    },
+    "auth-sign-in-success": {
+      "name": "Sign-in happy path with a real session",
+      "module": "auth",
+      "roles": [
+        "shared"
+      ],
+      "priority": "P1",
+      "description": "Valid credentials create a real session (cookies set) and land on /projects directly (no /dashboard hop); header shows Panel/Salir",
+      "expectedSpecs": 1,
+      "knownGaps": "Closed in It1 by the storageState harness + session spec"
+    },
+    "auth-sign-out": {
+      "name": "Sign out ends the session",
+      "module": "auth",
+      "roles": [
+        "user"
+      ],
+      "priority": "P2",
+      "description": "Authenticated user presses Salir; cookies are cleared and protected routes redirect again",
+      "expectedSpecs": 1,
+      "knownGaps": "Closed in It1 by the session spec"
+    },
+    "auth-admin-login-handoff": {
+      "name": "Django admin impersonation handoff",
+      "module": "auth",
+      "roles": [
+        "staff"
+      ],
+      "priority": "P3",
+      "description": "/admin-login consumes access/refresh/redirect query params, stores tokens and redirects",
+      "expectedSpecs": 1,
+      "knownGaps": "Unit-tested only; E2E needs crafted tokens (low priority)"
+    },
+    "help-manual-browse": {
+      "name": "Browse the interactive help",
+      "module": "home",
+      "roles": [
+        "shared"
+      ],
+      "priority": "P3",
+      "description": "/manual renders Versiona help sections and fuzzy search finds a process",
+      "expectedSpecs": 1,
+      "knownGaps": "No spec yet — nice-to-have"
+    },
+    "a1-onboarding-wow": {
+      "name": "A1 - Sign-up and first wow moment",
+      "module": "onboarding",
+      "roles": [
+        "guest"
+      ],
+      "priority": "P1",
+      "description": "New user signs up, names their org, the sample project seeds, and they see a working comparison in under 5 minutes without uploading anything (docs/plan/01 A1)",
+      "expectedSpecs": 1
+    },
+    "a2-invite-team": {
+      "name": "A2 - Invite the team and assign roles",
+      "module": "org",
+      "roles": [
+        "admin"
+      ],
+      "priority": "P1",
+      "description": "Admin invites an email with a role; invitee accepts and lands directly on the project (docs/plan/01 A2)",
+      "expectedSpecs": 1
+    },
+    "b1-create-project": {
+      "name": "B1 - Create a project in 30 seconds",
+      "module": "projects",
+      "roles": [
+        "editor"
+      ],
+      "priority": "P1",
+      "description": "Member creates a project with name only and lands on the empty project with the upload dropzone (docs/plan/01 B1)",
+      "expectedSpecs": 1
+    },
+    "b2-projects-board": {
+      "name": "B2 - Projects board with states, filters and search",
+      "module": "projects",
+      "roles": [
+        "viewer"
+      ],
+      "priority": "P2",
+      "description": "Board shows derived states, filters by state and searches by name and content (docs/plan/01 B2)",
+      "expectedSpecs": 1
+    },
+    "b3-project-settings": {
+      "name": "B3 - Edit project configuration (never retroactive)",
+      "module": "projects",
+      "roles": [
+        "admin"
+      ],
+      "priority": "P2",
+      "description": "Admin edits checklist/section owners/approval rules creating a new config version (docs/plan/01 B3)",
+      "expectedSpecs": 1
+    },
+    "c1-upload-first": {
+      "name": "C1 - Upload the first document",
+      "module": "documents",
+      "roles": [
+        "editor"
+      ],
+      "priority": "P1",
+      "description": "Editor drags a PDF; analysis indexes sections and version 1 shows its traffic light (docs/plan/01 C1)",
+      "expectedSpecs": 1
+    },
+    "c2-upload-version": {
+      "name": "C2 - Upload a new version (the commit)",
+      "module": "documents",
+      "roles": [
+        "editor"
+      ],
+      "priority": "P1",
+      "description": "Editor uploads a re-delivery with a message; within seconds sees what changed, check deltas and affected seals (docs/plan/01 C2)",
+      "expectedSpecs": 1
+    },
+    "c3-history": {
+      "name": "C3 - Browse the version history",
+      "module": "documents",
+      "roles": [
+        "viewer"
+      ],
+      "priority": "P2",
+      "description": "Timeline shows author/date/message per version, downloads via signed URL and jumps to comparison (docs/plan/01 C3)",
+      "expectedSpecs": 1
+    },
+    "d1-request-review": {
+      "name": "D1 - Request a review (the pull request)",
+      "module": "review",
+      "roles": [
+        "editor",
+        "reviewer"
+      ],
+      "priority": "P1",
+      "description": "Author opens a review request; reviewers are assigned from section owners and see it in their inbox (docs/plan/01 D1)",
+      "expectedSpecs": 1
+    },
+    "d2-assisted-review": {
+      "name": "D2 - Review with assistance (already reviewed by you)",
+      "module": "review",
+      "roles": [
+        "reviewer"
+      ],
+      "priority": "P1",
+      "description": "Reviewer sees traffic light and change summary first, jumps to changed sections, unchanged-since-my-seal sections are marked (docs/plan/01 D2)",
+      "expectedSpecs": 1
+    },
+    "d3-anchored-observations": {
+      "name": "D3 - Anchored observations with state",
+      "module": "review",
+      "roles": [
+        "reviewer",
+        "editor"
+      ],
+      "priority": "P1",
+      "description": "Reviewer selects a page zone and comments; thread transitions open/answered/resolved and survives across versions (docs/plan/01 D3)",
+      "expectedSpecs": 1
+    },
+    "d4-seal-approve": {
+      "name": "D4 - Approve with a seal",
+      "module": "review",
+      "roles": [
+        "reviewer"
+      ],
+      "priority": "P1",
+      "description": "Reviewer seals in one click; with all required seals the version freezes as approved (docs/plan/01 D4)",
+      "expectedSpecs": 1
+    },
+    "d5-selective-invalidation": {
+      "name": "D5 - Re-delivery and selective invalidation (the jewel)",
+      "module": "review",
+      "roles": [
+        "editor",
+        "reviewer",
+        "admin"
+      ],
+      "priority": "P1",
+      "description": "New version invalidates only seals over changed sections, preserves the rest with validity records, and notifies only affected reviewers (docs/plan/01 D5; queen test docs/plan/06 SS5.4)",
+      "expectedSpecs": 1
+    },
+    "e1-compare": {
+      "name": "E1 - Compare any two versions (star screen)",
+      "module": "compare",
+      "roles": [
+        "viewer"
+      ],
+      "priority": "P1",
+      "description": "Side-by-side with highlights, modified-section list matching the fixture truth table, and summary view (docs/plan/01 E1)",
+      "expectedSpecs": 2
+    },
+    "e3-configurable-checks": {
+      "name": "E3 - Configure and run checks (traffic light with evidence)",
+      "module": "compare",
+      "roles": [
+        "admin"
+      ],
+      "priority": "P2",
+      "description": "Admin adds a check; next version runs it and shows evidence navigable to the page (docs/plan/01 E3)",
+      "expectedSpecs": 1
+    },
+    "f1-billing": {
+      "name": "F1 - Plan limits and upgrade path (contact - no online payment)",
+      "module": "billing",
+      "roles": [
+        "owner"
+      ],
+      "priority": "P2",
+      "description": "Free org hits a plan limit (402 + upgrade flag) and gets the reusable upgrade dialog linking to /precios; Pro beyond the trial is activated by contact",
+      "expectedSpecs": 1,
+      "knownGaps": "Wompi/online checkout not shipped - upgrade is manual via hola@versiona.app; every new signup auto-starts a 14-day Pro trial"
+    },
+    "c4-delete-draft": {
+      "name": "C4 - Delete a draft version (trash + restore)",
+      "module": "documents",
+      "roles": [
+        "editor"
+      ],
+      "priority": "P2",
+      "description": "Latest draft version goes to the trash with two-step confirmation, shows a tombstone and can be restored (docs/audit/03 C4)",
+      "expectedSpecs": 1
+    },
+    "a3-account-security": {
+      "name": "A3 - 2FA and active sessions",
+      "module": "auth",
+      "roles": [
+        "user"
+      ],
+      "priority": "P2",
+      "description": "TOTP enrolment, challenge on login and session revocation (docs/audit/03 A3)",
+      "expectedSpecs": 1
+    },
+    "e2-saved-comparisons": {
+      "name": "E2 - Saved comparisons",
+      "module": "compare",
+      "roles": [
+        "viewer"
+      ],
+      "priority": "P2",
+      "description": "Save a comparison with a name, list it per project, share an internal link (docs/audit/03 E2)",
+      "expectedSpecs": 1
+    },
+    "f2-usage-panel": {
+      "name": "F2 - Usage panel and preventive warnings",
+      "module": "billing",
+      "roles": [
+        "owner"
+      ],
+      "priority": "P2",
+      "description": "Usage vs plan limits with warnings at 80%, trial status line, reachable from the authed header (Plan y uso) and settings; upgrade CTA links to /precios with a contact fallback",
+      "expectedSpecs": 1
+    },
+    "e4-constancia": {
+      "name": "E4 - Exportable certificate",
+      "module": "review",
+      "roles": [
+        "admin"
+      ],
+      "priority": "P2",
+      "description": "Issue and download the validity certificate PDF of an approved version (docs/audit/03 E4)",
+      "expectedSpecs": 1
+    },
+    "master-e2e-journey": {
+      "name": "M1 - Master end-to-end journey",
+      "module": "master",
+      "roles": [
+        "guest",
+        "editor",
+        "reviewer"
+      ],
+      "priority": "P1",
+      "description": "Sign-up to certificate export in 16 UI-only steps (docs/audit/03 SS7)",
+      "expectedSpecs": 1
+    },
+    "b4-archive-delete": {
+      "name": "B4 - Archive or delete a project",
+      "module": "projects",
+      "roles": [
+        "admin"
+      ],
+      "priority": "P2",
+      "description": "Archiving locks writes; deletion needs the exact name, lands in the org trash and is restorable; sealed projects only archive (T4) (docs/audit/03 B4)",
+      "expectedSpecs": 1
+    },
+    "public-pricing": {
+      "name": "Public pricing page",
+      "module": "billing",
+      "roles": [
+        "guest"
+      ],
+      "priority": "P1",
+      "description": "/precios renders the 3-plan catalog from GET /api/public/plans/ (silent static fallback), COP prices, comparison table, trial badge on Pro and honest CTAs (signup / contact - no online checkout)",
+      "expectedSpecs": 1
+    },
+    "trial-visibility": {
+      "name": "Trial banner visibility",
+      "module": "billing",
+      "roles": [
+        "user"
+      ],
+      "priority": "P2",
+      "description": "Fresh signup auto-starts the 14-day Pro trial; the authed app shows a dismissable banner with days left linking to /precios and the usage panel shows the trial line",
+      "expectedSpecs": 1
+    },
+    "public-compare": {
+      "name": "Anonymous public PDF comparison",
+      "module": "public",
+      "roles": [
+        "guest"
+      ],
+      "priority": "P1",
+      "description": "Visitor compares two PDFs on /comparar without an account (10MB/100-page caps, no OCR), sees the truth-table result on a shareable 24h page and the persistent signup CTA",
       "expectedSpecs": 1
     }
   }

@@ -39,9 +39,19 @@ Code, Codex, Windsurf) comparten el mismo cuerpo de instrucciones general.
 <!-- fleet-base:end -->
 
 <!-- project-specific:begin -->
-## Seccion especifica del proyecto
+## Versiona — project specifics
 
-Esta seccion **NO** la toca el sync. Contenido del proyecto (arquitectura,
-comandos clave, decisiones puntuales).
+Versiona is "the Git of documents": version control, comparison and seal-based approval for
+PDFs. The full identity, conventions and lessons live in `CLAUDE.md` (project-specific
+section); the planning suite in `docs/plan/00…09` is the source of truth (flows A1…F1,
+invariants I1–I15, roadmap It0–It7 with D5 as the crown jewel).
+
+Key facts:
+- Stack: Django 6 + DRF + Celery / Next.js 16 + React 19 / PostgreSQL 16 + pgvector / Redis /
+  MinIO / mailpit. Native runtime — no Docker for now (DP-21).
+- Backend apps: `core`, `accounts` + skeleton bounded contexts (`docs/plan/03` §2).
+- Key commands: `backend/venv/bin/python backend/manage.py <cmd>` ·
+  `cd frontend && npm test` · `npx playwright test <spec>` (max 2 files) ·
+  `backend/venv/bin/python testdata/generate_pdfs.py` (fixtures — never edit PDFs by hand).
 
 <!-- project-specific:end -->

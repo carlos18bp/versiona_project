@@ -102,3 +102,9 @@ build/
 dist/
 *.egg-info/
 *.egg
+
+
+# Ed25519 seal signing key — NEVER tracked (dev auto-generates; prod via
+# SEAL_SIGNING_KEY_PATH + secret manager, DP-24)
+.seal_signing_key.pem
+*.pem

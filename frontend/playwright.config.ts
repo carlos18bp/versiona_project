@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  globalSetup: './e2e/global-setup.ts',
   timeout: 60_000, // Increased to 60s for slower environments
   expect: {
     timeout: 10_000, // Increased to 10s
@@ -19,7 +20,7 @@ export default defineConfig({
   webServer: [
     {
       command: '../backend/venv/bin/python ../backend/manage.py runserver 127.0.0.1:8000',
-      url: 'http://127.0.0.1:8000/api/blogs-data/',
+      url: 'http://127.0.0.1:8000/api/health/',
       reuseExistingServer: !process.env.CI,
       timeout: 180_000, // 3 minutes for server startup
       stdout: 'ignore',

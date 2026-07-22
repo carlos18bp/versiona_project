@@ -170,16 +170,22 @@ por ecosistema. La fuente de verdad es `vps-ops-toolkit/workflows/`.
 <!-- fleet-base:end -->
 
 <!-- project-specific:begin -->
-# Base Django React Next Feature — Claude Code Configuration
+# Versiona — Claude Code Configuration
 
 ## Project Identity
 
-- **Name**: Base Django React Next Feature (Template project)
-- **Domain**: N/A (template — not deployed to production)
-- **Stack**: Django + DRF (backend) / Next.js + React + TypeScript (frontend) / MySQL 8 / Redis / Huey
-- **Server path**: `/home/ryzepeck/webapps/base_django_react_next_feature_staging` (staging only)
-- **Services**: `base_django_react_next_feature_staging` (Gunicorn), `base_django_react_next_feature-staging-huey`
-- **Note**: This is a **template project** used as the starting point for new Django+Next.js projects
+- **Name**: Versiona — "the Git of documents" (SaaS: version control, comparison and
+  seal-based approval for PDFs)
+- **Domain**: TBD (deployment details deferred post-MVP — DP-21/DP-22)
+- **Stack**: Django 6 + DRF + **Celery** (backend) / Next.js 16 + React 19 + TypeScript
+  (frontend) / **PostgreSQL 16 + pgvector** / Redis / **MinIO** (S3) / mailpit (dev SMTP)
+- **Runtime**: native processes, NO Docker for now (operator decision DP-21); dev on this VPS
+- **Repo path**: `/home/ryzepeck/webapps/versiona_project`
+- **Planning suite (source of truth)**: `docs/plan/00-vision.md` … `09-roadmap-ejecucion.md` —
+  every feature maps to an artifact flow id (A1…F1) and follows the vertical-iteration
+  roadmap (It0 bootstrap done; next: It1 document core C1/C2/C3/B1)
+- **Crown jewel**: flow D5 (selective seal invalidation) — protected by invariants I1–I15
+  (`docs/plan/02-modelo-datos.md` §5); never trade it away
 
 ---
 
@@ -481,8 +487,13 @@ Focus particularly on `tasks/active_context.md` and `tasks/tasks_plan.md` as the
 
 ## Directory Structure
 
-- Backend: `content/` Django app, `base_feature_project/` Django project
-- Frontend: `app/` (Next.js App Router), `components/`, `lib/stores/`, `e2e/`
+- Backend (`backend/`): Django project `versiona_project/` (settings split, celery.py, tasks)
+  + bounded-context apps (`docs/plan/03` §2): `core` (mixins, admin site, staging banner),
+  `accounts` (auth), and skeletons `orgs`, `projects`, `documents`, `reviews`,
+  `observations`, `checks`, `comparisons`, `engine`, `notifications`, `billing`, `audit`
+- Frontend (`frontend/`): `app/` (Next.js App Router), `components/` (+ `components/ui/`
+  kit), `lib/stores/` (Zustand), `e2e/` (Playwright + flow-definitions.json)
+- Test fixtures: `testdata/` (deterministic PDFs + generator — truth table in its README)
 
 ---
 
@@ -510,49 +521,43 @@ Full reference: `docs/TESTING_QUALITY_STANDARDS.md`
 
 ---
 
-## Lessons Learned — Base Django React Next Feature
+## Lessons Learned — Versiona
 
 ### Architecture Patterns
 
-#### Content Storage: Structured JSON over CMS
-- Structured JSON storage for content (JSONField pattern)
+#### Bounded contexts, not a monolith app
+- One Django app per context (`docs/plan/03` §2); models split under `<app>/models/`
+- Business logic in `<app>/services/`; views stay thin FBV wrappers (`@api_view`)
+- Shared mixins in `core.models.mixins`: `TimestampedModel` + `PublicIdModel` (UUIDv7 —
+  public ids in routes, never integer PKs)
 
-#### Single Django App: `content`
-- All models, views, serializers, and services live in the `content` app
-- Models are split into individual files under `content/models/`
+#### Immutability is the product
+- Sealed/analyzed versions never mutate (I2/I3); `Seal`/`SealValidityRecord` are
+  append-only (I4); D5 preserves a seal ONLY on exact normalized-hash equality (I7)
+- When in doubt between preserving and invalidating a seal: invalidate
 
-#### Service Layer Pattern
-- Business logic lives in `content/services/`, not in views
-- Views are thin FBV wrappers that call service methods
+#### Celery conventions
+- Broker/results on Redis; queues `default` / `engine_light` / `engine_heavy`
+- Periodic tasks declared statically in `settings.CELERY_BEAT_SCHEDULE` (no
+  django-celery-beat app — fewer Django-6 compat risks, same behavior)
+- Dev/tests run eager (`CELERY_TASK_ALWAYS_EAGER=1`, mirrors the old Huey immediate mode)
+
+#### Deterministic fixtures as contracts
+- `testdata/generate_pdfs.py` produces byte-reproducible PDFs; the v1→v2 truth table IS the
+  assertion contract for the engine, D5 and E2E — regenerate only via script + README update
 
 ### Code Style & Conventions
-
-#### Bilingual Content Pattern
-- Models have paired fields: `title_en`/`title_es`, `content_json_en`/`content_json_es`, etc.
-- Frontend reads the appropriate field based on current locale
-
-### Email System
-
-#### Template Registry Pattern
-- All emails defined in `EmailTemplateRegistry` with default content
-- Admin can override content via `EmailTemplateConfig` model
-
-#### 24h Cooldown Rule
-- `last_automated_email_at` field tracks last automated email
-- All automated email tasks check this before sending
-- Manual sends bypass the cooldown
-
-### Proposal System
-
-- 12 section types defined in `ProposalSection.SectionType` choices with unique constraint
-- Heat Score (1-10): pre-computed and cached
-- 20+ change log types tracked
+- UI copy Spanish-first (DP-17); code identifiers English; glossary in `docs/plan/00` governs
+  names (Seal, DocumentVersion, SealValidityRecord…)
+- Non-members get 404 (never 403) on tenant objects (I12)
 
 ---
 
-## Error Documentation — Base Django React Next Feature
+## Error Documentation — Versiona
 
-No documented errors (clean template).
+No resolved incidents yet. Known template debts are tracked in `tasks/tasks_plan.md`
+(pre-existing `tsc` error in `lib/services/__tests__/http.test.ts`, template ESLint errors in
+auth pages/scripts).
 
 ---
 
