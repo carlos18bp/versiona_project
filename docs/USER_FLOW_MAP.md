@@ -28,6 +28,12 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 
 ## Module Index
 
+> **Status governance (2026-07-22)**: since It1 the authoritative status per flow is
+> `frontend/e2e/flow-definitions.json` (v2.2.0, 36 flows) + the flow-coverage CI report;
+> the audit trail lives in `docs/audit/`. Every flow below is **Implemented** and E2E
+> covered unless its row says otherwise — the per-iteration "Planned (ItN)" labels are
+> historical.
+
 | Flow ID | Name | Module | Priority | Roles | Frontend Route | Status |
 |---------|------|--------|----------|-------|----------------|--------|
 | `home-loads` | Landing page loads | home | P1 | shared | `/` | Implemented |
@@ -36,8 +42,8 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 | `auth-login-invalid` | Invalid credentials rejected | auth | P1 | shared | `/sign-in` | Implemented |
 | `auth-protected-redirect` | Protected routes redirect | auth | P1 | guest | `/dashboard` | Implemented |
 | `auth-forgot-password-form` | Password recovery | auth | P2 | shared | `/forgot-password` | Implemented |
-| `auth-sign-in-success` | Sign-in happy path (real session) | auth | P1 | shared | `/sign-in` → `/dashboard` | **Gap** — spec lands with It1 storageState setup |
-| `auth-sign-out` | Sign out ends the session | auth | P2 | user | header (Salir) | **Gap** — depends on `auth-sign-in-success` |
+| `auth-sign-in-success` | Sign-in happy path (real session) | auth | P1 | shared | `/sign-in` → `/projects` (direct, It9) | Implemented (It1) |
+| `auth-sign-out` | Sign out ends the session | auth | P2 | user | header (Salir) | Implemented (It1) |
 | `auth-admin-login-handoff` | Django admin impersonation handoff | auth | P3 | staff | `/admin-login` | Gap — unit-tested only |
 | `help-manual-browse` | Browse the interactive help | home | P3 | shared | `/manual` | Gap — nice-to-have |
 | `a1-onboarding-wow` | A1 Sign-up and first wow | onboarding | P1 | guest | `/onboarding` | Planned (It6) |
@@ -55,7 +61,17 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 | `d5-selective-invalidation` | D5 Selective invalidation | review | P1 | system/coordinator | seals panel + `/inbox` | Planned (It3) |
 | `e1-compare` | E1 Compare two versions | compare | P1 | viewer | `.../compare/[base]/[target]` | Planned (It2) |
 | `e3-configurable-checks` | E3 Configurable checks | compare | P2 | admin | settings + version viewer (Checks tab) | Planned (It5) |
-| `f1-billing` | F1 Plan and payment | billing | P2 | owner | `/org/settings` (Billing tab) | Planned (It7) |
+| `f1-billing` | F1 Plan limits + upgrade path (contact) | billing | P2 | owner | 402 sites → UpgradeDialog → `/precios` | Implemented (It7/It9 — no online checkout) |
+| `f2-usage-panel` | F2 Usage panel + warnings + trial line | billing | P2 | member | `/org/usage` (header "Plan y uso") | Implemented (It7/It9) |
+| `c4-delete-draft` | C4 Delete a draft version | documents | P2 | editor | version timeline | Implemented (It1) |
+| `b4-archive-delete` | B4 Archive/delete a project | projects | P2 | admin | project settings + `/org/trash` | Implemented (It1) |
+| `a3-account-security` | A3 TOTP 2FA + sessions | auth | P2 | user | `/settings` (Seguridad) | Implemented (It6) |
+| `e2-saved-comparisons` | E2 Saved comparisons | compare | P2 | viewer | compare view + project panel | Implemented (It7) |
+| `e4-constancia` | E4 Exportable certificate | review | P2 | admin | version viewer (Constancias) | Implemented (It7) |
+| `master-e2e-journey` | Master journey (16 steps, 3 users) | master | P1 | all | end-to-end | Implemented (It8) |
+| `public-pricing` | Public pricing page | billing | P1 | guest | `/precios` | Implemented (It9) |
+| `trial-visibility` | Trial banner + days left | billing | P2 | user | global banner + `/org/usage` | Implemented (It9) |
+| `public-compare` | Anonymous public PDF comparison | public | P1 | guest | `/comparar` → `/comparar/[id]` | Implemented (It9) |
 
 ---
 
