@@ -26,6 +26,9 @@ const parser = require('@babel/parser');
 
 const LIFECYCLE_HOOKS = new Set(['beforeEach', 'afterEach', 'beforeAll', 'afterAll']);
 
+// Member calls on `test`/`it` that configure or annotate but do NOT declare a test.
+const NON_TEST_MEMBERS = new Set(['use', 'slow', 'setTimeout', 'step', 'info', 'fail', 'configure']);
+
 const GENERIC_TITLES = new Set([
   'it works',
   'should work',
@@ -69,8 +72,12 @@ function textFromLiteral(node) {
     return String(node.value);
   }
 
-  if (node.type === 'TemplateLiteral' && node.expressions.length === 0) {
-    return node.quasis.map((item) => item.value.cooked || item.value.raw || '').join('');
+  if (node.type === 'TemplateLiteral') {
+    // Render interpolations as a stable placeholder so templated titles stay
+    // non-empty and deterministic for the analyzer.
+    return node.quasis
+      .map((item) => item.value.cooked || item.value.raw || '')
+      .join('${…}');
   }
 
   return '';
@@ -121,6 +128,10 @@ function classifyCall(node) {
   const isSkipped = chain.includes('skip') || chain.includes('todo') || chain.includes('fixme');
   const isSerial = chain.includes('serial');
 
+  if (chain.includes('configure')) {
+    return null;
+  }
+
   if (root === 'describe' || (root === 'test' && hasDescribe)) {
     return {
       kind: 'describe',
@@ -132,7 +143,7 @@ function classifyCall(node) {
   }
 
   if (root === 'it' || root === 'test') {
-    if (chain.some((part) => LIFECYCLE_HOOKS.has(part))) {
+    if (chain.some((part) => LIFECYCLE_HOOKS.has(part) || NON_TEST_MEMBERS.has(part))) {
       return null;
     }
     return {

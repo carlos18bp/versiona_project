@@ -49,7 +49,7 @@ class ASTAnalyzer:
     # Assertion method names (pytest and unittest)
     ASSERTION_PATTERNS = {
         # pytest
-        "assert",
+        "assert", "raises",
         # unittest
         "assertEqual", "assertNotEqual", "assertTrue", "assertFalse",
         "assertIs", "assertIsNot", "assertIsNone", "assertIsNotNone",

@@ -71,7 +71,7 @@ describe('SealsPanel', () => {
     expect(screen.getByText('Esta versión aún no tiene sellos.')).toBeInTheDocument();
   });
 
-  it('[D4-F01] lists a seal with its coverage and validity badge', () => {
+  it('[D4-F01] lists a seal with its scope and validity badge', () => {
     setState({ seals: [seal] });
 
     render(<SealsPanel versionId="v1" canConfirmPlan={false} />);

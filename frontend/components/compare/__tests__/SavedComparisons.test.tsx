@@ -10,7 +10,7 @@ const mockGet = api.get as jest.Mock;
 describe('SavedComparisons (E2)', () => {
   beforeEach(() => mockGet.mockReset());
 
-  it('[E2-F01-ui] lists saved comparisons with their deep link', async () => {
+  it('[E2-F01-ui] lists saved comparisons with their direct link', async () => {
     mockGet.mockResolvedValueOnce({
       data: {
         results: [{
