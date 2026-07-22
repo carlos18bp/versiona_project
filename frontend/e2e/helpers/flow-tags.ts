@@ -54,3 +54,4 @@ export const B4_ARCHIVE_DELETE = ['@flow:b4-archive-delete', '@module:projects',
 export const PUBLIC_PRICING = ['@flow:public-pricing', '@module:billing', '@priority:P1'];
 export const TRIAL_VISIBILITY = ['@flow:trial-visibility', '@module:billing', '@priority:P2'];
 export const PUBLIC_COMPARE = ['@flow:public-compare', '@module:public', '@priority:P1'];
+export const F3_ORG_AUDIT = ['@flow:f3-org-audit', '@module:org', '@priority:P2'];

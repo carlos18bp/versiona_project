@@ -72,6 +72,7 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 | `public-pricing` | Public pricing page | billing | P1 | guest | `/precios` | Implemented (It9) |
 | `trial-visibility` | Trial banner + days left | billing | P2 | user | global banner + `/org/usage` | Implemented (It9) |
 | `public-compare` | Anonymous public PDF comparison | public | P1 | guest | `/comparar` → `/comparar/[id]` | Implemented (It9) |
+| `f3-org-audit` | F3 Org audit log + CSV export | org | P2 | owner/admin | `/org/audit` | Implemented (It7) — **spec gap registered 2026-07-22** |
 
 ---
 
