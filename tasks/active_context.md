@@ -5,6 +5,24 @@
 
 **Last updated**: 2026-07-23
 
+## Ronda de cobertura total de escenarios (2026-07-23)
+
+Segunda sesión del día, sobre el pipeline ya mergeado (PR #2). Objetivo: que cada
+user flow tenga prueba **en la capa que el mapa exhaustivo prescribe**, no solo un
+spec por flujo. Punto de partida: 170 ids en `docs/audit/03`, 64 sin rastro alguno.
+Resultado: **191 de 192 ids con prueba**; el único sin ella es `A1-L01` (métrica de
+activación, sin superficie testeable). 47 marks de trazabilidad + 55 tests backend
++ 24 RTL + 2 escenarios E2E; el mapa ganó §7.bis (superficies públicas It9, clases
+`T`/`S`) y §10.bis (15 divergencias mapa↔código auditadas).
+
+**Hallazgos de producto abiertos** (ninguno arreglado: ronda de solo-tests) —
+detalle en §10.bis: la bandera `degraded` nunca se persiste ⇒ DP-09 no fuerza
+coordinador · sin guarda de "rojo estructural" (una versión sin secciones sigue
+siendo sellable) · `Document.approved_version` es campo muerto · el DELETE de
+comparaciones guardadas ignora autoría y borra todas las filas · el salto de un
+check rojo a su sección no existe en la UI · sin API de reenvío de invitación ni
+de remoción de miembro · `onboarding_state` sin estado de fallo (500 al usuario).
+
 ## Current focus
 
 **Quality pipeline session (2026-07-23) on top of the merged It0–It9 product**: the 8
