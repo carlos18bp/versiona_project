@@ -13,6 +13,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
     'E4-F01 — sellar → aprobar → emitir constancia → PDF descargable',
     { tag: [...E4_CONSTANCIA, '@scenario:e4-f01', '@scenario:e4-f04'] },
     async ({ browser }) => {
+      test.setTimeout(360_000); // tres contextos + análisis reales + emisión del PDF
       // Editor sube; revisor sella todo (aprueba); admin emite
       const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });
       const editorPage = await editorContext.newPage();
@@ -82,9 +83,10 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
   );
 
   test(
-    'E2-F01 — guardar una comparación con nombre y reabrirla desde el proyecto',
-    { tag: [...E2_SAVED_COMPARISONS, '@scenario:e2-f01'] },
-    async ({ page }) => {
+    'E2-F01/E2-F02 — guardar una comparación con nombre, reabrirla y compartirla con otro miembro',
+    { tag: [...E2_SAVED_COMPARISONS, '@scenario:e2-f01', '@scenario:e2-f02'] },
+    async ({ page, browser }) => {
+      test.setTimeout(360_000); // dos análisis reales + apertura del enlace por otro miembro
       await openSeededProject(page);
       const title = uniqueName('Comparable');
       await uploadPdf(page, 'contrato_v1.pdf', { title, message: 'v1' });
@@ -115,6 +117,28 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
       await savedRow.click();
       await page.waitForURL(/\/compare\//, { timeout: 20_000 });
       await expect(page.getByTestId('compare-view')).toBeVisible({ timeout: 90_000 });
+      const sharedLink = page.url();
+      await page.getByRole('tab', { name: 'Resumen' }).click();
+      const summary = (await page.getByTestId('change-summary').innerText())
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      // E2-F02: otro miembro abre el enlace interno y ve la MISMA comparación
+      const viewerContext = await browser.newContext({
+        storageState: 'e2e/.auth/viewer.json',
+      });
+      const viewerPage = await viewerContext.newPage();
+      await viewerPage.goto(sharedLink);
+      await expect(viewerPage.getByTestId('compare-view')).toBeVisible({ timeout: 90_000 });
+      await viewerPage.getByRole('tab', { name: 'Resumen' }).click();
+      await expect
+        .poll(async () =>
+          (await viewerPage.getByTestId('change-summary').innerText())
+            .replace(/\s+/g, ' ')
+            .trim()
+        )
+        .toBe(summary);
+      await viewerContext.close();
     }
   );
 });

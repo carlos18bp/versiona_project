@@ -31,8 +31,9 @@ test.describe('F1+F2 — Límites del plan y consumo', () => {
 
   test(
     'F1-L01/F2-F01 — el trial arranca, al expirar el límite bloquea con diálogo y el panel avisa',
-    { tag: [...F1_BILLING, ...F2_USAGE_PANEL, '@scenario:f1-l01', '@scenario:f2-f01'] },
+    { tag: [...F1_BILLING, ...F2_USAGE_PANEL, '@scenario:f1-l01', '@scenario:f2-f01', '@scenario:f1-a01'] },
     async ({ page }) => {
+      test.setTimeout(360_000); // registro + análisis real + recorrido completo del upgrade
       const email = `free-${Date.now().toString(36)}@versiona.test`;
 
       // Registro + onboarding (siembra el proyecto ejemplo ⇒ 1 activo)
@@ -89,6 +90,15 @@ test.describe('F1+F2 — Límites del plan y consumo', () => {
       await page.getByTestId('settings-usage-link').click();
       await page.waitForURL(/org\/usage/);
       await expect(page.getByTestId('usage-panel')).toBeVisible({ timeout: 20_000 });
+
+      // F1-A01: el CTA lleva a una pantalla informativa, sin cobro en línea
+      await page.getByTestId('upgrade-plans-link').click();
+      await page.waitForURL(/\/precios/, { timeout: 20_000 });
+      await expect(page.getByTestId('plan-card-pro')).toBeVisible({ timeout: 45_000 });
+      await expect(page.getByTestId('plan-cta-pro')).toHaveAttribute('href', '/sign-up');
+      await expect(
+        page.getByText('Pago en línea próximamente — escríbenos para continuar en Pro.')
+      ).toBeVisible();
     }
   );
 });
