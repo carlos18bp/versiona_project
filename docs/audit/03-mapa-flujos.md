@@ -23,8 +23,13 @@ C 45 · D 58 · E 37 · F 26) + 11 heredados (U1–U9, H1–H2) + 1 máster (M1,
 | `L##` | Estado límite (vacíos, única versión, sellada, locked, límites de plan) | unit/integración + RTL (estado de pantalla) |
 | `C##` | Concurrencia | unit/integración transaccional; E2E solo `D4-C01` |
 | `X##` | Exclusión de alcance (la UI no expone / endpoint ausente) | verificación negativa en integración |
+| `T##` | Prueba/promoción temporal (trial Pro, It9) | integración + tarea beat; RTL para el aviso |
+| `S##` | Reuso puro de servicio (superficie pública sin tenencia) | unit sobre funciones puras |
 
 Anexos: `U1..U9` (auth heredado), `H1..H2` (landing/ayuda), `M1` (prueba maestra).
+Módulos añadidos en It9 (§7.bis): `PC` (comparador público anónimo), `PR` (precios
+públicos), `TR`/clase `T` (prueba Pro), más los anexos `MAN`/`ADM`/`HOME`/`A11Y`/`NTF`
+y el anexo de infraestructura `FD` (fake data — no es producto).
 
 ### 0.2 Reglas anti-explosión (vinculantes)
 
@@ -424,6 +429,57 @@ Anti-flake: correos únicos por corrida, purga de mailpit al inicio, positivo-an
 (paso 13 confirma ANTES de asertar el paso 15 negativo), esperas solo por estado visible/poll
 de job en UI, retries 2 en CI. **Criterio de misión cumplida: M1 verde dos corridas seguidas.**
 
+## 7.bis Módulo P · Superficie pública y freemium (It9) — añadido 2026-07-23
+
+Superficies nacidas después del snapshot original de este mapa. Rutas públicas
+(AllowAny): `/`, `/precios`, `/comparar[/:id]`, `/manual`, `/admin-login`.
+
+### PC — Comparador público anónimo · P1 · It9
+Rutas: `/comparar`, `/comparar/[id]` · Endpoints: `public/comparisons/` (POST/GET) ·
+Estado: **Implementado**
+
+| id | tipo | escenario | actor | crit |
+|---|---|---|---|---|
+| PC-F01 | F | Visitante sube dos PDF → ve la truth table y el CTA lo lleva a registro | guest | BLOQ |
+| PC-F02 | F | Resultado compartible por enlace durante su TTL (24 h) | guest | ENR |
+| PC-S01/S02 | S | Reuso puro del engine: `analyze_bytes(allow_ocr=False)` + `compare_snapshots` sin filas de tenencia | sistema | BLOQ |
+| PC-E01..E08 | E | No-PDF (415) · sobre-tamaño (413) · protegido/corrupto (400) · exceso de páginas (422) · escaneado → upsell OCR (422) · throttle (429) · id inexistente (404) · resultado caducado (410) | guest | BLOQ |
+| PC-P01..P03 | P | Endpoint AllowAny sin sesión ✓ · sin fugas de tenencia (cero filas Organization/Document) · limpieza de archivos efímeros | guest | BLOQ |
+
+### PR — Precios públicos · P1 · It9
+Ruta `/precios` · Endpoint `public/plans/` · Estado: **Implementado**
+
+| id | tipo | escenario | actor | crit |
+|---|---|---|---|---|
+| PR-F01 | F | Tres tarjetas con precios COP y badge de prueba en Pro | guest | BLOQ |
+| PR-F02 | F | Tabla comparativa con los límites honestos (1/20/∞ · 2/25/∞ · 30 días/∞) | guest | ENR |
+| PR-F03 | F | CTAs: gratis y Pro → registro; Enterprise → contacto (sin checkout) | guest | BLOQ |
+| PR-E01 | E | API caída → catálogo estático de respaldo, la página no se rompe | guest | ENR |
+
+### TR — Prueba Pro de 14 días (clase `T`) · P2 · It9
+Estado: **Implementado** (sin cobro en línea — Wompi diferido, F1-X01)
+
+| id | tipo | escenario | actor | crit |
+|---|---|---|---|---|
+| F1-T01 | T | Alta nueva estrena trial Pro de 14 días (sin tarjeta) | owner | BLOQ |
+| F1-T02 | T | Plan efectivo perezoso: override de consola > trial activo > gratis | sistema | BLOQ |
+| F1-T03 | T | Override de consola gana sobre trial (activo o expirado) | sistema | BLOQ |
+| F1-T04 | T | El trial levanta límites de proyectos/miembros/historial; al expirar vuelven | owner | BLOQ |
+| F1-T05..T07 | T | Beat diario: expira, avisa a T-3 y al vencer, una sola vez (idempotente); no avisa a orgs con override | sistema | ENR |
+| F2-T01 | T | El panel de uso publica el bloque de trial (on_trial, días restantes) | member | ENR |
+| TRIAL-F01 | T | Banner global con días restantes, enlace a /precios y descarte por sesión | user | ENR |
+
+### Anexo público adicional
+
+| id | superficie | escenario | prueba |
+|---|---|---|---|
+| MAN-F01/F02 | `/manual` | Secciones renderizadas · búsqueda difusa encuentra un proceso | `e2e/public/manual.spec.ts` |
+| ADM-F01/E01 | `/admin-login` | Handoff con tokens reales aterriza autenticado · sin tokens rebota a sign-in | `e2e/auth/admin-login.spec.ts` |
+| HOME-* | `/` | CTA dual · secciones honestas · nav a precios · footer de producto | `e2e/public/smoke.spec.ts` |
+| A11Y-01 | app | Cero violaciones críticas de axe en tablero/inbox/settings | `e2e/app/a11y.spec.ts` |
+| NTF-F01..F04, NTF-A01, NTF-E01 | notificaciones | Catálogo, preferencias por canal, silenciables vs obligatorias | `notifications/tests/` |
+| FD-01..FD-08 | infra (no-producto) | Fake data cumple reglas de negocio; delete respeta superusers y evidencia protegida | `accounts/tests/commands/` |
+
 ## 8. Anexo · Flujos heredados (auth/home) — estado actual
 
 | ID | Flujo (flow-definitions) | Estado | Prueba |
@@ -434,11 +490,11 @@ de job en UI, retries 2 en CI. **Criterio de misión cumplida: M1 verde dos corr
 | U4 | auth-sign-up-form | ✅ cubierto | `auth.spec.ts` |
 | U5 | sesión/refresh/validate | ✅ unit+integración | `test_jwt_endpoints.py`, `http.test.ts` |
 | U6 | auth-forgot-password-form | ✅ cubierto (forms) | `auth.spec.ts` |
-| U7 | auth-admin-login-handoff | ⚠️ solo unit (gap P3 registrado) | `admin-login/__tests__` |
-| U8 | auth-sign-in-success (sesión real) | ❌ gap P1 → lo cierra H02 en It1 | — |
-| U9 | auth-sign-out | ❌ gap P2 (depende de U8) | — |
+| U7 | auth-admin-login-handoff | ✅ cerrado 2026-07-23 (guard + handoff real) | `e2e/auth/admin-login.spec.ts` |
+| U8 | auth-sign-in-success (sesión real) | ✅ cerrado en It1 | `e2e/auth/session.spec.ts` |
+| U9 | auth-sign-out | ✅ cerrado en It1 | `e2e/auth/session.spec.ts` |
 | H1 | home-loads | ✅ cubierto | `smoke.spec.ts` |
-| H2 | help-manual-browse | ❌ gap P3 | — |
+| H2 | help-manual-browse | ✅ cerrado 2026-07-23 | `e2e/public/manual.spec.ts` |
 
 ## 9. Checklist de estados por pantalla (matriz obligatoria)
 
@@ -483,6 +539,34 @@ It1 (H05/H06) y su uso es punto 10 del DoD.
 4. **E4**: verificación online con QR (offline-only por ahora, T6).
 5. **T12**: `version.downloaded` de terceros visible solo a admin (adoptado).
 6. **D4-A02**: retirar sello — confirmado pre-aprobación only (DP-08).
+
+## 10.bis Divergencias mapa ↔ código (auditadas 2026-07-23)
+
+Escenarios donde el comportamiento real difiere de lo que este mapa asumía. El test
+sigue al CÓDIGO (asevera lo que hace hoy) y la fila queda anotada aquí para decidir
+después si se cambia el producto o el mapa.
+
+| id | lo que el mapa asumía | lo que hace el código | veredicto |
+|---|---|---|---|
+| F2-P01 | editor 403 en el panel de uso | cualquier MIEMBRO ve el uso; el no-miembro recibe 404 (I12) | decisión It7 — actualizar el mapa, no el producto |
+| A3-L01 | "cerrar todas las sesiones" incluye la actual | `revoke_other_sessions` conserva a propósito el refresh en curso | contrato real documentado; reabrir sólo si producto lo pide |
+| D2-A01 | saltar desde un check rojo a su sección | `ChecksPanel` pinta la evidencia como texto inerte; ni enlace ni botón; `scrollToPage` sólo lo alimenta `ObservationsPanel` | **brecha de producto** (el dato `evidence.page/section` ya viaja) — pendiente |
+| C2-L01 | "comparación deshabilitada **con explicación**" | CTA deshabilitado + `compare.pickTwo` genérico; no dice "este documento sólo tiene una versión" | media-brecha de copy — pendiente |
+| D1-L01 | copy "estás al día" | `notifications.empty` = "No tienes notificaciones" | equivalente; alinear mapa o diccionario |
+| A1-L01 | métrica de activación S1 (< 5 min) | analítica de producto, sin superficie testeable | **no-testeable**: sólo documento |
+| A2-A02 | reenviar invitación pendiente (mismo token) | no existe endpoint ni servicio; el rodeo (revocar + reinvitar) acuña un token NUEVO, contradiciendo la fila | clase X: verificación negativa |
+| A2-A04 | remover miembro ⇒ 404 en sus recursos | el 404 se cumple (I12) al desactivar la membresía, pero **no existe API de remoción**: `projects/{p}/members/` es GET-only (DELETE → 405) | clase X parcial: la invariante sí, la acción no |
+| A1-E01 | siembra falla ⇒ error con reintento en el wizard | `onboarding_state` no tiene estado de fallo (`no_org|pending|done`) y la vista sólo atrapa `DomainError` ⇒ un fallo de MinIO/engine escapa como 500. El reintento funciona de facto (transacción atómica deja `pending`) pero sin representación explícita | **brecha de producto** — pendiente |
+| D2-P01 | matriz de permisos de `progress/` | el endpoint no existe | clase X: verificación negativa |
+| B2-L02 / C3-L01 | — | el tablero pinta el paginador siempre; la línea de tiempo lo oculta con una sola página | inconsistencia menor de UX — pendiente |
+| D1-A01 | revisores auto-sugeridos por dueños de sección | `section_owners` sólo alimenta la matemática de aprobación (`seal_service`); `create_review_request` exige `reviewer_ids` y fija `scope='all'` | clase X: verificación negativa |
+| E2-A01 | renombrar/eliminar comparación guardada (autor o admin) | eliminar existe; renombrar NO. Además el DELETE **no distingue autor** (cualquier editor/reviewer borra la de otro) y **borra todas** las filas guardadas de esa comparación | clase X parcial + **2 bugs de producto** — pendientes |
+| D2-P01 | matriz 200/403/401/404 en `progress/` | ruta inexistente ⇒ la pata "anónimo 401" es inalcanzable; el sustituto real `versions/{v}/review_context/` se rige por rol de proyecto, no por asignación (no hay 403 de no-asignado en ningún punto) | clase X + regla sin punto de aplicación |
+| B1-A01 | crear proyecto desde plantilla de org ⇒ config v1 con checks | el serializer sólo acepta name/description; la única vía es `config/apply_template/` (copy-on-apply ⇒ config v2) | clase X: verificación negativa |
+| B4-A01 | purga anticipada del owner con 2ª confirmación + auditoría | no existe ruta de purga manual (el docstring de `trash_service` la promete); sólo `purge_expired` automática | clase X: verificación negativa |
+| C3-A02 | historial por sección (blame) | no hay endpoint; `versions/{v}/sections/` no lleva procedencia. El dato SÍ existe (`SectionVersion.body_hash` difiere entre versiones) ⇒ brecha sólo de API | clase X: verificación negativa |
+| C2-L02 | el puntero aprobado no se mueve | correcto, pero `Document.approved_version` es **campo muerto**: nadie lo escribe en producción (la aprobación vive en `DocumentVersion.is_approved`) ⇒ la garantía es vacua hoy | **bug latente** — el test fija el puntero en Arrange para que la aserción muerda cuando se cablee |
+| D5-L01 | pérdida total de secciones ⇒ todo sello invalidado **+ coordinador forzado + versión no sellable** | invalidación total ✅ (I7 intacto, cero `preserved`). PERO: (a) `persist_analysis` nunca persiste `degraded`, así que la regla DP-09 de forzar coordinador no dispara y el plan se resuelve en auto; (b) no existe guarda de "rojo estructural": una versión sin secciones sigue siendo sellable | ✅ lo crítico + **2 requisitos incumplidos** — pendientes |
 
 ## 11. Procedimiento de alta de escenario
 

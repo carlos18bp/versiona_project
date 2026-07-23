@@ -35,7 +35,7 @@ describe('PricingPlans', () => {
     expect(pro).toHaveTextContent(/149\.000/);
   });
 
-  it('renders the static fallback marker when the API fails', async () => {
+  it('[PR-E01] renders the static fallback marker when the API fails', async () => {
     mockGet.mockRejectedValueOnce(new Error('down'));
 
     render(<PricingPlans />);

@@ -5,8 +5,8 @@ test.describe('Precios públicos', () => {
   test.slow();
 
   test(
-    'PRICING-F01 — /precios muestra las tres tarjetas con precios COP',
-    { tag: [...PUBLIC_PRICING, '@scenario:pricing-f01'] },
+    'PR-F01 — /precios muestra las tres tarjetas con precios COP',
+    { tag: [...PUBLIC_PRICING, '@scenario:pr-f01'] },
     async ({ page }) => {
       await page.goto('/precios');
 
@@ -24,8 +24,8 @@ test.describe('Precios públicos', () => {
   );
 
   test(
-    'PRICING-F02 — la tabla comparativa muestra los límites honestos',
-    { tag: [...PUBLIC_PRICING, '@scenario:pricing-f02'] },
+    'PR-F02 — la tabla comparativa muestra los límites honestos',
+    { tag: [...PUBLIC_PRICING, '@scenario:pr-f02'] },
     async ({ page }) => {
       await page.goto('/precios');
       const table = page.getByTestId('pricing-table');
@@ -41,8 +41,8 @@ test.describe('Precios públicos', () => {
   );
 
   test(
-    'PRICING-F03 — los CTAs llevan a registro y contacto',
-    { tag: [...PUBLIC_PRICING, '@scenario:pricing-f03'] },
+    'PR-F03 — los CTAs llevan a registro y contacto',
+    { tag: [...PUBLIC_PRICING, '@scenario:pr-f03'] },
     async ({ page }) => {
       await page.goto('/precios');
 
