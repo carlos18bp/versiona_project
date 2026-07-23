@@ -17,6 +17,7 @@ import { TESTDATA, uniqueName } from '../helpers/versiona';
  */
 
 const BACKEND = path.resolve(__dirname, '../../../backend');
+const BACKEND_API = `http://127.0.0.1:${process.env.E2E_BACKEND_PORT ?? 8000}`;
 
 function upgradeOrgToPro(email: string) {
   execFileSync(
@@ -137,7 +138,7 @@ test.describe('M1 — La prueba maestra', () => {
           `http://127.0.0.1:8025/api/v1/message/${email.ID}`
         );
         const token = ((await detail.json()).Text as string).match(/\/invite\/([\w-]+)/)?.[1];
-        expect(token).toBeTruthy();
+        expect(token).toMatch(/^[\w-]{20,64}$/);
 
         const context = await browser.newContext();
         const page = await context.newPage();
@@ -261,19 +262,19 @@ test.describe('M1 — La prueba maestra', () => {
         editor.waitForEvent('popup', { timeout: 30_000 }),
         editor.getByTestId('issue-certificate').click(),
       ]);
-      expect(popup).toBeTruthy();
+      await popup.close();
 
       const versionId = v3Url.split('/versions/')[1].split(/[/?#]/)[0];
       const access = (await editorContext.cookies()).find(
         (cookie) => cookie.name === 'access_token'
       )!.value;
       const list = await editor.request.get(
-        `http://127.0.0.1:8000/api/versions/${versionId}/certificates/`,
+        `${BACKEND_API}/api/versions/${versionId}/certificates/`,
         { headers: { Authorization: `Bearer ${access}` } }
       );
       const certificate = (await list.json()).results[0];
       const download = await editor.request.get(
-        `http://127.0.0.1:8000/api/versions/${versionId}/certificates/${certificate.public_id}/download/`,
+        `${BACKEND_API}/api/versions/${versionId}/certificates/${certificate.public_id}/download/`,
         { headers: { Authorization: `Bearer ${access}` } }
       );
       const { url, snapshot } = await download.json();

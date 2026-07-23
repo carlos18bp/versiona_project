@@ -43,7 +43,7 @@ test.describe('A2 — Invitar al equipo', () => {
       );
       const body = (await detail.json()).Text as string;
       const token = body.match(/\/invite\/([\w-]+)/)?.[1];
-      expect(token).toBeTruthy();
+      expect(token).toMatch(/^[\w-]{20,64}$/);
 
       await inviteePage.goto(`/invite/${token}`);
       await expect(inviteePage.getByTestId('invite-landing')).toBeVisible({ timeout: 20_000 });

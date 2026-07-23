@@ -92,8 +92,7 @@
       ],
       "priority": "P3",
       "description": "/admin-login consumes access/refresh/redirect query params, stores tokens and redirects",
-      "expectedSpecs": 1,
-      "knownGaps": "Unit-tested only; E2E needs crafted tokens (low priority)"
+      "expectedSpecs": 1
     },
     "help-manual-browse": {
       "name": "Browse the interactive help",
@@ -103,8 +102,7 @@
       ],
       "priority": "P3",
       "description": "/manual renders Versiona help sections and fuzzy search finds a process",
-      "expectedSpecs": 1,
-      "knownGaps": "No spec yet — nice-to-have"
+      "expectedSpecs": 1
     },
     "a1-onboarding-wow": {
       "name": "A1 - Sign-up and first wow moment",
@@ -371,6 +369,17 @@
       ],
       "priority": "P1",
       "description": "Visitor compares two PDFs on /comparar without an account (10MB/100-page caps, no OCR), sees the truth-table result on a shareable 24h page and the persistent signup CTA",
+      "expectedSpecs": 1
+    },
+    "f3-org-audit": {
+      "name": "F3 - Org audit log with CSV export",
+      "module": "org",
+      "roles": [
+        "owner",
+        "admin"
+      ],
+      "priority": "P2",
+      "description": "Owner/admin browses the organization audit log at /org/audit (type/actor filters, audit-list) and exports it as CSV; non-admins get the administration-view notice (shipped It7, spec added 2026-07-22)",
       "expectedSpecs": 1
     }
   }

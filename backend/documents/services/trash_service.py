@@ -84,10 +84,12 @@ def restore_document(document: Document, user, request=None):
         project=document.project, slug=document.slug
     ).exists()
     if collision:
+        # Persist the renamed slug while the row is still trashed: restore()
+        # flips deleted_at on its own UPDATE, and the alive-only unique index
+        # would reject the old slug before the rename ever hit the DB.
         document.slug = f'{slugify(document.slug)[:200]}-restaurado'
-    document.restore()
-    if collision:
         document.save(update_fields=['slug', 'updated_at'])
+    document.restore()
     audit.record(org=document.project.organization, project=document.project, actor=user,
                  event_type='document.restored', obj=document,
                  payload={'title': document.title}, request=request)

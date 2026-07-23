@@ -34,9 +34,9 @@ describe('SavedComparisons (E2)', () => {
   it('[E2-L01] renders nothing when the project has none', async () => {
     mockGet.mockResolvedValueOnce({ data: { results: [] } });
 
-    const { container } = render(<SavedComparisons projectId="p1" />);
+    render(<SavedComparisons projectId="p1" />);
 
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(container.querySelector('[data-testid="saved-comparisons"]')).toBeNull();
+    expect(screen.queryByTestId('saved-comparisons')).not.toBeInTheDocument();
   });
 });

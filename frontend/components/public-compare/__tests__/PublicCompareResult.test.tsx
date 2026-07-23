@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { PublicCompareResult } from '../PublicCompareResult';
@@ -49,8 +49,8 @@ describe('PublicCompareResult', () => {
 
     await userEvent.click(screen.getByText('Valor y forma de pago'));
 
-    const diff = screen.getByTestId('public-word-diff');
-    expect(diff.querySelector('ins')).toHaveTextContent('doce');
-    expect(diff.querySelector('del')).toHaveTextContent('diez');
+    const diff = within(screen.getByTestId('public-word-diff'));
+    expect(diff.getByRole('insertion')).toHaveTextContent('doce');
+    expect(diff.getByRole('deletion')).toHaveTextContent('diez');
   });
 });

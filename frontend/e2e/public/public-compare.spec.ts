@@ -47,4 +47,28 @@ test.describe('Comparador público anónimo', () => {
       await page.waitForURL(/\/sign-up/);
     }
   );
+
+  test(
+    'PC-E01 — un PDF escaneado recibe el mensaje upsell de OCR',
+    { tag: [...PUBLIC_COMPARE, '@scenario:pc-e01'] },
+    async ({ page }) => {
+      await page.goto('/comparar');
+
+      await page
+        .getByTestId('public-file-a')
+        .setInputFiles(path.join(TESTDATA, 'escaneado_v1.pdf'));
+      await page
+        .getByTestId('public-file-b')
+        .setInputFiles(path.join(TESTDATA, 'contrato_v2.pdf'));
+      await page.getByTestId('public-compare-submit').click();
+
+      await expect(page.getByTestId('public-compare-error')).toBeVisible({
+        timeout: 30_000,
+      });
+      await expect(page.getByTestId('public-compare-error')).toContainText('OCR');
+      await expect(page.getByTestId('public-compare-error')).toContainText(
+        'cuenta gratis'
+      );
+    }
+  );
 });

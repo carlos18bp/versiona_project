@@ -1,39 +1,42 @@
-from faker import Faker
 from django.core.management.base import BaseCommand
+from faker import Faker
+
 from accounts.models import User
 
+
 class Command(BaseCommand):
-    help = 'Create User records in the database'
+    help = 'Create fake User records that follow Versiona business rules'
+
+    """
+    Each fake user is created the way the product creates real ones (A1/It9):
+    a personal Organization is provisioned via ensure_personal_org, which also
+    starts the 14-day Pro trial (billing.Subscription). No fake user is ever
+    staff or superuser — delete_fake_data relies on that to clean up safely.
+    """
 
     def add_arguments(self, parser):
         parser.add_argument('number_of_users', type=int, nargs='?', default=10)
 
     def handle(self, *args, **options):
+        from orgs.services import ensure_personal_org
+
         number_of_users = options['number_of_users']
         fake = Faker()
 
-        roles = [User.Role.CUSTOMER, User.Role.ADMIN]
-
-        for i in range(number_of_users):
-            # Generate unique email
-            email = fake.unique.email()
-            first_name = fake.first_name()
-            last_name = fake.last_name()
-            phone = fake.phone_number()
-            role = fake.random_element(elements=roles)
-            
-            # Create user with random password
+        for _ in range(number_of_users):
             user = User.objects.create_user(
-                email=email,
-                password='password',  # Default password for fake users
-                first_name=first_name,
-                last_name=last_name,
-                phone=phone,
-                role=role,
+                email=fake.unique.email(),
+                password='secreta123',  # deterministic dev password
+                first_name=fake.first_name(),
+                last_name=fake.last_name(),
+                phone=fake.phone_number(),
                 is_active=True,
-                is_staff=(role == User.Role.ADMIN),
             )
+            org = ensure_personal_org(user)
+            self.stdout.write(self.style.SUCCESS(
+                f'User "{user.email}" created with personal org "{org.slug}" (trial)'
+            ))
 
-            self.stdout.write(self.style.SUCCESS(f'User "{user.email}" created with role {role}'))
-
-        self.stdout.write(self.style.SUCCESS(f'{number_of_users} User records created'))
+        self.stdout.write(self.style.SUCCESS(
+            f'{number_of_users} User records created with personal orgs + trials'
+        ))

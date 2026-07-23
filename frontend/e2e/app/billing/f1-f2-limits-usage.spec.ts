@@ -83,6 +83,12 @@ test.describe('F1+F2 — Límites del plan y consumo', () => {
       await page.getByTestId('nav-plan-usage').click();
       await page.waitForURL(/org\/usage/);
       await expect(page.getByTestId('usage-panel')).toBeVisible({ timeout: 20_000 });
+
+      // …y también desde /settings
+      await page.goto('/settings');
+      await page.getByTestId('settings-usage-link').click();
+      await page.waitForURL(/org\/usage/);
+      await expect(page.getByTestId('usage-panel')).toBeVisible({ timeout: 20_000 });
     }
   );
 });

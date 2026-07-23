@@ -1,0 +1,5 @@
+# Coverage config shared by local runs and CI (pytest-cov --cov flags come
+# from pytest.ini addopts — this file only carries exclusions).
+[run]
+omit =
+    versiona_project/settings_prod.py
