@@ -54,6 +54,7 @@ def api_document(client_as, versiona_context):
     pytest.param('anonymous', 401, id='c1-p03-anonymous'),
     pytest.param('non_member', 404, id='c1-p04-non-member'),
 ])
+@pytest.mark.escenario('C1-P01')
 def test_create_document_permission_matrix(client_as, versiona_context, actor, expected):
     response = client_as(actor).post(documents_url(versiona_context), {'title': 'Doc'})
 
@@ -84,6 +85,7 @@ def test_upload_first_version_via_api_indexes_sections(client_as, versiona_conte
     pytest.param('anonymous', 401, id='c1-upload-p03-anonymous'),
     pytest.param('non_member', 404, id='c1-upload-p04-non-member'),
 ])
+@pytest.mark.escenario('C2-P01')
 def test_upload_intent_permission_matrix(client_as, versiona_context, api_document, actor, expected):
     response = client_as(actor).post(f'/api/documents/{api_document}/versions/upload_intent/')
 
@@ -149,6 +151,7 @@ def test_download_returns_signed_url_and_audits(client_as, versiona_context, api
     pytest.param('anonymous', 401, id='c3-p03-anonymous'),
     pytest.param('non_member', 404, id='c3-p04-non-member'),
 ])
+@pytest.mark.escenario('C3-P01')
 def test_version_detail_permission_matrix(client_as, versiona_context, api_document, actor, expected):
     uploaded = upload_via_api(client_as('editor'), api_document)
     version_id = uploaded.data['version']['public_id']
@@ -202,6 +205,7 @@ def test_edit_message_permission_matrix(client_as, versiona_context, api_documen
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
+@pytest.mark.escenario('C4-P01')
 def test_trash_and_restore_version_roundtrip(client_as, versiona_context, api_document):
     editor = client_as('editor')
     uploaded = upload_via_api(editor, api_document)

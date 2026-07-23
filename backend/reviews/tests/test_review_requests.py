@@ -135,6 +135,7 @@ def test_second_open_request_on_the_same_version_is_rejected(analyzed_v1):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('D2-F01')
+@pytest.mark.escenario('D2-F02')
 def test_review_context_marks_changed_and_unchanged_since_my_seal(analyzed_v1):
     """The heart of D2: reviewer sealed §1-2 on v1; v2 changes §3/§5 — the
     context says exactly which sections deserve their attention."""
@@ -194,6 +195,7 @@ def test_inbox_lists_pending_assignments_via_api(client_as, analyzed_v1):
     pytest.param('anonymous', 401, id='d1-p03-anonymous'),
     pytest.param('non_member', 404, id='d1-p04-non-member'),
 ])
+@pytest.mark.escenario('D1-P01')
 def test_create_review_permission_matrix(client_as, analyzed_v1, actor, expected):
     context, document, v1 = analyzed_v1
 

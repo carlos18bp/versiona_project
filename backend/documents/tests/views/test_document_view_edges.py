@@ -165,6 +165,7 @@ def test_edit_message_on_approved_version_is_rejected(client_as, doc_with_versio
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-P02')
+@pytest.mark.escenario('C4-P01')
 def test_viewer_cannot_delete_a_version(client_as, doc_with_version):
     _, version = doc_with_version
 

@@ -46,6 +46,7 @@ def test_editing_config_creates_a_new_version(versiona_context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('B3-F02')
+@pytest.mark.escenario('B3-L01')
 def test_i8_existing_versions_keep_their_pinned_config(versiona_context):
     """THE non-retroactivity proof: a version uploaded under config v1 keeps
     answering to v1 even after the project moves to v2."""
@@ -69,6 +70,7 @@ def test_i8_existing_versions_keep_their_pinned_config(versiona_context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('B3-E01')
+@pytest.mark.escenario('E3-E01')
 def test_checklist_validation_rejects_bad_items(versiona_context):
     project = versiona_context.project
     admin = versiona_context.users['admin']
@@ -168,6 +170,8 @@ def test_template_copy_on_apply_is_a_snapshot(versiona_context):
     pytest.param('anonymous', 401, id='b3-p03-anonymous'),
     pytest.param('non_member', 404, id='b3-p04-non-member'),
 ])
+@pytest.mark.escenario('B3-P01')
+@pytest.mark.escenario('E3-P01')
 def test_update_config_permission_matrix(client_as, versiona_context, actor, expected):
     response = client_as(actor).post(
         f'/api/projects/{versiona_context.project.public_id}/config/',

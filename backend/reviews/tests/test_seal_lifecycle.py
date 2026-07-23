@@ -143,6 +143,7 @@ def test_validity_chain_i11_across_versions(sealed_v1):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('D4-A01')
+@pytest.mark.escenario('D4-A02')
 def test_seal_can_be_withdrawn_before_approval_but_not_after(sealed_v1):
     context, document, v1, seal_a, _ = sealed_v1
     from documents.models import DocumentVersion

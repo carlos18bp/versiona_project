@@ -30,6 +30,7 @@ def test_invitation_sends_the_email_with_the_token_link(versiona_context, mailou
 
 @pytest.mark.django_db
 @pytest.mark.escenario('A2-F02')
+@pytest.mark.escenario('A2-A01')
 def test_accepting_creates_memberships_and_lands_on_the_project(
     versiona_context, django_user_model
 ):
@@ -75,6 +76,7 @@ def test_accept_requires_the_exact_invited_email(versiona_context, django_user_m
 
 @pytest.mark.django_db
 @pytest.mark.escenario('A2-E02')
+@pytest.mark.escenario('A2-A03')
 def test_expired_and_revoked_invitations_cannot_be_accepted(
     versiona_context, django_user_model
 ):
@@ -146,6 +148,8 @@ def test_public_state_endpoint_shows_the_landing_info(client_as, versiona_contex
     pytest.param('anonymous', 401, id='a2-p03-anonymous'),
     pytest.param('non_member', 404, id='a2-p04-non-member'),
 ])
+@pytest.mark.escenario('A2-P01')
+@pytest.mark.escenario('A2-P02')
 def test_invite_permission_matrix(client_as, versiona_context, actor, expected):
     response = client_as(actor).post(
         f'/api/projects/{versiona_context.project.public_id}/invitations/',

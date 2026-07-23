@@ -118,6 +118,7 @@ def test_serials_increment_per_org_and_year(approved_version):
     pytest.param('anonymous', 401, id='e4-p03-anonymous'),
     pytest.param('non_member', 404, id='e4-p04-non-member'),
 ])
+@pytest.mark.escenario('E4-P01')
 def test_issue_permission_matrix(client_as, approved_version, actor, expected):
     _, version = approved_version
 

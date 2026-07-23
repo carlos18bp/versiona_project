@@ -112,6 +112,7 @@ def test_public_key_endpoint_serves_the_current_key(client_as, analyzed_v1):
     pytest.param('anonymous', 401, id='d4-p03-anonymous'),
     pytest.param('non_member', 404, id='d4-p04-non-member'),
 ])
+@pytest.mark.escenario('D4-P01')
 def test_place_seal_permission_matrix(client_as, analyzed_v1, actor, expected):
     _, _, version = analyzed_v1
 

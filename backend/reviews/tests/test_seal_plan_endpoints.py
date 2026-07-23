@@ -127,6 +127,7 @@ def test_confirming_without_a_decision_per_seal_is_rejected(client_as, pending_p
     pytest.param('anonymous', 401, id='d5-plan-p03-anonymous'),
     pytest.param('non_member', 404, id='d5-plan-p04-non-member'),
 ])
+@pytest.mark.escenario('D5-P01')
 def test_confirm_plan_permission_matrix(client_as, pending_plan, actor, expected):
     _, v2, seal = pending_plan
 

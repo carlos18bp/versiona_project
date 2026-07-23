@@ -49,6 +49,7 @@ def test_create_project_rejects_blank_name(client_as, versiona_context):
     pytest.param('non_member', 404, id='b1-p04-non-member'),
     pytest.param('anonymous', 401, id='b1-p03-anonymous'),
 ])
+@pytest.mark.escenario('B1-P01')
 def test_create_project_permission_matrix(client_as, versiona_context, actor, expected):
     response = client_as(actor).post(
         org_projects_url(versiona_context), {'name': f'Proyecto {actor}'}
@@ -117,6 +118,7 @@ def test_org_member_without_project_membership_sees_empty_board(
     pytest.param('non_member', 404, id='b2-p04-non-member'),
     pytest.param('anonymous', 401, id='b2-p03-anonymous'),
 ])
+@pytest.mark.escenario('B2-P01')
 def test_project_detail_permission_matrix(client_as, versiona_context, actor, expected):
     response = client_as(actor).get(project_url(versiona_context))
 
@@ -142,6 +144,7 @@ def test_admin_edits_project_metadata(client_as, versiona_context):
     pytest.param('anonymous', 401, id='b4-p03-anonymous'),
     pytest.param('non_member', 404, id='b4-p04-non-member'),
 ])
+@pytest.mark.escenario('B4-P01')
 def test_trash_project_permission_matrix(client_as, versiona_context, actor, expected):
     response = client_as(actor).delete(
         project_url(versiona_context), {'confirm_name': 'Torre Central'}, format='json'

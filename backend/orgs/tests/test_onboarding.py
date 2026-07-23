@@ -40,6 +40,7 @@ def test_onboarding_seeds_the_sample_with_a_working_comparison(fresh_user):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('A1-F02')
+@pytest.mark.escenario('A1-A03')
 def test_onboarding_is_idempotent(fresh_user):
     first = complete_onboarding(fresh_user, 'Mi Org')
     second = complete_onboarding(fresh_user, 'Mi Org')
@@ -52,6 +53,8 @@ def test_onboarding_is_idempotent(fresh_user):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('A1-F03')
+@pytest.mark.escenario('A1-P01')
+@pytest.mark.escenario('A1-A02')
 def test_state_endpoint_reports_pending_then_done(client_as, fresh_user):
     from rest_framework.test import APIClient
 
@@ -71,5 +74,6 @@ def test_state_endpoint_reports_pending_then_done(client_as, fresh_user):
 
 
 @pytest.mark.django_db
+@pytest.mark.escenario('A1-P01')
 def test_anonymous_cannot_touch_onboarding(client_as):
     assert client_as('anonymous').get('/api/me/onboarding/').status_code == 401

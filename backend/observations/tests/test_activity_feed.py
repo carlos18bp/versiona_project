@@ -32,6 +32,7 @@ def feed_url(context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('ACT-F01')
+@pytest.mark.escenario('F3-A01')
 def test_feed_lists_whitelisted_events_newest_first(client_as, seeded_events):
     response = client_as('viewer').get(feed_url(seeded_events))
 
@@ -63,6 +64,7 @@ def test_feed_filters_by_event_type(client_as, seeded_events):
     pytest.param('anonymous', 401, id='act-p03-anonymous'),
     pytest.param('non_member', 404, id='act-p04-non-member'),
 ])
+@pytest.mark.escenario('F3-A01')
 def test_feed_permission_matrix(client_as, seeded_events, actor, expected):
     response = client_as(actor).get(feed_url(seeded_events))
 

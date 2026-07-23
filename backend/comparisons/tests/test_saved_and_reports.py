@@ -31,6 +31,7 @@ def compared(versiona_context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('E2-F01')
+@pytest.mark.escenario('E2-P01')
 def test_save_and_list_named_comparisons(client_as, compared):
     context, comparison = compared
     client = client_as('editor')
@@ -85,6 +86,7 @@ def test_viewer_cannot_save_but_can_list(client_as, compared):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('F3-F01')
+@pytest.mark.escenario('F3-L01')
 def test_org_audit_filters_and_is_admin_only(client_as, versiona_context, compared):
     url = f'/api/orgs/{versiona_context.org.public_id}/audit/'
 
@@ -115,6 +117,7 @@ def test_org_audit_exports_csv(client_as, versiona_context, compared):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('REP-F01')
+@pytest.mark.escenario('F3-A02')
 def test_project_report_summarizes_documents(client_as, compared):
     context, _ = compared
 
@@ -132,6 +135,7 @@ def test_project_report_summarizes_documents(client_as, compared):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('ACT-F03')
+@pytest.mark.escenario('F3-A02')
 def test_activity_accepts_a_date_range(client_as, compared):
     context, _ = compared
 

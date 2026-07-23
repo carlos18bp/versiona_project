@@ -114,6 +114,7 @@ def test_session_revoke_endpoint_blacklists_the_session(auth_client, user):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('A3-C08')
+@pytest.mark.escenario('A3-P01')
 def test_session_revoke_endpoint_returns_404_for_unknown_session(auth_client):
     response = auth_client.post('/api/me/sessions/999999/revoke/')
 

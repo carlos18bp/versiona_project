@@ -147,6 +147,8 @@ def test_resolved_thread_can_be_reopened(with_v1):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-F04')
+@pytest.mark.escenario('D3-A03')
+@pytest.mark.escenario('D3-A04')
 def test_reanchor_truth_table_v1_to_v2(with_v1):
     """v2: §3 modified ⇒ reanchored_section · §6 removed ⇒ orphaned ·
     §1 intact ⇒ exact carrying the original quads."""
@@ -211,6 +213,7 @@ def test_observation_on_unknown_section_is_rejected(with_v1):
     pytest.param('anonymous', 401, id='d3-p03-anonymous'),
     pytest.param('non_member', 404, id='d3-p04-non-member'),
 ])
+@pytest.mark.escenario('D3-P01')
 def test_create_observation_permission_matrix(client_as, with_v1, actor, expected):
     _, _, v1 = with_v1
 
