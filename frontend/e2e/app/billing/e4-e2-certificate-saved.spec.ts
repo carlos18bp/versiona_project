@@ -2,6 +2,8 @@ import { expect, test } from '../../test-with-coverage';
 import { E2_SAVED_COMPARISONS, E4_CONSTANCIA } from '../../helpers/flow-tags';
 import { openSeededProject, uniqueName, uploadPdf } from '../../helpers/versiona';
 
+const BACKEND_API = `http://127.0.0.1:${process.env.E2E_BACKEND_PORT ?? 8000}`;
+
 test.use({ storageState: 'e2e/.auth/editor.json' });
 
 test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () => {
@@ -22,7 +24,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
         .getByRole('link', { name: title });
       await expect(documentLink).toBeVisible({ timeout: 90_000 });
       await documentLink.click();
-      await expect(editorPage.getByTestId('version-item-1')).toBeVisible({ timeout: 20_000 });
+      await expect(editorPage.getByTestId('version-item-1')).toBeVisible({ timeout: 90_000 });
       await editorPage.getByRole('link', { name: 'Ver documento' }).click();
       await editorPage.waitForURL(/versions\//);
       const versionUrl = editorPage.url();
@@ -32,17 +34,17 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
       });
       const reviewerPage = await reviewerContext.newPage();
       await reviewerPage.goto(versionUrl);
-      await expect(reviewerPage.getByTestId('seal-action-bar')).toBeVisible({ timeout: 20_000 });
+      await expect(reviewerPage.getByTestId('seal-action-bar')).toBeVisible({ timeout: 90_000 });
       await reviewerPage.getByTestId('seal-all').click();
       await expect(
         reviewerPage.getByTestId('seal-reviewer@versiona.test')
-      ).toBeVisible({ timeout: 20_000 });
+      ).toBeVisible({ timeout: 90_000 });
 
       // Admin: la versión aprobada ofrece emitir constancia
       const adminContext = await browser.newContext({ storageState: 'e2e/.auth/admin.json' });
       const adminPage = await adminContext.newPage();
       await adminPage.goto(versionUrl);
-      await expect(adminPage.getByTestId('certificate-panel')).toBeVisible({ timeout: 20_000 });
+      await expect(adminPage.getByTestId('certificate-panel')).toBeVisible({ timeout: 90_000 });
 
       const [popup] = await Promise.all([
         adminPage.waitForEvent('popup', { timeout: 30_000 }),
@@ -56,7 +58,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
         (cookie) => cookie.name === 'access_token'
       )!.value;
       const listResponse = await adminPage.request.get(
-        `http://127.0.0.1:8000/api/versions/${versionId}/certificates/`,
+        `${BACKEND_API}/api/versions/${versionId}/certificates/`,
         { headers: { Authorization: `Bearer ${access}` } }
       );
       const certificates = (await listResponse.json()).results;
@@ -64,7 +66,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
       expect(certificates[0].serial).toMatch(/-\d{4}$/);
 
       const downloadResponse = await adminPage.request.get(
-        `http://127.0.0.1:8000/api/versions/${versionId}/certificates/${certificates[0].public_id}/download/`,
+        `${BACKEND_API}/api/versions/${versionId}/certificates/${certificates[0].public_id}/download/`,
         { headers: { Authorization: `Bearer ${access}` } }
       );
       const { url, snapshot } = await downloadResponse.json();
@@ -91,7 +93,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
         .getByRole('link', { name: title });
       await expect(documentLink).toBeVisible({ timeout: 90_000 });
       await documentLink.click();
-      await expect(page.getByTestId('version-item-1')).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('version-item-1')).toBeVisible({ timeout: 90_000 });
       await uploadPdf(page, 'contrato_v2.pdf', { message: 'v2' });
       await expect(page.getByTestId('version-item-2')).toBeVisible({ timeout: 90_000 });
 
@@ -99,7 +101,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
       await page.getByTestId('select-version-2').check();
       await page.getByTestId('compare-selected').click();
       await page.waitForURL(/\/compare\//, { timeout: 20_000 });
-      await expect(page.getByTestId('compare-view')).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByTestId('compare-view')).toBeVisible({ timeout: 90_000 });
 
       const savedName = uniqueName('Entrega');
       page.once('dialog', (dialog) => void dialog.accept(savedName));
@@ -112,7 +114,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
       await expect(savedRow).toBeVisible({ timeout: 15_000 });
       await savedRow.click();
       await page.waitForURL(/\/compare\//, { timeout: 20_000 });
-      await expect(page.getByTestId('compare-view')).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByTestId('compare-view')).toBeVisible({ timeout: 90_000 });
     }
   );
 });

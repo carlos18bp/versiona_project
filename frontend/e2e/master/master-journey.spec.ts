@@ -17,6 +17,7 @@ import { TESTDATA, uniqueName } from '../helpers/versiona';
  */
 
 const BACKEND = path.resolve(__dirname, '../../../backend');
+const BACKEND_API = `http://127.0.0.1:${process.env.E2E_BACKEND_PORT ?? 8000}`;
 
 function upgradeOrgToPro(email: string) {
   execFileSync(
@@ -268,12 +269,12 @@ test.describe('M1 — La prueba maestra', () => {
         (cookie) => cookie.name === 'access_token'
       )!.value;
       const list = await editor.request.get(
-        `http://127.0.0.1:8000/api/versions/${versionId}/certificates/`,
+        `${BACKEND_API}/api/versions/${versionId}/certificates/`,
         { headers: { Authorization: `Bearer ${access}` } }
       );
       const certificate = (await list.json()).results[0];
       const download = await editor.request.get(
-        `http://127.0.0.1:8000/api/versions/${versionId}/certificates/${certificate.public_id}/download/`,
+        `${BACKEND_API}/api/versions/${versionId}/certificates/${certificate.public_id}/download/`,
         { headers: { Authorization: `Bearer ${access}` } }
       );
       const { url, snapshot } = await download.json();

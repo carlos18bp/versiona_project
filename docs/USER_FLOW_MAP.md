@@ -44,8 +44,8 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 | `auth-forgot-password-form` | Password recovery | auth | P2 | shared | `/forgot-password` | Implemented |
 | `auth-sign-in-success` | Sign-in happy path (real session) | auth | P1 | shared | `/sign-in` → `/projects` (direct, It9) | Implemented (It1) |
 | `auth-sign-out` | Sign out ends the session | auth | P2 | user | header (Salir) | Implemented (It1) |
-| `auth-admin-login-handoff` | Django admin impersonation handoff | auth | P3 | staff | `/admin-login` | Gap — unit-tested only |
-| `help-manual-browse` | Browse the interactive help | home | P3 | shared | `/manual` | Gap — nice-to-have |
+| `auth-admin-login-handoff` | Django admin impersonation handoff | auth | P3 | staff | `/admin-login` | Implemented — spec added 2026-07-22 |
+| `help-manual-browse` | Browse the interactive help | home | P3 | shared | `/manual` | Implemented — spec added 2026-07-22 |
 | `a1-onboarding-wow` | A1 Sign-up and first wow | onboarding | P1 | guest | `/onboarding` | Planned (It6) |
 | `a2-invite-team` | A2 Invite team and roles | org | P1 | admin | `/org/settings`, `/invite/[token]` | Planned (It6) |
 | `b1-create-project` | B1 Create a project | projects | P1 | editor | `/projects/new` | Planned (It1) |
@@ -72,7 +72,7 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 | `public-pricing` | Public pricing page | billing | P1 | guest | `/precios` | Implemented (It9) |
 | `trial-visibility` | Trial banner + days left | billing | P2 | user | global banner + `/org/usage` | Implemented (It9) |
 | `public-compare` | Anonymous public PDF comparison | public | P1 | guest | `/comparar` → `/comparar/[id]` | Implemented (It9) |
-| `f3-org-audit` | F3 Org audit log + CSV export | org | P2 | owner/admin | `/org/audit` | Implemented (It7) — **spec gap registered 2026-07-22** |
+| `f3-org-audit` | F3 Org audit log + CSV export | org | P2 | owner/admin | `/org/audit` | Implemented (It7) — spec added 2026-07-22 |
 
 ---
 
