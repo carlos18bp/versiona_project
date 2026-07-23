@@ -3,15 +3,19 @@
 > Memory Bank core file: current focus, recent changes, next steps. Updated every session
 > that changes project state.
 
-**Last updated**: 2026-07-22
+**Last updated**: 2026-07-23
 
 ## Current focus
 
-**It9 (freemium go-public prep) shipped and the full product (It0–It9) merged to
-`master` via PR #1.** The MVP is feature-complete AND market-shaped: iLovePDF-style
-freemium with a 14-day Pro trial on signup, public landing + /precios, and the anonymous
-comparator /comparar as the acquisition hook. CI is green end to end (backend, unit,
-e2e with mailpit, quality gate).
+**Quality pipeline session (2026-07-23) on top of the merged It0–It9 product**: the 8
+project skills ran as sequential phases — methodology refresh, domain-true fake data
+(create seeds through ensure_personal_org; delete honors protected evidence I4),
+flow audit (caught the unregistered F3 org-audit flow), dev-DB refresh + e2e re-seed,
+backend coverage tail to ~100 per file with all 14 apps finally measured
+(public_tools tests were silently uncollected in CI), frontend stores/staging/manual
+to 100 lines, quality gate at 0 errors / 0 warnings, and e2e flow coverage 37/37.
+Two production fixes fell out: trash restore slug-collision ordering and the
+E2E harness ports (env-parameterized after a foreign fleet server squatted :3000).
 
 ## What a fresh session should know
 
