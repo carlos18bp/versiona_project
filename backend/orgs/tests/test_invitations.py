@@ -158,3 +158,82 @@ def test_invite_permission_matrix(client_as, versiona_context, actor, expected):
     )
 
     assert response.status_code == expected
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('A2-A02')
+def test_pending_invitation_has_no_resend_route(client_as, versiona_context):
+    context = versiona_context
+    invitation = create_invitation(
+        context.project, context.users['admin'],
+        email='invitada@externa.co', role='reviewer',
+    )
+
+    response = client_as('admin').post(
+        f'/api/projects/{context.project.public_id}'
+        f'/invitations/{invitation.public_id}/resend/'
+    )
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('A2-A02')
+def test_reinviting_a_pending_email_is_rejected_instead_of_resending(
+    client_as, versiona_context, mailoutbox
+):
+    context = versiona_context
+    create_invitation(
+        context.project, context.users['admin'],
+        email='invitada@externa.co', role='reviewer',
+    )
+
+    response = client_as('admin').post(
+        f'/api/projects/{context.project.public_id}/invitations/',
+        {'email': 'invitada@externa.co', 'role': 'reviewer'},
+        format='json',
+    )
+
+    assert response.status_code == 409
+    assert response.data['error'] == (
+        'Ya hay una invitación pendiente para invitada@externa.co.'
+    )
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('A2-A04')
+def test_deactivating_the_org_membership_hides_the_project(client_as, versiona_context):
+    context = versiona_context
+    OrganizationMembership.objects.filter(
+        organization=context.org, user=context.users['editor']
+    ).update(is_active=False)
+
+    response = client_as('editor').get(f'/api/projects/{context.project.public_id}/')
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('A2-A04')
+def test_removing_the_project_membership_hides_the_project_documents(
+    client_as, versiona_context, document_with_versions
+):
+    context = versiona_context
+    document, _versions = document_with_versions(n_versions=1)
+    ProjectMembership.objects.filter(
+        project=context.project, user=context.users['reviewer']
+    ).delete()
+
+    response = client_as('reviewer').get(f'/api/documents/{document.public_id}/')
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('A2-A04')
+def test_members_endpoint_does_not_expose_member_removal(client_as, versiona_context):
+    response = client_as('admin').delete(
+        f'/api/projects/{versiona_context.project.public_id}/members/'
+    )
+
+    assert response.status_code == 405

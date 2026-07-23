@@ -4,10 +4,12 @@ fixtures (versions arrive analyzed from the shared context)."""
 from uuid import uuid4
 
 import pytest
+from django.urls import Resolver404, resolve
 
 from documents.models import DocumentVersion
 from documents.services.version_service import DomainError
-from reviews.models import ReviewRequest
+from projects.services import config_service
+from reviews.models import ReviewAssignment, ReviewRequest
 from reviews.services import review_service
 
 
@@ -190,3 +192,112 @@ def test_admin_who_did_not_request_can_cancel_review(versiona_context, open_revi
     review = review_service.cancel_review_request(open_review, versiona_context.users['admin'])
 
     assert review.status == ReviewRequest.Status.CANCELLED
+
+
+@pytest.fixture
+def version_owned_by_sections(versiona_context, document_with_versions):
+    """Project config carrying section owners (B3) pinned on an analyzed version."""
+    versiona_context.config = config_service.update_config(
+        versiona_context.project,
+        versiona_context.users['admin'],
+        section_owners={
+            'objeto-del-contrato': [versiona_context.users['reviewer'].pk],
+            'confidencialidad': [versiona_context.users['admin'].pk],
+        },
+    )
+    _, versions = document_with_versions(n_versions=1)
+    return versions[0]
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D1-A01')
+def test_section_owners_do_not_make_reviewer_selection_optional(
+    client_as, version_owned_by_sections
+):
+    """Negative verification: auto-suggestion from section owners is absent —
+    the request still demands an explicit manual selection (DP-A7)."""
+    version = version_owned_by_sections
+
+    response = client_as('editor').post(
+        f'/api/versions/{version.public_id}/reviews/', {}, format='json'
+    )
+
+    assert response.status_code == 400
+    assert 'reviewer_ids' in response.data
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D1-A01')
+def test_section_owners_are_not_added_as_reviewers_on_their_own(
+    client_as, versiona_context, version_owned_by_sections
+):
+    """Negative verification: the admin owns 'confidencialidad' yet gets no
+    assignment because only the explicitly chosen reviewer is assigned."""
+    version = version_owned_by_sections
+
+    response = client_as('editor').post(
+        f'/api/versions/{version.public_id}/reviews/',
+        {'reviewer_ids': [versiona_context.users['reviewer'].pk]},
+        format='json',
+    )
+
+    assert response.status_code == 201
+    assigned = {row['reviewer_email'] for row in response.data['assignments']}
+    assert assigned == {versiona_context.users['reviewer'].email}
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D1-A01')
+def test_assignment_scope_ignores_the_sections_the_reviewer_owns(
+    versiona_context, version_owned_by_sections
+):
+    """Negative verification: no per-section scope is derived from ownership —
+    every assignment is created covering the whole document."""
+    review = review_service.create_review_request(
+        version_owned_by_sections,
+        versiona_context.users['editor'],
+        [versiona_context.users['reviewer'].pk],
+    )
+
+    assert review.assignments.get().scope == 'all'
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D2-P01')
+def test_review_progress_route_is_not_registered():
+    """Negative verification: `review_requests/{id}/progress/` (docs/audit/03 D2)
+    has no URL entry, so its permission matrix cannot exist yet."""
+    with pytest.raises(Resolver404):
+        resolve(f'/api/review_requests/{uuid4()}/progress/')
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('D2-P01')
+def test_assigned_reviewer_hits_a_missing_progress_endpoint(client_as, open_review):
+    """Negative verification: even the assigned reviewer gets a router 404 —
+    the D2 progress surface is unimplemented, not merely restricted."""
+    assignment = ReviewAssignment.objects.get(review_request=open_review)
+
+    response = client_as('reviewer').get(
+        f'/api/review_requests/{assignment.review_request.public_id}/progress/'
+    )
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('actor, expected', [
+    pytest.param('reviewer', 200, id='d2-p01-assigned-reviewer'),
+    pytest.param('viewer', 200, id='d2-p02-unassigned-member'),
+    pytest.param('anonymous', 401, id='d2-p03-anonymous'),
+    pytest.param('non_member', 404, id='d2-p04-non-member'),
+])
+@pytest.mark.escenario('D2-P01')
+def test_review_context_permission_matrix(client_as, ready_version, open_review, actor, expected):
+    """The implemented D2 surface is `review_context/`, gated by project role
+    (viewer+), not by assignment: an unassigned member reads it too."""
+    _, version = ready_version
+
+    response = client_as(actor).get(f'/api/versions/{version.public_id}/review_context/')
+
+    assert response.status_code == expected

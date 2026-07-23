@@ -127,6 +127,64 @@ def test_issue_permission_matrix(client_as, approved_version, actor, expected):
     assert response.status_code == expected
 
 
+@pytest.fixture
+def two_issuances(approved_version):
+    context, version = approved_version
+    first = issue_certificate(version, context.users['admin'])
+    second = issue_certificate(version, context.users['admin'])
+    return context, version, first, second
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('E4-A01')
+def test_listing_returns_every_previous_issuance_newest_first(client_as, two_issuances):
+    context, version, first, second = two_issuances
+
+    response = client_as('viewer').get(f'/api/versions/{version.public_id}/certificates/')
+
+    assert response.status_code == 200
+    assert [row['serial'] for row in response.data['results']] == [
+        second.serial, first.serial
+    ]
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('E4-A01')
+def test_listed_serials_follow_the_org_year_sequence_format(client_as, two_issuances):
+    context, version, first, second = two_issuances
+    prefix = f'{context.org.slug.upper()[:12]}-{first.created_at.year}'
+
+    response = client_as('viewer').get(f'/api/versions/{version.public_id}/certificates/')
+
+    assert [row['serial'] for row in response.data['results']] == [
+        f'{prefix}-0002', f'{prefix}-0001'
+    ]
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('E4-A01')
+def test_listing_carries_the_issue_date_of_each_certificate(client_as, two_issuances):
+    context, version, first, second = two_issuances
+
+    response = client_as('viewer').get(f'/api/versions/{version.public_id}/certificates/')
+
+    assert [row['created_at'] for row in response.data['results']] == [
+        second.created_at, first.created_at
+    ]
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('E4-A01')
+def test_listing_names_the_issuer_of_each_certificate(client_as, two_issuances):
+    context, version, first, second = two_issuances
+
+    response = client_as('viewer').get(f'/api/versions/{version.public_id}/certificates/')
+
+    assert {row['issued_by'] for row in response.data['results']} == {
+        context.users['admin'].email
+    }
+
+
 @pytest.mark.django_db
 @pytest.mark.escenario('E4-F04')
 def test_download_endpoint_returns_signed_url_and_snapshot(client_as, approved_version):
