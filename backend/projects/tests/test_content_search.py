@@ -70,6 +70,7 @@ def test_search_misses_return_the_guided_empty_list(client_as, board_with_conten
 
 @pytest.mark.django_db
 @pytest.mark.escenario('B2-A01')
+@pytest.mark.escenario('B2-A04')
 def test_status_filter_separates_archived_projects(client_as, versiona_context):
     from documents.services import trash_service
 

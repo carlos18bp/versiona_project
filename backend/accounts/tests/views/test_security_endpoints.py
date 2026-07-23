@@ -114,6 +114,7 @@ def test_session_revoke_endpoint_blacklists_the_session(auth_client, user):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('A3-C08')
+@pytest.mark.escenario('A3-P01')
 def test_session_revoke_endpoint_returns_404_for_unknown_session(auth_client):
     response = auth_client.post('/api/me/sessions/999999/revoke/')
 
@@ -135,3 +136,32 @@ def test_revoke_others_endpoint_keeps_only_the_given_refresh(auth_client, user):
     assert response.status_code == 200
     assert response.data == {'revoked': 2}
     assert len(twofactor.list_sessions(user)) == 1
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('A3-L01')
+def test_revoke_others_without_a_refresh_closes_every_session(auth_client, user):
+    RefreshToken.for_user(user)
+    RefreshToken.for_user(user)
+    RefreshToken.for_user(user)
+
+    response = auth_client.post('/api/me/sessions/revoke_others/', {}, format='json')
+
+    assert response.data == {'revoked': 3}
+    assert twofactor.list_sessions(user) == []
+
+
+@pytest.mark.django_db
+@pytest.mark.escenario('A3-L01')
+def test_revoke_others_keeps_the_current_refresh_usable(auth_client, user, api_client):
+    keep = RefreshToken.for_user(user)
+    RefreshToken.for_user(user)
+    auth_client.post(
+        '/api/me/sessions/revoke_others/', {'refresh': str(keep)}, format='json'
+    )
+
+    refreshed = api_client.post(
+        '/api/token/refresh/', {'refresh': str(keep)}, format='json'
+    )
+
+    assert refreshed.status_code == 200

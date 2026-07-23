@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 import { ChecksPanel } from '../ChecksPanel';
 import { api } from '../../../lib/services/http';
@@ -6,6 +6,20 @@ import { api } from '../../../lib/services/http';
 jest.mock('../../../lib/services/http', () => ({ api: { get: jest.fn() } }));
 
 const mockGet = api.get as jest.Mock;
+
+const FAILING_CHECK_RESPONSE = {
+  summary: { pass: 0, warn: 0, fail: 1 },
+  config_version: 3,
+  results: [
+    {
+      key: 'tiene-multa',
+      label: 'Cláusula penal por incumplimiento',
+      outcome: 'fail',
+      evidence: { section: 'clausula-penal', page: 7, snippet: '' },
+      message: 'El texto requerido no aparece en la sección.',
+    },
+  ],
+};
 
 describe('ChecksPanel (E3)', () => {
   beforeEach(() => mockGet.mockReset());
@@ -57,6 +71,45 @@ describe('ChecksPanel (E3)', () => {
       'El texto requerido no aparece'
     );
     expect(screen.getByText('Config v2')).toBeInTheDocument();
+  });
+
+  it('[D2-A01] names the section that holds the failing check evidence', async () => {
+    mockGet.mockResolvedValueOnce({ data: FAILING_CHECK_RESPONSE });
+
+    render(<ChecksPanel versionId="v1" />);
+
+    expect(await screen.findByTestId('check-tiene-multa')).toHaveTextContent(
+      'Evidencia en clausula-penal (pág. 7)'
+    );
+  });
+
+  it('[D2-A01] marks the failing check row with the fail outcome', async () => {
+    mockGet.mockResolvedValueOnce({ data: FAILING_CHECK_RESPONSE });
+
+    render(<ChecksPanel versionId="v1" />);
+
+    expect(await screen.findByTestId('check-tiene-multa')).toHaveAttribute(
+      'data-outcome',
+      'fail'
+    );
+  });
+
+  it('[D2-A01] offers no link to jump to the section of the failing check', async () => {
+    mockGet.mockResolvedValueOnce({ data: FAILING_CHECK_RESPONSE });
+
+    render(<ChecksPanel versionId="v1" />);
+
+    const row = await screen.findByTestId('check-tiene-multa');
+    expect(within(row).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('[D2-A01] offers no button to jump to the section of the failing check', async () => {
+    mockGet.mockResolvedValueOnce({ data: FAILING_CHECK_RESPONSE });
+
+    render(<ChecksPanel versionId="v1" />);
+
+    const row = await screen.findByTestId('check-tiene-multa');
+    expect(within(row).queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('renders nothing while loading or on failure', async () => {

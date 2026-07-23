@@ -27,6 +27,17 @@ const project = {
   updated_at: '2026-07-12T00:00:00Z',
 };
 
+function makeProject(index: number) {
+  return { ...project, public_id: `p${index}`, name: `Proyecto ${index}` };
+}
+
+const FIRST_OF_60_PROJECTS = {
+  count: 60,
+  next: 'orgs/org-1/projects/?page=2',
+  previous: null,
+  results: Array.from({ length: 25 }, (_, index) => makeProject(index + 1)),
+};
+
 describe('ProjectsBoardPage', () => {
   beforeEach(() => mockGet.mockReset());
 
@@ -56,6 +67,42 @@ describe('ProjectsBoardPage', () => {
       'href',
       '/projects/new'
     );
+  });
+
+  it('[B2-L02] enables the next-page control when the board holds more than 25 projects', async () => {
+    mockGet.mockResolvedValueOnce({ data: FIRST_OF_60_PROJECTS });
+
+    render(<ProjectsBoardPage />);
+
+    expect(await screen.findByText('Proyecto 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Siguiente' })).toBeEnabled();
+  });
+
+  it('[B2-L02] disables the previous-page control on the first page of the board', async () => {
+    mockGet.mockResolvedValueOnce({ data: FIRST_OF_60_PROJECTS });
+
+    render(<ProjectsBoardPage />);
+
+    expect(await screen.findByText('Proyecto 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled();
+  });
+
+  it('[B2-L02] shows the current page indicator of the paginated board', async () => {
+    mockGet.mockResolvedValueOnce({ data: FIRST_OF_60_PROJECTS });
+
+    render(<ProjectsBoardPage />);
+
+    expect(await screen.findByText('Proyecto 1')).toBeInTheDocument();
+    expect(screen.getByText('Página 1')).toBeInTheDocument();
+  });
+
+  it('[B2-L02] renders only the 25 projects of the first page', async () => {
+    mockGet.mockResolvedValueOnce({ data: FIRST_OF_60_PROJECTS });
+
+    render(<ProjectsBoardPage />);
+
+    expect(await screen.findByText('Proyecto 1')).toBeInTheDocument();
+    expect(within(screen.getByTestId('projects-grid')).getAllByRole('listitem')).toHaveLength(25);
   });
 
   it('[Board-E] shows the error state with a retry button', async () => {

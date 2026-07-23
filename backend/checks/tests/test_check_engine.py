@@ -156,6 +156,7 @@ def test_checks_endpoint_returns_results_with_evidence(client_as, checked_versio
     pytest.param('member-viewer', 200, id='e3-templates-p01-member'),
     pytest.param('anonymous', 401, id='e3-templates-p03-anonymous'),
 ])
+@pytest.mark.escenario('E3-P01')
 def test_templates_list_permission_matrix(client_as, versiona_context, actor, expected):
     alias = 'viewer' if actor == 'member-viewer' else actor
     response = client_as(alias).get(

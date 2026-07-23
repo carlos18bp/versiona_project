@@ -255,6 +255,7 @@ def scenario(draw):
 @hyp_settings(max_examples=300, deadline=None)
 @given(scenario())
 @pytest.mark.escenario('D5-C01')
+@pytest.mark.escenario('D5-E01')
 def test_property_preserved_implies_proven_hash_equality(case):
     """I7 — for EVERY input: `preserved` ⇒ every covered section is labeled
     `unchanged` AND its current hash equals the sealed hash; covers_all seals

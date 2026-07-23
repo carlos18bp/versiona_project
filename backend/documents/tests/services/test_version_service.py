@@ -94,6 +94,7 @@ def test_corrupt_file_is_rejected(document, versiona_context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C1-E03')
+@pytest.mark.escenario('C2-E03')
 def test_oversized_upload_is_rejected(document, versiona_context, settings):
     settings.MAX_PDF_SIZE_MB = 0
 

@@ -148,6 +148,7 @@ def test_compare_against_a_failed_version_is_rejected(client_as, analyzed_docume
     pytest.param('anonymous', 401, id='e1-p03-anonymous'),
     pytest.param('non_member', 404, id='e1-p04-non-member'),
 ])
+@pytest.mark.escenario('E1-P01')
 def test_compare_permission_matrix(client_as, analyzed_document, actor, expected):
     document, versions = analyzed_document
 

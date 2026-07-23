@@ -5,6 +5,25 @@
 > celdas de prueba. Gate de cierre de misión: 0 escenarios sin fila, 0 filas sin prueba
 > (salvo `n/a` justificado), 0 pruebas huérfanas (sin escenario).
 
+## Corte 2026-07-23 — cierre de la ronda de cobertura total
+
+| Métrica | Valor |
+|---|---|
+| Ids de escenario en `03` (todas las clases, filas de tabla) | **192** |
+| Ids con al menos una prueba (marker pytest · título jest · tag e2e) | **191** |
+| Sin prueba | **1** — `A1-L01`, métrica de activación S1: analítica de producto, no-testeable (§10.bis) |
+| Ids con prueba que exceden el mapa | 265 medidos: incluyen sub-ids finos (`A3-C0x`, `D5-F0x`) y anexos (`NTF`, `FD`, `ACT`, `REP`) declarados en §7.bis |
+| Flujos en `flow-definitions.json` | 37, todos con spec (0 missing) |
+| Specs E2E | 30 archivos |
+
+Método: los tres greps de §5 unidos y comparados contra las filas de `03`
+(reproducible; el diff debe devolver exactamente `A1-L01`).
+
+Clases nuevas incorporadas al mapa en esta ronda: `T` (prueba Pro) y `S` (reuso puro
+de servicio), más el módulo público `PC`/`PR` y los anexos `MAN`/`ADM`/`HOME`/`A11Y`.
+
+---
+
 **Iteración**: **It8 (cierre de misión)** · **Fecha**: 2026-07-12 ·
 **M1 LA PRUEBA MAESTRA**: `e2e/master/master-journey.spec.ts` — 2 corridas
 consecutivas verdes (1.8m / 1.4m) · **Reina OCR**: `test_queen_over_a_scanned_document_forces_the_coordinator` ·
@@ -176,12 +195,13 @@ PENDIENTE (It8). Gate: verde 2 corridas consecutivas.
 
 ## 3. Cumplimiento de reglas (se recalcula por iteración)
 
-| Regla | Valor actual | Gate al cierre |
+| Regla | Valor al 2026-07-23 | Gate al cierre |
 |---|---|---|
-| Escenarios BLOQUEANTES con E2E | 6/6 de los implementados (U/H) | 100% de los BLOQUEANTES |
-| Escenarios sin prueba alguna | 247 (iteraciones no llegadas) | 0 |
-| Pruebas huérfanas (sin escenario) | 0 conocidas (suites It0 mapean a U/H) | 0 |
+| Escenarios BLOQUEANTES con E2E | 100% de los implementados (37/37 flujos con spec) | 100% de los BLOQUEANTES |
+| Escenarios sin prueba alguna | **1** (`A1-L01`, no-testeable por naturaleza) | 0 testeables |
+| Pruebas huérfanas (sin escenario) | 0 — las suites post-It8 quedaron mapeadas en §7.bis | 0 |
 | `test.skip` en el árbol | 0 | 0 (prohibido) |
+| Escenarios con feature ausente (clase X, verificación negativa) | 6 — A2-A02, A2-A04, D2-P01, B1-A01, B4-A01, C3-A02 (§10.bis) | documentados, no ocultos |
 
 ## 4. Gates de cobertura vigentes vs objetivo
 

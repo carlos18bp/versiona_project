@@ -25,6 +25,7 @@ from documents.services.version_service import DomainError
 
 @pytest.mark.django_db
 @pytest.mark.escenario('F1-L01')
+@pytest.mark.escenario('B1-L01')
 def test_free_plan_allows_one_active_project(versiona_context):
     """The seeded org already has Torre Central active ⇒ a second project on
     the free plan is rejected with the informative upgrade CTA (402)."""
@@ -49,6 +50,7 @@ def test_pro_plan_lifts_the_project_limit(versiona_context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('F1-L02')
+@pytest.mark.escenario('A2-L01')
 def test_member_limit_blocks_new_invitations(versiona_context):
     """The seeded org has 7 members — way past free's 2 ⇒ inviting is blocked
     (existing members are NEVER removed: DP-04)."""
@@ -65,6 +67,7 @@ def test_member_limit_blocks_new_invitations(versiona_context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C3-L02')
+@pytest.mark.escenario('F1-L03')
 def test_old_history_is_locked_not_deleted_on_free(versiona_context, document_with_versions):
     document, versions = document_with_versions(n_versions=2)
     from documents.models import DocumentVersion
@@ -104,6 +107,7 @@ def test_pro_plan_unlocks_history(versiona_context, document_with_versions):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('F2-F01')
+@pytest.mark.escenario('F2-L01')
 def test_usage_report_warns_at_capacity(versiona_context):
     report = usage_report(versiona_context.org)
 
@@ -119,6 +123,7 @@ def test_usage_report_warns_at_capacity(versiona_context):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('F1-F01')
+@pytest.mark.escenario('B1-L01')
 def test_create_project_endpoint_returns_402_with_upgrade_flag(client_as, versiona_context):
     response = client_as('owner').post(
         f'/api/orgs/{versiona_context.org.public_id}/projects/',
@@ -132,6 +137,7 @@ def test_create_project_endpoint_returns_402_with_upgrade_flag(client_as, versio
 
 @pytest.mark.django_db
 @pytest.mark.escenario('F2-F02')
+@pytest.mark.escenario('F2-P01')
 def test_usage_endpoint_visible_to_members_only(client_as, versiona_context):
     url = f'/api/orgs/{versiona_context.org.public_id}/usage/'
 
