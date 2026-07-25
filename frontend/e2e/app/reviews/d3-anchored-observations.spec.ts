@@ -1,5 +1,5 @@
 import { expect, test } from '../../test-with-coverage';
-import { D3_OBSERVATIONS } from '../../helpers/flow-tags';
+import { D3_ANCHORED_OBSERVATIONS } from '../../helpers/flow-tags';
 import { openSeededProject, uniqueName, uploadPdf } from '../../helpers/versiona';
 
 test.describe('D3 — Observaciones ancladas', () => {
@@ -7,7 +7,7 @@ test.describe('D3 — Observaciones ancladas', () => {
 
   test(
     'D3-F01/F02/F04 — ancla, hilo, re-anclaje en v2 y resolución (I14)',
-    { tag: [...D3_OBSERVATIONS, '@scenario:d3-f01', '@scenario:d3-f02', '@scenario:d3-f04'] },
+    { tag: [...D3_ANCHORED_OBSERVATIONS, '@scenario:d3-f01', '@scenario:d3-f02', '@scenario:d3-f04'] },
     async ({ browser }) => {
       // Editor sube v1
       const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });

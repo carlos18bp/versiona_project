@@ -111,6 +111,34 @@ def test_missing_required_section_fails_with_reason(versiona_context):
 
 
 @pytest.mark.django_db
+def test_missing_required_text_fails_with_no_snippet_evidence(versiona_context):
+    """Falla si el engine cae a 'pass' (o fabrica un snippet) cuando el texto
+    requerido NO aparece en ninguna sección con severidad default (fail):
+    debe reportar outcome='fail' y evidence={reason: text_missing, pattern},
+    sin clave 'snippet' — no hay nada que citar si no hubo match."""
+    context = versiona_context
+    config_service.update_config(
+        context.project, context.users['admin'],
+        checklist=[{'key': 'tiene-poliza', 'label': 'Póliza de cumplimiento',
+                    'type': 'required_text', 'param': r'p[oó]liza de cumplimiento'}],
+    )
+    editor = context.users['editor']
+    document = version_service.create_document(context.project, 'Sin póliza', editor)
+    intent = version_service.create_upload_intent(document, editor)
+    storage_service.put_bytes(
+        intent.key, (TESTDATA / 'contrato_v1.pdf').read_bytes(), 'application/pdf'
+    )
+    version, _ = version_service.complete_upload(document, intent.upload_id, 'v1', editor)
+
+    run = CheckRun.objects.get(document_version=version)
+    result = run.results.get(key='tiene-poliza')
+
+    assert result.outcome == 'fail'
+    assert result.evidence == {'reason': 'text_missing', 'pattern': r'p[oó]liza de cumplimiento'}
+    assert 'snippet' not in result.evidence
+
+
+@pytest.mark.django_db
 @pytest.mark.escenario('E3-A02')
 def test_run_checks_is_idempotent_per_version_and_config(checked_version):
     _, version = checked_version

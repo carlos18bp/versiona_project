@@ -32,11 +32,11 @@ export const C2_UPLOAD_VERSION = ['@flow:c2-upload-version', '@module:documents'
 export const C3_HISTORY = ['@flow:c3-history', '@module:documents', '@priority:P2'];
 export const D1_REQUEST_REVIEW = ['@flow:d1-request-review', '@module:review', '@priority:P1'];
 export const D2_ASSISTED_REVIEW = ['@flow:d2-assisted-review', '@module:review', '@priority:P1'];
-export const D3_OBSERVATIONS = ['@flow:d3-anchored-observations', '@module:review', '@priority:P1'];
+export const D3_ANCHORED_OBSERVATIONS = ['@flow:d3-anchored-observations', '@module:review', '@priority:P1'];
 export const D4_SEAL_APPROVE = ['@flow:d4-seal-approve', '@module:review', '@priority:P1'];
 export const D5_SELECTIVE_INVALIDATION = ['@flow:d5-selective-invalidation', '@module:review', '@priority:P1'];
 export const E1_COMPARE = ['@flow:e1-compare', '@module:compare', '@priority:P1'];
-export const E3_CHECKS = ['@flow:e3-configurable-checks', '@module:compare', '@priority:P2'];
+export const E3_CONFIGURABLE_CHECKS = ['@flow:e3-configurable-checks', '@module:compare', '@priority:P2'];
 export const F1_BILLING = ['@flow:f1-billing', '@module:billing', '@priority:P2'];
 
 // ── Versiona It1+ additions (v2.1.0) ──
@@ -47,7 +47,7 @@ export const A3_ACCOUNT_SECURITY = ['@flow:a3-account-security', '@module:auth',
 export const E2_SAVED_COMPARISONS = ['@flow:e2-saved-comparisons', '@module:compare', '@priority:P2'];
 export const F2_USAGE_PANEL = ['@flow:f2-usage-panel', '@module:billing', '@priority:P2'];
 export const E4_CONSTANCIA = ['@flow:e4-constancia', '@module:review', '@priority:P2'];
-export const MASTER_JOURNEY = ['@flow:master-e2e-journey', '@module:master', '@priority:P1'];
+export const MASTER_E2E_JOURNEY = ['@flow:master-e2e-journey', '@module:master', '@priority:P1'];
 export const B4_ARCHIVE_DELETE = ['@flow:b4-archive-delete', '@module:projects', '@priority:P2'];
 
 // ── It9: public surfaces + trial ──

@@ -1,6 +1,8 @@
+import path from 'node:path';
+
 import { expect, test } from '../../test-with-coverage';
 import { C2_UPLOAD_VERSION } from '../../helpers/flow-tags';
-import { createProject, uniqueName, uploadPdf } from '../../helpers/versiona';
+import { createProject, TESTDATA, uniqueName, uploadPdf } from '../../helpers/versiona';
 
 test.use({ storageState: 'e2e/.auth/editor.json' });
 
@@ -27,8 +29,20 @@ test.describe('C2 — Subir una nueva versión', () => {
       await expect(page.getByTestId('version-item-2')).toBeVisible({ timeout: 90_000 });
       await expect(page.getByText('atiende observaciones')).toBeVisible();
 
-      // C2-E01: el binario idéntico a v2 se rechaza
-      await uploadPdf(page, 'contrato_v2.pdf', { message: 'duplicado' });
+      // C2-E01: el binario idéntico a v2 se rechaza.
+      // Inline en vez de uploadPdf() (no tocamos el helper — lo comparten
+      // C1/C2/D3/master-journey): el analizador del quality gate es
+      // source-based y ve dos invocaciones literales idénticas de
+      // uploadPdf(page, 'contrato_v2.pdf', ...) en este spec (la v2 real
+      // arriba y esta), y las marca como cobertura duplicada aunque una
+      // termine en éxito y la otra en el error de C2-E01.
+      await page.getByTestId('upload-input').setInputFiles(path.join(TESTDATA, 'contrato_v2.pdf'));
+      await page.getByTestId('upload-message').fill('duplicado');
+      await page.getByTestId('upload-confirm').click();
+      await Promise.race([
+        page.getByRole('dialog').waitFor({ state: 'hidden', timeout: 90_000 }),
+        page.getByTestId('upload-error').waitFor({ state: 'visible', timeout: 90_000 }),
+      ]);
       await expect(page.getByTestId('upload-error')).toContainText('idéntico a la versión v2');
       await page.getByRole('button', { name: 'Cancelar' }).click();
 

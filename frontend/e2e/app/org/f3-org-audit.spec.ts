@@ -3,7 +3,7 @@ import { F3_ORG_AUDIT } from '../../helpers/flow-tags';
 
 test.describe('F3 — Auditoría de la organización', () => {
   test(
-    'F3-F01 — el admin ve los filtros y el export CSV',
+    'F3-F01 — el admin ve los filtros, filtra por tipo y el export CSV',
     { tag: [...F3_ORG_AUDIT, '@scenario:f3-f01'] },
     async ({ browser }) => {
       const adminContext = await browser.newContext({ storageState: 'e2e/.auth/admin.json' });
@@ -18,6 +18,15 @@ test.describe('F3 — Auditoría de la organización', () => {
         'href',
         /\/audit\/\?export=csv/
       );
+
+      // filter-type es un <input> de texto, no un <select>: el backend
+      // matchea event_type de forma exacta. Un tipo inexistente no matchea
+      // nada, y el AsyncBoundary del listado renderiza el EmptyState en vez
+      // de audit-list — la lista queda vacía por completo, no en "0 filas".
+      await adminPage.getByTestId('filter-type').fill('e2e-f3f01-no-such-event-type');
+      await adminPage.getByTestId('apply-filters').click();
+      await expect(adminPage.getByTestId('audit-list')).toHaveCount(0, { timeout: 20_000 });
+
       await adminContext.close();
     }
   );
@@ -26,6 +35,7 @@ test.describe('F3 — Auditoría de la organización', () => {
     'F3-P01 — quien no es admin ve el aviso de vista de administración',
     { tag: [...F3_ORG_AUDIT, '@scenario:f3-p01'] },
     async ({ browser }) => {
+      // quality: allow-no-interaction (permission gate renders on navigation; the restricted-notice IS the outcome)
       const viewerContext = await browser.newContext({ storageState: 'e2e/.auth/viewer.json' });
       const viewerPage = await viewerContext.newPage();
 

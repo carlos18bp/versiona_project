@@ -48,6 +48,14 @@ describe('ForgotPasswordPage', () => {
 
     render(<ForgotPasswordPage />);
 
+    // Escape hatch out of the reset flow: catches a regression where the
+    // "Back to sign in" link disappears or stops pointing at /sign-in and the
+    // visitor is stranded on the reset screen.
+    expect(screen.getByRole('link', { name: /back to sign in/i })).toHaveAttribute(
+      'href',
+      '/sign-in'
+    );
+
     await advanceToCodeStep();
 
     await waitFor(() => {

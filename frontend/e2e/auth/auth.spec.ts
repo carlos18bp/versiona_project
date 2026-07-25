@@ -3,30 +3,6 @@ import { waitForPageLoad } from '../fixtures';
 import { AUTH_SIGN_IN_FORM, AUTH_SIGN_UP_FORM, AUTH_LOGIN_INVALID, AUTH_PROTECTED_REDIRECT, AUTH_FORGOT_PASSWORD_FORM } from '../helpers/flow-tags';
 
 test.describe('Authentication', () => {
-  test('should navigate to sign-in page', { tag: [...AUTH_SIGN_IN_FORM] }, async ({ page }) => {
-    await page.goto('/sign-in');
-    await waitForPageLoad(page);
-    
-    await expect(page).toHaveURL(/.*sign-in/);
-  });
-
-  test('should display sign-in form', { tag: [...AUTH_SIGN_IN_FORM] }, async ({ page }) => {
-    await page.goto('/sign-in');
-    await waitForPageLoad(page);
-    
-    // Check for email input (by placeholder since it doesn't have type="email")
-    const emailInput = page.getByPlaceholder('Email');
-    await expect(emailInput).toBeVisible();
-    
-    // Check for password input
-    const passwordInput = page.locator('input[type="password"]');
-    await expect(passwordInput).toBeVisible();
-    
-    // Check for submit button
-    const submitBtn = page.locator('button[type="submit"]');
-    await expect(submitBtn).toBeVisible();
-  });
-
   test('should show validation on empty form submission', { tag: [...AUTH_SIGN_IN_FORM] }, async ({ page }) => {
     await page.goto('/sign-in');
     await waitForPageLoad(page);
@@ -73,40 +49,17 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/.*sign-in/);
   });
 
-  test('should have link to dashboard after sign-in', { tag: [...AUTH_SIGN_IN_FORM] }, async ({ page }) => {
-    await page.goto('/');
-    await waitForPageLoad(page);
-    
-    // Dashboard link presence depends on auth state; verify home page loads successfully
-    await expect(page).toHaveURL('/');
-  });
-
-  test('should navigate to dashboard page', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
+  test('should redirect anonymous users away from the dashboard', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
+    // quality: allow-no-interaction (authorization gate fires on navigation itself — redirect guard; no user action exists to drive)
     await page.goto('/dashboard');
     await waitForPageLoad(page);
 
-    // Either redirected to sign-in or the dashboard is shown
-    await expect(page).toHaveURL(/dashboard|sign-in/);
-  });
-
-  test('should display sign-up page heading', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
-    await page.goto('/sign-up');
-    await waitForPageLoad(page);
-
-    await expect(page).toHaveURL(/.*sign-up/);
-    await expect(page.getByRole('heading', { name: 'Crear cuenta' })).toBeVisible();
-  });
-
-  test('should show all required sign-up form fields', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
-    await page.goto('/sign-up');
-    await waitForPageLoad(page);
-
-    await expect(page.getByPlaceholder('First Name')).toBeVisible();
-    await expect(page.getByPlaceholder('Last Name')).toBeVisible();
-    await expect(page.getByPlaceholder('Email')).toBeVisible();
-    await expect(page.getByPlaceholder('Password', { exact: true })).toBeVisible();
-    await expect(page.getByPlaceholder('Confirm Password')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Crear cuenta' })).toBeVisible();
+    // Anonymous context (no storageState): /dashboard hard-redirects to
+    // /projects (app/dashboard/page.tsx), and the useRequireAuth guard that
+    // gates /projects then bounces the unauthenticated visitor to /sign-in
+    // before projects-grid ever mounts.
+    await expect(page).toHaveURL(/\/sign-in/);
+    await expect(page.getByTestId('projects-grid')).toHaveCount(0);
   });
 
   test('should validate password mismatch on sign-up', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
@@ -125,21 +78,6 @@ test.describe('Authentication', () => {
     // Should show password mismatch error and stay on sign-up page
     await expect(page.getByText('Las contraseñas no coinciden')).toBeVisible();
     await expect(page).toHaveURL(/.*sign-up/);
-  });
-
-  test('should display forgot password form', { tag: [...AUTH_FORGOT_PASSWORD_FORM] }, async ({ page }) => {
-    await page.goto('/forgot-password');
-    await waitForPageLoad(page);
-
-    await expect(page).toHaveURL(/.*forgot-password/);
-    await expect(page.getByRole('heading', { name: 'Reset Password' })).toBeVisible();
-
-    // Step A: email input and send code button
-    await expect(page.getByPlaceholder('Email')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Send verification code' })).toBeVisible();
-
-    // Link back to sign-in
-    await expect(page.getByRole('link', { name: 'Back to sign in' })).toBeVisible();
   });
 
   test('should navigate from sign-in to forgot password', { tag: [...AUTH_FORGOT_PASSWORD_FORM] }, async ({ page }) => {

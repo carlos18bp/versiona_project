@@ -15,6 +15,7 @@ function mintTokens(): { access: string; refresh: string } {
   return JSON.parse(raw).owner;
 }
 
+// quality: disable no_user_interaction (query-param handoff page, no clickable UI by design — the click happens in Django admin, a separate app outside this suite; handoff logic is already unit-tested in app/admin-login/__tests__/page.test.tsx)
 test.describe('Handoff desde el admin de Django', () => {
   test(
     'ADM-E01 — sin tokens el handoff rebota a sign-in',
