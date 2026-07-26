@@ -94,6 +94,30 @@ def test_verify_endpoint_returns_offline_verification_material(client_as, analyz
 
 
 @pytest.mark.django_db
+def test_verify_endpoint_reports_invalid_for_a_tampered_stored_signature(client_as, analyzed_v1):
+    """Falla si /verify/ devuelve signature_valid=True (o 200 sin más) para un
+    sello cuya firma persistida fue corrompida en la base — un verificador que
+    falla open es el peor defecto posible en un producto de integridad
+    documental (I6)."""
+    from reviews.models import Seal
+
+    context, _, version = analyzed_v1
+    seal = seal_service.create_seal(version, context.users['reviewer'], covers_all=True)
+    Seal.objects.filter(pk=seal.pk).update(signature='QUFBQQ==')
+
+    response = client_as('viewer').get(
+        f'{seals_url(version)}{seal.public_id}/verify/'
+    )
+
+    assert response.status_code == 200
+    assert response.data['signature_valid'] is False
+    # The stored payload itself was untouched — proves the two signals are
+    # independent: a corrupted SIGNATURE alone must not silently also flip
+    # binds_version_sha256, which would mask which check actually failed.
+    assert response.data['binds_version_sha256'] is True
+
+
+@pytest.mark.django_db
 def test_public_key_endpoint_serves_the_current_key(client_as, analyzed_v1):
     from reviews.services import signing
 

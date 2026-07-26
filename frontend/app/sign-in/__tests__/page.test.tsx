@@ -105,7 +105,11 @@ describe('SignInPage', () => {
     render(<SignInPage />);
 
     fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'user@example.com' } });
-    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'password123' } });
+    const passwordInput = screen.getByPlaceholderText('Password');
+    // Masking contract: catches a regression where the password field loses
+    // type="password" and the credential is rendered in clear text on screen.
+    expect(passwordInput).toHaveAttribute('type', 'password');
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
     await waitFor(() => {

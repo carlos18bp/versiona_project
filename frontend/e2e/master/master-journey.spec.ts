@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
 import { expect, test } from '../test-with-coverage';
-import { MASTER_JOURNEY } from '../helpers/flow-tags';
+import { MASTER_E2E_JOURNEY } from '../helpers/flow-tags';
 import { purgeMailbox, waitForEmail } from '../helpers/mailpit';
 import { TESTDATA, uniqueName } from '../helpers/versiona';
 
@@ -59,7 +59,7 @@ test.describe.configure({ mode: 'serial' });
 test.describe('M1 — La prueba maestra', () => {
   test(
     'M1 — del registro a la constancia en dieciséis pasos',
-    { tag: [...MASTER_JOURNEY, '@scenario:m1', '@states'] },
+    { tag: [...MASTER_E2E_JOURNEY, '@scenario:m1', '@states'] },
     async ({ browser }) => {
       test.setTimeout(720_000); // 12 min: tres usuarios y cuatro análisis reales
 
