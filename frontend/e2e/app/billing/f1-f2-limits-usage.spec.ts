@@ -31,7 +31,7 @@ test.describe('F1+F2 — Límites del plan y consumo', () => {
 
   test(
     'F1-L01/F2-F01 — el trial arranca, al expirar el límite bloquea con diálogo y el panel avisa',
-    { tag: [...F1_BILLING, ...F2_USAGE_PANEL, '@scenario:f1-l01', '@scenario:f2-f01', '@scenario:f1-a01'] },
+    { tag: [...F1_BILLING, ...F2_USAGE_PANEL, '@scenario:f1-l01', '@scenario:f2-f01', '@scenario:f1-a01', '@outcome:error', '@outcome:display'] },
     async ({ page }) => {
       test.setTimeout(360_000); // registro + análisis real + recorrido completo del upgrade
       const email = `free-${Date.now().toString(36)}@versiona.test`;

@@ -3,7 +3,7 @@ import { waitForPageLoad } from '../fixtures';
 import { AUTH_SIGN_IN_FORM, AUTH_SIGN_UP_FORM, AUTH_LOGIN_INVALID, AUTH_PROTECTED_REDIRECT, AUTH_FORGOT_PASSWORD_FORM } from '../helpers/flow-tags';
 
 test.describe('Authentication', () => {
-  test('should show validation on empty form submission', { tag: [...AUTH_SIGN_IN_FORM] }, async ({ page }) => {
+  test('should show validation on empty form submission', { tag: [...AUTH_SIGN_IN_FORM, '@outcome:display'] }, async ({ page }) => {
     await page.goto('/sign-in');
     await waitForPageLoad(page);
     
@@ -15,7 +15,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/.*sign-in/);
   });
 
-  test('should accept input in form fields', { tag: [...AUTH_SIGN_IN_FORM] }, async ({ page }) => {
+  test('should accept input in form fields', { tag: [...AUTH_SIGN_IN_FORM, '@outcome:display'] }, async ({ page }) => {
     await page.goto('/sign-in');
     await waitForPageLoad(page);
     
@@ -30,7 +30,7 @@ test.describe('Authentication', () => {
     await expect(passwordInput).toHaveValue('password123');
   });
 
-  test('should handle invalid credentials gracefully', { tag: [...AUTH_LOGIN_INVALID] }, async ({ page }) => {
+  test('should handle invalid credentials gracefully', { tag: [...AUTH_LOGIN_INVALID, '@outcome:error'] }, async ({ page }) => {
     await page.goto('/sign-in');
     await waitForPageLoad(page);
     
@@ -49,7 +49,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/.*sign-in/);
   });
 
-  test('should redirect anonymous users away from the dashboard', { tag: [...AUTH_PROTECTED_REDIRECT] }, async ({ page }) => {
+  test('should redirect anonymous users away from the dashboard', { tag: [...AUTH_PROTECTED_REDIRECT, '@outcome:success'] }, async ({ page }) => {
     // quality: allow-no-interaction (authorization gate fires on navigation itself — redirect guard; no user action exists to drive)
     await page.goto('/dashboard');
     await waitForPageLoad(page);
@@ -62,7 +62,7 @@ test.describe('Authentication', () => {
     await expect(page.getByTestId('projects-grid')).toHaveCount(0);
   });
 
-  test('should validate password mismatch on sign-up', { tag: [...AUTH_SIGN_UP_FORM] }, async ({ page }) => {
+  test('should validate password mismatch on sign-up', { tag: [...AUTH_SIGN_UP_FORM, '@outcome:error'] }, async ({ page }) => {
     await page.goto('/sign-up');
     await waitForPageLoad(page);
 
@@ -80,7 +80,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/.*sign-up/);
   });
 
-  test('should navigate from sign-in to forgot password', { tag: [...AUTH_FORGOT_PASSWORD_FORM] }, async ({ page }) => {
+  test('should navigate from sign-in to forgot password', { tag: [...AUTH_FORGOT_PASSWORD_FORM, '@outcome:display'] }, async ({ page }) => {
     await page.goto('/sign-in');
     await waitForPageLoad(page);
 

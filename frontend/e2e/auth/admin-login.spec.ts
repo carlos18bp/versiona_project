@@ -30,7 +30,7 @@ test.describe('Handoff desde el admin de Django', () => {
 
   test(
     'ADM-F01 — con tokens reales aterriza autenticado en el destino',
-    { tag: [...ADMIN_LOGIN_HANDOFF, '@scenario:adm-f01'] },
+    { tag: [...ADMIN_LOGIN_HANDOFF, '@scenario:adm-f01', '@outcome:success'] },
     async ({ page }) => {
       const { access, refresh } = mintTokens();
 

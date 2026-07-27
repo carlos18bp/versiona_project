@@ -9,7 +9,7 @@ test.describe('E1 — Comparar dos versiones (pantalla estrella)', () => {
 
   test(
     'E1-F01/F02 — las tres vistas muestran la tabla de verdad exacta',
-    { tag: [...E1_COMPARE, '@scenario:e1-f01', '@scenario:e1-f02', '@scenario:c3-a01'] },
+    { tag: [...E1_COMPARE, '@scenario:e1-f01', '@scenario:e1-f02', '@scenario:c3-a01', '@outcome:display'] },
     async ({ page }) => {
       await createProject(page, uniqueName('Comparación'));
       await uploadPdf(page, 'contrato_v1.pdf', { title: 'Contrato C', message: 'v1' });
@@ -74,7 +74,7 @@ test.describe('E1 — Comparar dos versiones (pantalla estrella)', () => {
 
   test(
     'E1-L01 — comparar una versión consigo misma no ofrece pares inválidos',
-    { tag: [...E1_COMPARE, '@scenario:e1-l01'] },
+    { tag: [...E1_COMPARE, '@scenario:e1-l01', '@outcome:display'] },
     async ({ page }) => {
       await createProject(page, uniqueName('SinCambios'));
       await uploadPdf(page, 'contrato_v1.pdf', { title: 'Único', message: 'v1' });

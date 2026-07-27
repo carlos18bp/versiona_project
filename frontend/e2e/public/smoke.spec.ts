@@ -3,7 +3,7 @@ import { HOME_LOADS } from '../helpers/flow-tags';
 
 test(
   'public header navigates to the pricing page',
-  { tag: [...HOME_LOADS, '@scenario:home-nav-pricing'] },
+  { tag: [...HOME_LOADS, '@scenario:home-nav-pricing', '@outcome:display'] },
   async ({ page }) => {
     await page.goto('/');
 
@@ -16,7 +16,7 @@ test(
 
 test(
   'public footer links the product pages',
-  { tag: [...HOME_LOADS, '@scenario:home-footer'] },
+  { tag: [...HOME_LOADS, '@scenario:home-footer', '@outcome:display'] },
   async ({ page }) => {
     // quality: allow-no-interaction (footer hrefs are the contract; nav covered by the pricing test)
     await page.goto('/');

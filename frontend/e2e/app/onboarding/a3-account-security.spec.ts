@@ -10,7 +10,7 @@ test.describe('A3 — Seguridad de la cuenta', () => {
 
   test(
     'A3-F01/F03 — activar 2FA y entrar con el código',
-    { tag: [...A3_ACCOUNT_SECURITY, '@scenario:a3-f01', '@scenario:a3-f03'] },
+    { tag: [...A3_ACCOUNT_SECURITY, '@scenario:a3-f01', '@scenario:a3-f03', '@outcome:success', '@outcome:error'] },
     async ({ page }) => {
       const email = `sec-${Date.now().toString(36)}@versiona.test`;
 

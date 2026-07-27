@@ -9,7 +9,7 @@ test.describe('A1 — Registro y momento wow', () => {
 
   test(
     'A1-F01 — del registro a una comparación funcionando',
-    { tag: [...A1_ONBOARDING_WOW, '@scenario:a1-f01', '@scenario:a1-f03'] },
+    { tag: [...A1_ONBOARDING_WOW, '@scenario:a1-f01', '@scenario:a1-f03', '@outcome:success'] },
     async ({ page }) => {
       const email = `wow-${Date.now().toString(36)}@versiona.test`;
 

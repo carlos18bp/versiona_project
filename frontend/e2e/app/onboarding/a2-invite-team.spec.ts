@@ -8,7 +8,7 @@ test.describe('A2 — Invitar al equipo', () => {
 
   test(
     'A2-F01/F02 — invitación por email, registro y aterrizaje directo en el proyecto',
-    { tag: [...A2_INVITE_TEAM, '@scenario:a2-f01', '@scenario:a2-f02'] },
+    { tag: [...A2_INVITE_TEAM, '@scenario:a2-f01', '@scenario:a2-f02', '@outcome:success'] },
     async ({ browser }) => {
       const invitee = `inv-${Date.now().toString(36)}@versiona.test`;
 

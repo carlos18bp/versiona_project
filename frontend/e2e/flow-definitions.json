@@ -10,7 +10,10 @@
       ],
       "priority": "P1",
       "description": "Versiona landing renders the 'El Git de tus documentos' headline, dual CTA (public comparator + free signup with the 14-day Pro trial), how-it-works, honest features/tech sections, pricing preview, FAQ and the public header/footer",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "auth-sign-in-form": {
       "name": "Sign-in form display and interaction",
@@ -20,7 +23,10 @@
       ],
       "priority": "P2",
       "description": "Sign-in page renders email/password fields and links to recovery",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "auth-sign-up-form": {
       "name": "Sign-up form display and validation",
@@ -30,7 +36,10 @@
       ],
       "priority": "P1",
       "description": "Sign-up page renders and validates password confirmation",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "error"
+      ]
     },
     "auth-login-invalid": {
       "name": "Invalid credentials are rejected",
@@ -40,7 +49,10 @@
       ],
       "priority": "P1",
       "description": "Wrong credentials show an error and do not create a session",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "error"
+      ]
     },
     "auth-protected-redirect": {
       "name": "Protected routes redirect anonymous users",
@@ -50,7 +62,10 @@
       ],
       "priority": "P1",
       "description": "Visiting a protected route without a session redirects to sign-in",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success"
+      ]
     },
     "auth-forgot-password-form": {
       "name": "Password recovery form",
@@ -60,7 +75,10 @@
       ],
       "priority": "P2",
       "description": "Recovery page renders the two-step code + reset form",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "auth-sign-in-success": {
       "name": "Sign-in happy path with a real session",
@@ -71,7 +89,10 @@
       "priority": "P1",
       "description": "Valid credentials create a real session (cookies set) and land on /projects directly (no /dashboard hop); header shows Panel/Salir",
       "expectedSpecs": 1,
-      "knownGaps": "Closed in It1 by the storageState harness + session spec"
+      "knownGaps": "Closed in It1 by the storageState harness + session spec",
+      "outcomes": [
+        "success"
+      ]
     },
     "auth-sign-out": {
       "name": "Sign out ends the session",
@@ -82,7 +103,10 @@
       "priority": "P2",
       "description": "Authenticated user presses Salir; cookies are cleared and protected routes redirect again",
       "expectedSpecs": 1,
-      "knownGaps": "Closed in It1 by the session spec"
+      "knownGaps": "Closed in It1 by the session spec",
+      "outcomes": [
+        "success"
+      ]
     },
     "auth-admin-login-handoff": {
       "name": "Django admin impersonation handoff",
@@ -92,7 +116,10 @@
       ],
       "priority": "P3",
       "description": "/admin-login consumes access/refresh/redirect query params, stores tokens and redirects",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success"
+      ]
     },
     "help-manual-browse": {
       "name": "Browse the interactive help",
@@ -102,7 +129,10 @@
       ],
       "priority": "P3",
       "description": "/manual renders Versiona help sections and fuzzy search finds a process",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "a1-onboarding-wow": {
       "name": "A1 - Sign-up and first wow moment",
@@ -112,7 +142,10 @@
       ],
       "priority": "P1",
       "description": "New user signs up, names their org, the sample project seeds, and they see a working comparison in under 5 minutes without uploading anything (docs/plan/01 A1)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success"
+      ]
     },
     "a2-invite-team": {
       "name": "A2 - Invite the team and assign roles",
@@ -122,7 +155,11 @@
       ],
       "priority": "P1",
       "description": "Admin invites an email with a role; invitee accepts and lands directly on the project (docs/plan/01 A2)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "b1-create-project": {
       "name": "B1 - Create a project in 30 seconds",
@@ -132,7 +169,11 @@
       ],
       "priority": "P1",
       "description": "Member creates a project with name only and lands on the empty project with the upload dropzone (docs/plan/01 B1)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "b2-projects-board": {
       "name": "B2 - Projects board with states, filters and search",
@@ -142,7 +183,10 @@
       ],
       "priority": "P2",
       "description": "Board shows derived states, filters by state and searches by name and content (docs/plan/01 B2)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "b3-project-settings": {
       "name": "B3 - Edit project configuration (never retroactive)",
@@ -152,7 +196,11 @@
       ],
       "priority": "P2",
       "description": "Admin edits checklist/section owners/approval rules creating a new config version (docs/plan/01 B3)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "failure"
+      ]
     },
     "c1-upload-first": {
       "name": "C1 - Upload the first document",
@@ -162,7 +210,11 @@
       ],
       "priority": "P1",
       "description": "Editor drags a PDF; analysis indexes sections and version 1 shows its traffic light (docs/plan/01 C1)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "c2-upload-version": {
       "name": "C2 - Upload a new version (the commit)",
@@ -172,7 +224,11 @@
       ],
       "priority": "P1",
       "description": "Editor uploads a re-delivery with a message; within seconds sees what changed, check deltas and affected seals (docs/plan/01 C2)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "c3-history": {
       "name": "C3 - Browse the version history",
@@ -182,7 +238,10 @@
       ],
       "priority": "P2",
       "description": "Timeline shows author/date/message per version, downloads via signed URL and jumps to comparison (docs/plan/01 C3)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "d1-request-review": {
       "name": "D1 - Request a review (the pull request)",
@@ -193,7 +252,11 @@
       ],
       "priority": "P1",
       "description": "Author opens a review request; reviewers are assigned from section owners and see it in their inbox (docs/plan/01 D1)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "d2-assisted-review": {
       "name": "D2 - Review with assistance (already reviewed by you)",
@@ -203,7 +266,10 @@
       ],
       "priority": "P1",
       "description": "Reviewer sees traffic light and change summary first, jumps to changed sections, unchanged-since-my-seal sections are marked (docs/plan/01 D2)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "d3-anchored-observations": {
       "name": "D3 - Anchored observations with state",
@@ -214,7 +280,11 @@
       ],
       "priority": "P1",
       "description": "Reviewer selects a page zone and comments; thread transitions open/answered/resolved and survives across versions (docs/plan/01 D3)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "d4-seal-approve": {
       "name": "D4 - Approve with a seal",
@@ -224,7 +294,11 @@
       ],
       "priority": "P1",
       "description": "Reviewer seals in one click; with all required seals the version freezes as approved (docs/plan/01 D4)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "d5-selective-invalidation": {
       "name": "D5 - Re-delivery and selective invalidation (the jewel)",
@@ -236,7 +310,10 @@
       ],
       "priority": "P1",
       "description": "New version invalidates only seals over changed sections, preserves the rest with validity records, and notifies only affected reviewers (docs/plan/01 D5; queen test docs/plan/06 SS5.4)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success"
+      ]
     },
     "e1-compare": {
       "name": "E1 - Compare any two versions (star screen)",
@@ -246,7 +323,10 @@
       ],
       "priority": "P1",
       "description": "Side-by-side with highlights, modified-section list matching the fixture truth table, and summary view (docs/plan/01 E1)",
-      "expectedSpecs": 2
+      "expectedSpecs": 2,
+      "outcomes": [
+        "display"
+      ]
     },
     "e3-configurable-checks": {
       "name": "E3 - Configure and run checks (traffic light with evidence)",
@@ -256,7 +336,11 @@
       ],
       "priority": "P2",
       "description": "Admin adds a check; next version runs it and shows evidence navigable to the page (docs/plan/01 E3)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "failure"
+      ]
     },
     "f1-billing": {
       "name": "F1 - Plan limits and upgrade path (contact - no online payment)",
@@ -267,7 +351,10 @@
       "priority": "P2",
       "description": "Free org hits a plan limit (402 + upgrade flag) and gets the reusable upgrade dialog linking to /precios; Pro beyond the trial is activated by contact",
       "expectedSpecs": 1,
-      "knownGaps": "Wompi/online checkout not shipped - upgrade is manual via hola@versiona.app; every new signup auto-starts a 14-day Pro trial"
+      "knownGaps": "Wompi/online checkout not shipped - upgrade is manual via hola@versiona.app; every new signup auto-starts a 14-day Pro trial",
+      "outcomes": [
+        "error"
+      ]
     },
     "c4-delete-draft": {
       "name": "C4 - Delete a draft version (trash + restore)",
@@ -277,7 +364,11 @@
       ],
       "priority": "P2",
       "description": "Latest draft version goes to the trash with two-step confirmation, shows a tombstone and can be restored (docs/audit/03 C4)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "a3-account-security": {
       "name": "A3 - 2FA and active sessions",
@@ -287,7 +378,11 @@
       ],
       "priority": "P2",
       "description": "TOTP enrolment, challenge on login and session revocation (docs/audit/03 A3)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "e2-saved-comparisons": {
       "name": "E2 - Saved comparisons",
@@ -297,7 +392,11 @@
       ],
       "priority": "P2",
       "description": "Save a comparison with a name, list it per project, share an internal link (docs/audit/03 E2)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "f2-usage-panel": {
       "name": "F2 - Usage panel and preventive warnings",
@@ -307,7 +406,10 @@
       ],
       "priority": "P2",
       "description": "Usage vs plan limits with warnings at 80%, trial status line, reachable from the authed header (Plan y uso) and settings; upgrade CTA links to /precios with a contact fallback",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "e4-constancia": {
       "name": "E4 - Exportable certificate",
@@ -317,7 +419,11 @@
       ],
       "priority": "P2",
       "description": "Issue and download the validity certificate PDF of an approved version (docs/audit/03 E4)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "master-e2e-journey": {
       "name": "M1 - Master end-to-end journey",
@@ -329,7 +435,10 @@
       ],
       "priority": "P1",
       "description": "Sign-up to certificate export in 16 UI-only steps (docs/audit/03 SS7)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success"
+      ]
     },
     "b4-archive-delete": {
       "name": "B4 - Archive or delete a project",
@@ -339,7 +448,11 @@
       ],
       "priority": "P2",
       "description": "Archiving locks writes; deletion needs the exact name, lands in the org trash and is restorable; sealed projects only archive (T4) (docs/audit/03 B4)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "public-pricing": {
       "name": "Public pricing page",
@@ -349,7 +462,10 @@
       ],
       "priority": "P1",
       "description": "/precios renders the 3-plan catalog from GET /api/public/plans/ (silent static fallback), COP prices, comparison table, trial badge on Pro and honest CTAs (signup / contact - no online checkout)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display"
+      ]
     },
     "trial-visibility": {
       "name": "Trial banner visibility",
@@ -359,7 +475,10 @@
       ],
       "priority": "P2",
       "description": "Fresh signup auto-starts the 14-day Pro trial; the authed app shows a dismissable banner with days left linking to /precios and the usage panel shows the trial line",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success"
+      ]
     },
     "public-compare": {
       "name": "Anonymous public PDF comparison",
@@ -369,7 +488,11 @@
       ],
       "priority": "P1",
       "description": "Visitor compares two PDFs on /comparar without an account (10MB/100-page caps, no OCR), sees the truth-table result on a shareable 24h page and the persistent signup CTA",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "success",
+        "error"
+      ]
     },
     "f3-org-audit": {
       "name": "F3 - Org audit log with CSV export",
@@ -380,7 +503,11 @@
       ],
       "priority": "P2",
       "description": "Owner/admin browses the organization audit log at /org/audit (type/actor filters, audit-list) and exports it as CSV; non-admins get the administration-view notice (shipped It7, spec added 2026-07-22)",
-      "expectedSpecs": 1
+      "expectedSpecs": 1,
+      "outcomes": [
+        "display",
+        "failure"
+      ]
     }
   }
 }

@@ -11,7 +11,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
 
   test(
     'E4-F01 — sellar → aprobar → emitir constancia → PDF descargable',
-    { tag: [...E4_CONSTANCIA, '@scenario:e4-f01', '@scenario:e4-f04'] },
+    { tag: [...E4_CONSTANCIA, '@scenario:e4-f01', '@scenario:e4-f04', '@outcome:success'] },
     async ({ browser }) => {
       test.setTimeout(360_000); // tres contextos + análisis reales + emisión del PDF
       // Editor sube; revisor sella todo (aprueba); admin emite
@@ -84,7 +84,7 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
 
   test(
     'E2-F01/E2-F02 — guardar una comparación con nombre, reabrirla y compartirla con otro miembro',
-    { tag: [...E2_SAVED_COMPARISONS, '@scenario:e2-f01', '@scenario:e2-f02'] },
+    { tag: [...E2_SAVED_COMPARISONS, '@scenario:e2-f01', '@scenario:e2-f02', '@outcome:success'] },
     async ({ page, browser }) => {
       test.setTimeout(360_000); // dos análisis reales + apertura del enlace por otro miembro
       await openSeededProject(page);

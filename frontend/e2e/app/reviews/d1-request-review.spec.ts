@@ -8,7 +8,7 @@ test.describe('D1 — Solicitar revisión (el pull request)', () => {
 
   test(
     'D1-F01/F03 — el editor asigna, el revisor recibe y su sello completa la revisión',
-    { tag: [...D1_REQUEST_REVIEW, '@scenario:d1-f01', '@scenario:d1-f03', '@scenario:d1-f04'] },
+    { tag: [...D1_REQUEST_REVIEW, '@scenario:d1-f01', '@scenario:d1-f03', '@scenario:d1-f04', '@outcome:success'] },
     async ({ browser }) => {
       // Editor: documento nuevo y solicitud de revisión
       const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });

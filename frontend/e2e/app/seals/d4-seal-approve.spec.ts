@@ -7,7 +7,7 @@ test.describe('D4 — Aprobar con sello', () => {
 
   test(
     'D4-F01/F02 — el revisor sella el documento completo, la firma verifica y la versión queda aprobada',
-    { tag: [...D4_SEAL_APPROVE, '@scenario:d4-f01', '@scenario:d4-f02'] },
+    { tag: [...D4_SEAL_APPROVE, '@scenario:d4-f01', '@scenario:d4-f02', '@outcome:success'] },
     async ({ browser }) => {
       // Editor prepares the document
       const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });

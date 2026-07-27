@@ -9,7 +9,7 @@ test.use({ storageState: 'e2e/.auth/editor.json' });
 test.describe('C1 — Subir el primer documento', () => {
   test(
     'C1-F01 — drag&drop con preview local, análisis y v1 con secciones indexadas',
-    { tag: [...C1_UPLOAD_FIRST, '@scenario:c1-f01', '@scenario:c1-a01'] },
+    { tag: [...C1_UPLOAD_FIRST, '@scenario:c1-f01', '@scenario:c1-a01', '@outcome:success'] },
     async ({ page }) => {
       await createProject(page, uniqueName('Contratos'));
 
@@ -40,7 +40,7 @@ test.describe('C1 — Subir el primer documento', () => {
 
   test(
     'C1-E01 — un PDF protegido se rechaza con mensaje accionable antes de subir',
-    { tag: [...C1_UPLOAD_FIRST, '@scenario:c1-e01'] },
+    { tag: [...C1_UPLOAD_FIRST, '@scenario:c1-e01', '@outcome:error'] },
     async ({ page }) => {
       await createProject(page, uniqueName('Protegidos'));
 

@@ -13,7 +13,7 @@ test.describe('Comparador público anónimo', () => {
 
   test(
     'PC-F01 — un visitante compara dos PDF, ve la truth table y el CTA lo lleva a registro',
-    { tag: [...PUBLIC_COMPARE, '@scenario:pc-f01'] },
+    { tag: [...PUBLIC_COMPARE, '@scenario:pc-f01', '@outcome:success'] },
     async ({ page }) => {
       await page.goto('/comparar');
       await expect(
@@ -50,7 +50,7 @@ test.describe('Comparador público anónimo', () => {
 
   test(
     'PC-E01 — un PDF escaneado recibe el mensaje upsell de OCR',
-    { tag: [...PUBLIC_COMPARE, '@scenario:pc-e01'] },
+    { tag: [...PUBLIC_COMPARE, '@scenario:pc-e01', '@outcome:error'] },
     async ({ page }) => {
       await page.goto('/comparar');
 

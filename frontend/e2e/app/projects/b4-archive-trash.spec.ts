@@ -9,7 +9,7 @@ test.describe('B4 — Archivar y eliminar proyecto', () => {
 
   test(
     'B4-F01/F02 — archivar bloquea escritura; papelera con nombre exacto y restauración',
-    { tag: [...B4_ARCHIVE_DELETE, '@scenario:b4-f01', '@scenario:b4-f02'] },
+    { tag: [...B4_ARCHIVE_DELETE, '@scenario:b4-f01', '@scenario:b4-f02', '@outcome:success'] },
     async ({ page, browser }) => {
       const name = uniqueName('Efímero');
       await createProject(page, name);

@@ -15,7 +15,7 @@ test.describe('D5 — Invalidación selectiva 💎', () => {
 
   test(
     'D5-F01/F02/F05 — v2 conserva el sello de A, invalida el de B y notifica SOLO a B',
-    { tag: [...D5_SELECTIVE_INVALIDATION, '@scenario:d5-f01', '@scenario:d5-f02', '@scenario:d5-f05'] },
+    { tag: [...D5_SELECTIVE_INVALIDATION, '@scenario:d5-f01', '@scenario:d5-f02', '@scenario:d5-f05', '@outcome:success'] },
     async ({ browser }) => {
       await purgeMailbox();
 

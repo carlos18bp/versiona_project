@@ -7,7 +7,7 @@ test.describe('D3 — Observaciones ancladas', () => {
 
   test(
     'D3-F01/F02/F04 — ancla, hilo, re-anclaje en v2 y resolución (I14)',
-    { tag: [...D3_ANCHORED_OBSERVATIONS, '@scenario:d3-f01', '@scenario:d3-f02', '@scenario:d3-f04'] },
+    { tag: [...D3_ANCHORED_OBSERVATIONS, '@scenario:d3-f01', '@scenario:d3-f02', '@scenario:d3-f04', '@outcome:success'] },
     async ({ browser }) => {
       // Editor sube v1
       const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });

@@ -7,7 +7,7 @@ test.describe('D2 — Revisar con asistencia', () => {
 
   test(
     'D2-F01 — "ya revisado por ti" acota la re-revisión a lo que cambió',
-    { tag: [...D2_ASSISTED_REVIEW, '@scenario:d2-f01', '@scenario:d2-l01'] },
+    { tag: [...D2_ASSISTED_REVIEW, '@scenario:d2-f01', '@scenario:d2-l01', '@outcome:display'] },
     async ({ browser }) => {
       // Editor sube v1
       const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });
