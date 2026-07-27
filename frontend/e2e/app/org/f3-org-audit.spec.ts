@@ -4,7 +4,7 @@ import { F3_ORG_AUDIT } from '../../helpers/flow-tags';
 test.describe('F3 — Auditoría de la organización', () => {
   test(
     'F3-F01 — el admin ve los filtros, filtra por tipo y el export CSV',
-    { tag: [...F3_ORG_AUDIT, '@scenario:f3-f01'] },
+    { tag: [...F3_ORG_AUDIT, '@scenario:f3-f01', '@outcome:display'] },
     async ({ browser }) => {
       const adminContext = await browser.newContext({ storageState: 'e2e/.auth/admin.json' });
       const adminPage = await adminContext.newPage();
@@ -33,7 +33,7 @@ test.describe('F3 — Auditoría de la organización', () => {
 
   test(
     'F3-P01 — quien no es admin ve el aviso de vista de administración',
-    { tag: [...F3_ORG_AUDIT, '@scenario:f3-p01'] },
+    { tag: [...F3_ORG_AUDIT, '@scenario:f3-p01', '@outcome:failure'] },
     async ({ browser }) => {
       // quality: allow-no-interaction (permission gate renders on navigation; the restricted-notice IS the outcome)
       const viewerContext = await browser.newContext({ storageState: 'e2e/.auth/viewer.json' });

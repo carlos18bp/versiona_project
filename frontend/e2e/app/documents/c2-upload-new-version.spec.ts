@@ -12,7 +12,7 @@ test.describe('C2 — Subir una nueva versión', () => {
 
   test(
     'C2-F01 — la re-entrega crea v2 con su mensaje y análisis automático',
-    { tag: [...C2_UPLOAD_VERSION, '@scenario:c2-f01', '@scenario:c2-e01', '@scenario:c2-a01'] },
+    { tag: [...C2_UPLOAD_VERSION, '@scenario:c2-f01', '@scenario:c2-e01', '@scenario:c2-a01', '@outcome:success', '@outcome:error'] },
     async ({ page }) => {
       await createProject(page, uniqueName('Reentregas'));
       await uploadPdf(page, 'contrato_v1.pdf', { title: 'Contrato R', message: 'v1' });

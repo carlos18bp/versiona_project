@@ -59,7 +59,7 @@ test.describe.configure({ mode: 'serial' });
 test.describe('M1 — La prueba maestra', () => {
   test(
     'M1 — del registro a la constancia en dieciséis pasos',
-    { tag: [...MASTER_E2E_JOURNEY, '@scenario:m1', '@states'] },
+    { tag: [...MASTER_E2E_JOURNEY, '@scenario:m1', '@states', '@outcome:success'] },
     async ({ browser }) => {
       test.setTimeout(720_000); // 12 min: tres usuarios y cuatro análisis reales
 

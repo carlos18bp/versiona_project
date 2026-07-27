@@ -5,7 +5,7 @@ const HELP_MANUAL_BROWSE = ['@flow:help-manual-browse', '@module:home', '@priori
 test.describe('Manual interactivo', () => {
   test(
     'MAN-F01 — /manual muestra las secciones con sus procesos',
-    { tag: [...HELP_MANUAL_BROWSE, '@scenario:man-f01'] },
+    { tag: [...HELP_MANUAL_BROWSE, '@scenario:man-f01', '@outcome:display'] },
     async ({ page }) => {
       await page.goto('/manual');
 
@@ -23,7 +23,7 @@ test.describe('Manual interactivo', () => {
 
   test(
     'MAN-F02 — la búsqueda filtra procesos por texto',
-    { tag: [...HELP_MANUAL_BROWSE, '@scenario:man-f02'] },
+    { tag: [...HELP_MANUAL_BROWSE, '@scenario:man-f02', '@outcome:display'] },
     async ({ page }) => {
       await page.goto('/manual');
 

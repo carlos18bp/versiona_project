@@ -9,7 +9,7 @@ test.describe('Trial — visibilidad del banner', () => {
 
   test(
     'TRIAL-F01 — el registro fresco ve el banner Pro con días restantes y lo descarta por sesión',
-    { tag: [...TRIAL_VISIBILITY, '@scenario:trial-f01'] },
+    { tag: [...TRIAL_VISIBILITY, '@scenario:trial-f01', '@outcome:success'] },
     async ({ page }) => {
       const email = `trial-${Date.now().toString(36)}@versiona.test`;
 

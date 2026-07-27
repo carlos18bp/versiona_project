@@ -7,7 +7,7 @@ test.use({ storageState: 'e2e/.auth/editor.json' });
 test.describe('B1 — Crear un proyecto', () => {
   test(
     'B1-F01 — nombre y descripción bastan y aterriza en el proyecto vacío con dropzone-guía',
-    { tag: [...B1_CREATE_PROJECT, '@scenario:b1-f01'] },
+    { tag: [...B1_CREATE_PROJECT, '@scenario:b1-f01', '@outcome:success'] },
     async ({ page }) => {
       const name = uniqueName('Licencia');
 
@@ -24,7 +24,7 @@ test.describe('B1 — Crear un proyecto', () => {
 
   test(
     'B1-E01 — el nombre vacío se rechaza con validación inline',
-    { tag: [...B1_CREATE_PROJECT, '@scenario:b1-e01'] },
+    { tag: [...B1_CREATE_PROJECT, '@scenario:b1-e01', '@outcome:error'] },
     async ({ page }) => {
       await page.goto('/projects/new');
       await page.getByTestId('project-submit').click();
@@ -36,7 +36,7 @@ test.describe('B1 — Crear un proyecto', () => {
 
   test(
     'B1-F01b — el proyecto recién creado aparece en el tablero',
-    { tag: [...B1_CREATE_PROJECT, '@scenario:b2-f01'] },
+    { tag: [...B1_CREATE_PROJECT, '@scenario:b2-f01', '@outcome:success'] },
     async ({ page }) => {
       const name = uniqueName('Tablero');
       await page.goto('/projects/new');

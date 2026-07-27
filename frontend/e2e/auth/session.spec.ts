@@ -4,7 +4,7 @@ import { AUTH_SIGN_IN_SUCCESS, AUTH_SIGN_OUT } from '../helpers/flow-tags';
 test.describe('Real session', () => {
   test(
     'U8 — sign-in with seeded credentials creates a session and lands on the board',
-    { tag: [...AUTH_SIGN_IN_SUCCESS, '@scenario:u8'] },
+    { tag: [...AUTH_SIGN_IN_SUCCESS, '@scenario:u8', '@outcome:success'] },
     async ({ page }) => {
       await page.goto('/sign-in');
       await page.getByPlaceholder('Email').fill('editor@versiona.test');
@@ -21,7 +21,7 @@ test.describe('Real session', () => {
 
   test(
     'U9 — sign-out clears the session and protected routes redirect again',
-    { tag: [...AUTH_SIGN_OUT, '@scenario:u9'] },
+    { tag: [...AUTH_SIGN_OUT, '@scenario:u9', '@outcome:success'] },
     async ({ browser }) => {
       const context = await browser.newContext({ storageState: 'e2e/.auth/viewer.json' });
       const page = await context.newPage();

@@ -7,7 +7,7 @@ test.use({ storageState: 'e2e/.auth/editor.json' });
 test.describe('C4 — Eliminar una versión borrador', () => {
   test(
     'C4-F01/F02 — a la papelera con doble confirmación, tombstone y restauración',
-    { tag: [...C4_DELETE_DRAFT, '@scenario:c4-f01', '@scenario:c4-f02'] },
+    { tag: [...C4_DELETE_DRAFT, '@scenario:c4-f01', '@scenario:c4-f02', '@outcome:success'] },
     async ({ page, browser }) => {
       await createProject(page, uniqueName('Papelera'));
       await uploadPdf(page, 'contrato_v1.pdf', { title: 'Borrable', message: 'v1' });

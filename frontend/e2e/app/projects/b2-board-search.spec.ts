@@ -9,7 +9,7 @@ test.describe('B2 — Tablero completo', () => {
 
   test(
     'B2-A03 — la búsqueda encuentra el proyecto por CONTENIDO del PDF',
-    { tag: [...B2_PROJECTS_BOARD, '@scenario:b2-a03', '@scenario:b2-a01'] },
+    { tag: [...B2_PROJECTS_BOARD, '@scenario:b2-a03', '@scenario:b2-a01', '@outcome:display'] },
     async ({ page }) => {
       // Proyecto fresco cuyo NOMBRE no contiene el término: si aparece al
       // buscar, la coincidencia vino del contenido del PDF.

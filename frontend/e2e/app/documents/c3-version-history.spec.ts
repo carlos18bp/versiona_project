@@ -7,7 +7,7 @@ test.use({ storageState: 'e2e/.auth/editor.json' });
 test.describe('C3 — Navegar el historial', () => {
   test(
     'C3-F01/F02 — timeline con autor, mensaje y miniatura; descarga por URL firmada',
-    { tag: [...C3_HISTORY, '@scenario:c3-f01', '@scenario:c3-f02'] },
+    { tag: [...C3_HISTORY, '@scenario:c3-f01', '@scenario:c3-f02', '@outcome:display'] },
     async ({ page }) => {
       await createProject(page, uniqueName('Historial'));
       await uploadPdf(page, 'contrato_v1.pdf', { title: 'Contrato H', message: 'v1 inicial' });

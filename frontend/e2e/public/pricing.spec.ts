@@ -6,7 +6,7 @@ test.describe('Precios públicos', () => {
 
   test(
     'PR-F01 — /precios muestra las tres tarjetas con precios COP',
-    { tag: [...PUBLIC_PRICING, '@scenario:pr-f01'] },
+    { tag: [...PUBLIC_PRICING, '@scenario:pr-f01', '@outcome:display'] },
     async ({ page }) => {
       // quality: allow-no-interaction (display contract: concrete COP prices/limits asserted; interactive coverage lives in PR-F03)
       await page.goto('/precios');
@@ -26,7 +26,7 @@ test.describe('Precios públicos', () => {
 
   test(
     'PR-F02 — la tabla comparativa muestra los límites honestos',
-    { tag: [...PUBLIC_PRICING, '@scenario:pr-f02'] },
+    { tag: [...PUBLIC_PRICING, '@scenario:pr-f02', '@outcome:display'] },
     async ({ page }) => {
       // quality: allow-no-interaction (display contract: concrete COP prices/limits asserted; interactive coverage lives in PR-F03)
       await page.goto('/precios');
@@ -44,7 +44,7 @@ test.describe('Precios públicos', () => {
 
   test(
     'PR-F03 — los CTAs llevan a registro y contacto',
-    { tag: [...PUBLIC_PRICING, '@scenario:pr-f03'] },
+    { tag: [...PUBLIC_PRICING, '@scenario:pr-f03', '@outcome:display'] },
     async ({ page }) => {
       await page.goto('/precios');
 
