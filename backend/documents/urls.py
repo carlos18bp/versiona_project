@@ -1,8 +1,11 @@
 from django.urls import path
 
-from . import views
+from . import views, views_objects
 
 urlpatterns = [
+    # Signed-URL object access — the local stand-in for S3 presigned URLs.
+    # Anonymous by design: the signature is the credential (see views_objects).
+    path('objects/<str:token>/', views_objects.object_access, name='object-access'),
     path('projects/<uuid:proj>/documents/', views.project_documents, name='project-documents'),
     path('documents/<uuid:doc>/', views.document_detail, name='document-detail'),
     path('documents/<uuid:doc>/restore/', views.document_restore, name='document-restore'),

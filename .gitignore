@@ -132,3 +132,10 @@ test-results/test-quality-report.json
 
 # Rotated logs (RotatingFileHandler: django.log.1, .2, ...)
 *.log.[0-9]*
+
+# Local object storage root (filesystem backend) + celery beat schedule state
+backend/var/
+
+# Backup of a previous .env kept on the box during onboarding — has secrets
+.env.dev-backup
+*.env.dev-backup

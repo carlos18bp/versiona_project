@@ -27,8 +27,16 @@ def scheduled_backup():
     Automated weekly backup of database and media files (Sunday 03:00 UTC).
     Storage: configured via BACKUP_STORAGE_PATH env var.
     Retention: 4 weeks (~1 month).
+
+    Skipped when BACKUPS_ENABLED is off — the fleet contract for staging, where
+    the VPS-level backup scripts already exclude the project and an app-level
+    dbbackup would just fill the disk.
     """
     from django.core.management import call_command
+
+    if not getattr(settings, 'BACKUPS_ENABLED', True):
+        logger.info('Backups disabled for this environment (BACKUPS_ENABLED=false) — skipping.')
+        return False
 
     timestamp = timezone.now().strftime('%Y-%m-%d_%H%M%S')
 
@@ -75,8 +83,11 @@ def weekly_slow_queries_report():
     """
     Weekly report of slow queries and potential N+1 patterns.
     Output: backend/logs/silk-reports/silk-report-YYYY-MM-DD.log
-    Only runs if Silk is enabled.
+    Only runs if Silk is enabled AND the environment wants the report — staging
+    opts out via ENABLE_SLOW_QUERIES_REPORT (fleet contract).
     """
+    if not getattr(settings, 'ENABLE_SLOW_QUERIES_REPORT', True):
+        return
     if not getattr(settings, 'ENABLE_SILK', False):
         return
 

@@ -140,7 +140,16 @@ def test_download_returns_signed_url_and_audits(client_as, versiona_context, api
     response = client_as('viewer').get(f'/api/versions/{version_id}/download/')
 
     assert response.status_code == 200
-    assert 'X-Amz-Signature' in response.data['url']
+
+    # Backend-agnostic: what matters is that the URL is a *signed capability* —
+    # it works as handed over, and it stops working once tampered with. Asserting
+    # 'X-Amz-Signature' pinned the storage vendor, not the behaviour, and broke
+    # the moment the same guarantee came from our own signer instead of S3.
+    url = response.data['url']
+    anonymous = client_as('anonymous')
+    assert anonymous.get(url).status_code == 200
+    assert anonymous.get(url.replace('/api/objects/', '/api/objects/x')).status_code == 403
+
     from audit.models import AuditEvent
     assert AuditEvent.objects.filter(event_type='version.downloaded').exists()
 
