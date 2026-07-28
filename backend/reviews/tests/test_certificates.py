@@ -196,5 +196,13 @@ def test_download_endpoint_returns_signed_url_and_snapshot(client_as, approved_v
     )
 
     assert response.status_code == 200
-    assert 'X-Amz-Signature' in response.data['url']
+
+    # Backend-agnostic: the guarantee is that the URL is a *signed capability* —
+    # it works as handed over and stops working once tampered with. Asserting
+    # 'X-Amz-Signature' pinned the storage vendor rather than the behaviour.
+    url = response.data['url']
+    anonymous = client_as('anonymous')
+    assert anonymous.get(url).status_code == 200
+    assert anonymous.get(url.replace('/api/objects/', '/api/objects/x')).status_code == 403
+
     assert response.data['snapshot']['serial'] == certificate.serial

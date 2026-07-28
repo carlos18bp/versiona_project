@@ -444,3 +444,61 @@ def document_with_versions(versiona_context):
         return document, versions
 
     return _make
+
+
+# ── Object storage ──────────────────────────────────────────────────────────
+@pytest.fixture(autouse=True)
+def _object_storage_root(settings, tmp_path_factory):
+    """Give every test a private, throwaway object root.
+
+    Before this existed the suite wrote to a real MinIO on 127.0.0.1:9000 (it
+    had accumulated 124 MB under the `test/` prefix). Forcing the filesystem
+    backend makes the suite hermetic and removes the external dependency; the
+    per-module `_test_storage_prefix` fixtures still namespace keys inside the
+    already-isolated root, so they stay harmless.
+    """
+    settings.AWS_STORAGE_BUCKET_NAME = ''
+    settings.OBJECT_STORAGE_ROOT = str(tmp_path_factory.mktemp('objects'))
+    settings.OBJECT_STORAGE_SENDFILE_ROOT = ''
+
+
+@pytest.fixture(autouse=True)
+def _not_production(settings):
+    """Never run the suite as production, whatever backend/.env says.
+
+    IS_PRODUCTION is computed at import time from DJANGO_ENV, so the per-module
+    `settings.DJANGO_ENV = 'test'` fixtures do not move it. Once the box carried
+    a production .env it flipped to True and the seal signer began demanding a
+    real SEAL_SIGNING_KEY_PATH instead of generating an ephemeral one.
+    """
+    settings.DJANGO_ENV = 'test'
+    settings.IS_PRODUCTION = False
+    # Fleet-contract switches: staging turns these off in its .env, which would
+    # make every task-body test assert against an early return. Pin them ON so
+    # the suite exercises the real work; the guards themselves are covered by
+    # dedicated tests in accounts/tests/commands/test_tasks.py.
+    settings.BACKUPS_ENABLED = True
+    settings.ENABLE_SLOW_QUERIES_REPORT = True
+
+
+@pytest.fixture(autouse=True)
+def _eager_celery(settings):
+    """Run tasks inline, regardless of what backend/.env says.
+
+    The suite is written around eager Celery ("real MinIO + eager Celery" in the
+    older docstrings): fixtures like `approved_version` expect the analysis to
+    have completed by the time complete_upload returns. That used to work only
+    because the developer's .env happened to set CELERY_TASK_ALWAYS_EAGER=true —
+    so the moment the box carried a production .env (eager off), 13 tests failed
+    at fixture setup. Pin it here instead of depending on the machine.
+
+    app.conf is set as well as settings: Celery resolves its config from
+    django.conf at app configuration time and caches it, so flipping the Django
+    setting alone does not reach an already-built app.
+    """
+    from versiona_project.celery import app
+
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.CELERY_TASK_EAGER_PROPAGATES = True
+    app.conf.task_always_eager = True
+    app.conf.task_eager_propagates = True

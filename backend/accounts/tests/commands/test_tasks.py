@@ -348,3 +348,37 @@ def test_purge_trashed_returns_zero_counts_on_a_clean_database():
     result = purge_trashed()
 
     assert result == {'versions': 0, 'documents': 0, 'projects': 0}
+
+
+# ---------------------------------------------------------------------------
+# Fleet staging contract: the two opt-out guards
+# ---------------------------------------------------------------------------
+
+def test_scheduled_backup_aborts_when_backups_are_disabled(settings):
+    """Catches: a staging box taking its own dbbackup anyway.
+
+    The fleet excludes staging from VPS-level backups; without this guard the
+    app-level weekly task still ran and filled a partition already at 79%.
+    """
+    from versiona_project.tasks import scheduled_backup
+
+    settings.BACKUPS_ENABLED = False
+
+    with patch('django.core.management.call_command') as call_command:
+        result = scheduled_backup()
+
+    assert result is False
+    call_command.assert_not_called()
+
+
+def test_weekly_slow_queries_report_aborts_when_the_report_is_disabled(settings, tmp_path):
+    """Catches: staging e-mailing performance reports it is contractually exempt from."""
+    from versiona_project.tasks import weekly_slow_queries_report
+
+    settings.ENABLE_SLOW_QUERIES_REPORT = False
+    settings.ENABLE_SILK = True  # would otherwise be the reason it returns
+
+    with patch('silk.models.SQLQuery') as sql_query:
+        weekly_slow_queries_report()
+
+    sql_query.objects.filter.assert_not_called()

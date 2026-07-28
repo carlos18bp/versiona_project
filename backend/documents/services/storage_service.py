@@ -1,5 +1,4 @@
-"""
-Object-storage service for domain files (docs/plan/02 §6, 08 §5).
+"""Object-storage service for domain files (docs/plan/02 §6, 08 §5).
 
 Key layout (never overwritten — one key per version):
     {env}/orgs/{org}/projects/{proj}/docs/{doc}/v{n}/original.pdf
@@ -7,40 +6,46 @@ Key layout (never overwritten — one key per version):
 Uploads land on a staging key first (uploads/{org}/{upload_id}) and are
 copied to their final immutable key at `complete/` (DP-06).
 
-Access is exclusively through short-TTL presigned URLs; the bucket stays
-private. All configuration comes from settings/env (kit 7).
+Access is exclusively through short-TTL signed URLs; objects are never publicly
+addressable. All configuration comes from settings/env (kit 7).
+
+This module is the stable import path for the whole domain. It owns the key
+layout — which is backend-agnostic — and forwards every object operation to the
+active backend (`storage/s3.py` or `storage/filesystem.py`, chosen by whether a
+bucket is configured). Keep new call sites on `storage_service.X`; do not import
+the backends directly.
 """
 
 import hashlib
 import uuid
 
-import boto3
-from botocore.client import Config
-from botocore.exceptions import ClientError
 from django.conf import settings
 
+from .storage import get_backend
+from .storage.base import StorageUnavailable
 
-class StorageUnavailable(Exception):
-    pass
+__all__ = [
+    'StorageUnavailable',
+    'staging_key',
+    'version_key',
+    'thumb_key',
+    'new_upload_id',
+    'sha256_of',
+    'presign_upload',
+    'presign_download',
+    'presign_view',
+    'head',
+    'get_bytes',
+    'put_bytes',
+    'put_stream',
+    'copy',
+    'delete',
+]
 
 
-def _client():
-    if not settings.AWS_STORAGE_BUCKET_NAME:
-        raise StorageUnavailable('Object storage is not configured (AWS_STORAGE_BUCKET_NAME).')
-    return boto3.client(
-        's3',
-        endpoint_url=settings.AWS_S3_ENDPOINT_URL or None,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        region_name=settings.AWS_S3_REGION_NAME,
-        config=Config(signature_version='s3v4'),
-    )
-
-
-def _bucket() -> str:
-    return settings.AWS_STORAGE_BUCKET_NAME
-
-
+# ---------------------------------------------------------------------------
+# Key layout — identical on every backend
+# ---------------------------------------------------------------------------
 def _env_prefix() -> str:
     return getattr(settings, 'DJANGO_ENV', 'development')
 
@@ -65,67 +70,54 @@ def new_upload_id() -> str:
     return uuid.uuid4().hex
 
 
+def sha256_of(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Object operations — delegated to the active backend
+# ---------------------------------------------------------------------------
 def presign_upload(key: str, ttl: int | None = None) -> str:
-    """Presigned PUT (content pinned to application/pdf; size re-verified at
-    complete/ — docs/plan/08 §5)."""
-    return _client().generate_presigned_url(
-        'put_object',
-        Params={'Bucket': _bucket(), 'Key': key, 'ContentType': 'application/pdf'},
-        ExpiresIn=ttl or int(getattr(settings, 'UPLOAD_SIGNED_URL_TTL_SECONDS', 900)),
-    )
+    return get_backend().presign_upload(key, ttl)
 
 
 def presign_download(key: str, filename: str, ttl: int | None = None) -> str:
-    return _client().generate_presigned_url(
-        'get_object',
-        Params={
-            'Bucket': _bucket(),
-            'Key': key,
-            'ResponseContentDisposition': f'attachment; filename="{filename}"',
-            'ResponseContentType': 'application/pdf',
-        },
-        ExpiresIn=ttl or int(getattr(settings, 'MEDIA_SIGNED_URL_TTL_SECONDS', 300)),
-    )
+    return get_backend().presign_download(key, filename, ttl)
 
 
 def presign_view(key: str, content_type: str, ttl: int | None = None) -> str:
-    """Inline variant for the in-app viewer/thumbnails (react-pdf needs GET)."""
-    return _client().generate_presigned_url(
-        'get_object',
-        Params={'Bucket': _bucket(), 'Key': key, 'ResponseContentType': content_type},
-        ExpiresIn=ttl or int(getattr(settings, 'MEDIA_SIGNED_URL_TTL_SECONDS', 300)),
-    )
+    return get_backend().presign_view(key, content_type, ttl)
 
 
 def head(key: str) -> dict | None:
-    try:
-        return _client().head_object(Bucket=_bucket(), Key=key)
-    except ClientError:
-        return None
+    """Object metadata, or None when the key does not exist.
+
+    Both backends return a dict carrying at least 'ContentLength' — the only
+    field the domain reads (version_service.complete_upload).
+    """
+    return get_backend().head(key)
 
 
 def get_bytes(key: str) -> bytes:
-    body = _client().get_object(Bucket=_bucket(), Key=key)['Body']
-    return body.read()
+    return get_backend().get_bytes(key)
 
 
 def put_bytes(key: str, data: bytes, content_type: str) -> None:
-    _client().put_object(Bucket=_bucket(), Key=key, Body=data, ContentType=content_type)
+    get_backend().put_bytes(key, data, content_type)
+
+
+def put_stream(key: str, chunks, max_bytes: int | None = None) -> int:
+    """Write an object from an iterable of chunks; returns the byte count.
+
+    Used by the signed-URL upload view, which must never materialise a 25 MB
+    body in memory (and must never touch request.body — see views_objects.py).
+    """
+    return get_backend().put_stream(key, chunks, max_bytes)
 
 
 def copy(source_key: str, dest_key: str) -> None:
-    _client().copy_object(
-        Bucket=_bucket(),
-        Key=dest_key,
-        CopySource={'Bucket': _bucket(), 'Key': source_key},
-        MetadataDirective='REPLACE',
-        ContentType='application/pdf',
-    )
+    get_backend().copy(source_key, dest_key)
 
 
 def delete(key: str) -> None:
-    _client().delete_object(Bucket=_bucket(), Key=key)
-
-
-def sha256_of(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
+    get_backend().delete(key)

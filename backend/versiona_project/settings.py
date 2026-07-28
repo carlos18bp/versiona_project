@@ -25,6 +25,14 @@ DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')
 IS_PRODUCTION = DJANGO_ENV == 'production'
 ENABLE_SILK = os.getenv('ENABLE_SILK', 'false').lower() in {'1', 'true', 'yes', 'on'}
 
+# Fleet staging contract: a staging deployment is production-grade in every way
+# EXCEPT that it does not take its own backups and does not e-mail performance
+# reports. Both default to on so a production deployment needs no extra env.
+BACKUPS_ENABLED = os.getenv('BACKUPS_ENABLED', 'true').lower() in {'1', 'true', 'yes', 'on'}
+ENABLE_SLOW_QUERIES_REPORT = os.getenv(
+    'ENABLE_SLOW_QUERIES_REPORT', 'true'
+).lower() in {'1', 'true', 'yes', 'on'}
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'change-me')
 
@@ -243,7 +251,28 @@ AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', '')
 AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_DEFAULT_ACL = None
-AWS_QUERYSTRING_EXPIRE = int(os.getenv('MEDIA_SIGNED_URL_TTL_SECONDS', '300'))
+
+# TTL of a signed object URL. Read by BOTH backends: S3 passes it to
+# generate_presigned_url, the filesystem backend bakes it into the token's `exp`.
+# (It used to be read only into AWS_QUERYSTRING_EXPIRE, so storage_service's
+# getattr(settings, 'MEDIA_SIGNED_URL_TTL_SECONDS', 300) always hit the default.)
+MEDIA_SIGNED_URL_TTL_SECONDS = int(os.getenv('MEDIA_SIGNED_URL_TTL_SECONDS', '300'))
+AWS_QUERYSTRING_EXPIRE = MEDIA_SIGNED_URL_TTL_SECONDS
+
+# Filesystem object storage (active whenever AWS_STORAGE_BUCKET_NAME is empty).
+# The root sits OUTSIDE MEDIA_ROOT on purpose: urls.py serves MEDIA_ROOT
+# unsigned under DEBUG and nginx aliases /media/ to it, so an object placed
+# there would be readable by guessing its path. A system check enforces this.
+OBJECT_STORAGE_ROOT = os.getenv('OBJECT_STORAGE_ROOT', os.path.join(BASE_DIR, 'var', 'objects'))
+OBJECT_STORAGE_DIR_MODE = 0o750
+OBJECT_STORAGE_FILE_MODE = 0o640
+# Set to nginx's `internal` location (e.g. /__objects_internal) to hand delivery
+# off with X-Accel-Redirect. Empty = stream from Django, which is what dev and
+# the test client need.
+OBJECT_STORAGE_SENDFILE_ROOT = os.getenv('OBJECT_STORAGE_SENDFILE_ROOT', '')
+# Signed URLs are root-relative by default, so they stay correct on every
+# hostname the app answers on. Set this only to force an absolute origin.
+OBJECT_STORAGE_PUBLIC_ORIGIN = os.getenv('OBJECT_STORAGE_PUBLIC_ORIGIN', '').rstrip('/')
 
 if AWS_STORAGE_BUCKET_NAME:
     _default_storage = {
