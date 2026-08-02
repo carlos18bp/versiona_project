@@ -3,6 +3,7 @@ from django.db import DatabaseError
 from django.db.models.deletion import ProtectedError
 
 from accounts.models import User
+from core.fake_data_guard import add_allow_production_argument, refuse_on_production
 
 
 class Command(BaseCommand):
@@ -18,9 +19,11 @@ class Command(BaseCommand):
     evidence (Seal.reviewer, Certificate.issued_by, Invitation.invited_by) are
     PRESERVED, not force-deleted: sealed history is append-only by product
     invariant (I4) and this command never trades it away. Storage objects
-    (MinIO) belonging to cascaded documents are acceptable dev debris;
-    production never runs this (the fake-data-refresh skill gates on
-    DJANGO_ENV).
+    belonging to cascaded documents are acceptable dev debris.
+
+    Production and staging are refused in code (core.fake_data_guard), not by
+    convention: this used to rely on the fake-data-refresh skill checking
+    DJANGO_ENV, which protected nobody running the command by hand.
     """
 
     def add_arguments(self, parser):
@@ -29,9 +32,12 @@ class Command(BaseCommand):
             action='store_true',
             help='Confirm deletion of all fake data.',
         )
+        add_allow_production_argument(parser)
 
     def handle(self, *args, **options):
         from orgs.models import Organization
+
+        refuse_on_production(options, 'delete_fake_data')
 
         if not options.get('confirm'):
             raise CommandError('Deletion not confirmed. Re-run with --confirm.')

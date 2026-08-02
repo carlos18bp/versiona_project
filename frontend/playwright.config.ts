@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { backendE2eEnv } from './e2e/helpers/backend-env';
+
 // Shared-VPS safety: another project's dev server squatting :3000/:8000 gets
 // silently "reused" by webServer and poisons every spec. Override per run:
 //   E2E_FRONTEND_PORT=3100 E2E_BACKEND_PORT=8100 npx playwright test ...
@@ -31,6 +33,10 @@ export default defineConfig({
       timeout: 180_000, // 3 minutes for server startup
       stdout: 'ignore',
       stderr: 'ignore',
+      // The server must answer against the SAME throwaway database global-setup
+      // seeded, not whatever backend/.env names — on a deployment host that is
+      // the live one. See e2e/helpers/backend-env.ts.
+      env: backendE2eEnv(),
     },
     {
       command: `npm run dev -- --port ${FRONTEND_PORT}`,

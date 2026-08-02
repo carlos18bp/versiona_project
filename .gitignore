@@ -139,3 +139,6 @@ backend/var/
 # Backup of a previous .env kept on the box during onboarding — has secrets
 .env.dev-backup
 *.env.dev-backup
+
+# E2E harness env (see backend/.env.e2e.example) — names a throwaway database
+backend/.env.e2e
