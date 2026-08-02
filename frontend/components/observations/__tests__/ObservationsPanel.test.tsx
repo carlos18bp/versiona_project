@@ -120,4 +120,23 @@ describe('ObservationsPanel (D3)', () => {
 
     expect(screen.queryByTestId('add-observation')).not.toBeInTheDocument();
   });
+
+  // The backend (observations/services.py, set_status) resolves only for the
+  // thread's author or an admin. Gating the button on `canCreate` showed it to
+  // every reviewer, who then got a 403 on click.
+  it('[D3-P03] hides resolve from a reviewer who did not open the thread', () => {
+    items = [observation({ status: 'answered', author_email: 'otra@versiona.test' })];
+
+    render(<ObservationsPanel {...baseProps} canResolveAny={false} />);
+
+    expect(screen.queryByTestId('resolve-o1')).not.toBeInTheDocument();
+  });
+
+  it('[D3-P04] shows resolve to an admin on a thread they did not open', () => {
+    items = [observation({ status: 'answered', author_email: 'otra@versiona.test' })];
+
+    render(<ObservationsPanel {...baseProps} canResolveAny />);
+
+    expect(screen.getByTestId('resolve-o1')).toBeInTheDocument();
+  });
 });

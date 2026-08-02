@@ -124,6 +124,7 @@ export default function VersionViewerPage() {
                 sections={detail.sections}
                 canCreate={['reviewer', 'admin'].includes(detail.effective_role ?? '')}
                 canReply={detail.effective_role !== 'viewer'}
+                canResolveAny={detail.effective_role === 'admin'}
                 currentUserEmail={userEmail}
                 onSelectAnchor={(quads) => setAnchorHighlights(quads)}
               />

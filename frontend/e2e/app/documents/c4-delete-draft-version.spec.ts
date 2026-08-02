@@ -46,12 +46,10 @@ test.describe('C4 — Eliminar una versión borrador', () => {
     'C4-E02 — una versión antigua (no la última) no puede eliminarse',
     { tag: [...C4_DELETE_DRAFT, '@scenario:c4-e02', '@outcome:error'] },
     async ({ page }) => {
-      // Silent-failure gap, verified by reading the component:
-      // `VersionTimeline`'s onConfirm only handles the success branch (no
-      // toast on failure), unlike every other destructive dialog in this
-      // codebase. This test protects the ONE thing that IS still correct —
-      // v1 is not actually trashed while v2 exists — and deliberately does
-      // NOT assert a toast, since none is ever shown on this path.
+      // Two guarantees at once: the backend refuses to trash a non-latest
+      // version, AND the UI actually tells the user so. The refusal used to be
+      // silent — `VersionTimeline`'s onConfirm had no failure branch, so the
+      // dialog just closed — which is why this test also pins the toast.
       await createProject(page, uniqueName('Papelera Vieja'));
       await uploadPdf(page, 'contrato_v1.pdf', { title: 'No borrable', message: 'v1' });
       await expect(page.getByText('No borrable')).toBeVisible({ timeout: 60_000 });
@@ -67,10 +65,16 @@ test.describe('C4 — Eliminar una versión borrador', () => {
       await page.getByTestId('type-to-confirm-input').fill('v1');
       await page.getByTestId('type-to-confirm-submit').click();
 
-      // El backend rechaza con 409 ("Solo la última versión ... puede
-      // eliminarse"): v1 sigue viva, sin tombstone. La recarga obliga a releer
-      // el estado del servidor, porque en el camino de fallo el timeline nunca
-      // se refresca solo.
+      // El rechazo se le dice al usuario: el mensaje del backend llega al
+      // toaster en vez de cerrarse el diálogo en silencio.
+      await expect(page.getByTestId('toaster')).toContainText(
+        'Solo la última versión del documento puede eliminarse.',
+        { timeout: 15_000 }
+      );
+
+      // Y v1 sigue viva, sin tombstone. La recarga obliga a releer el estado
+      // del servidor, porque en el camino de fallo el timeline nunca se
+      // refresca solo.
       await page.reload();
       await expect(page.getByTestId('version-item-1')).toBeVisible({ timeout: 20_000 });
 
