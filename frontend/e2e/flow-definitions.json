@@ -1,6 +1,6 @@
 {
   "version": "2.2.0",
-  "lastUpdated": "2026-07-22",
+  "lastUpdated": "2026-08-02",
   "flows": {
     "home-loads": {
       "name": "Landing page loads",
@@ -115,11 +115,9 @@
         "staff"
       ],
       "priority": "P3",
-      "description": "/admin-login consumes access/refresh/redirect query params, stores tokens and redirects",
-      "expectedSpecs": 1,
-      "outcomes": [
-        "success"
-      ]
+      "description": "/admin-login consumes access/refresh/redirect query params, stores tokens and redirects. Declared exempt from E2E credit: the click that starts this handoff happens inside the Django admin, a separate app outside this suite, so no spec can drive it through the UI. The handoff logic itself is covered at the unit layer by frontend/app/admin-login/__tests__/page.test.tsx; the two smoke specs in e2e/auth/admin-login.spec.ts still run, they just no longer buy coverage credit",
+      "expectedSpecs": 0,
+      "outcomes": []
     },
     "help-manual-browse": {
       "name": "Browse the interactive help",
@@ -141,10 +139,11 @@
         "guest"
       ],
       "priority": "P1",
-      "description": "New user signs up, names their org, the sample project seeds, and they see a working comparison in under 5 minutes without uploading anything (docs/plan/01 A1)",
+      "description": "New user signs up, names their org, the sample project seeds, and they see a working comparison in under 5 minutes without uploading anything (docs/plan/01 A1). If the seed job fails server-side (e.g. storage unavailable mid-seed), the form shows a retryable error rather than stranding the user (verified at the E2E layer by scenario A1-E01), and the wizard stays 'pending' with no half-seeded project left behind (verified at the backend layer by backend/orgs/tests/test_onboarding.py:87-120, since an E2E run that mocks the POST never reaches the seed job)",
       "expectedSpecs": 1,
       "outcomes": [
-        "success"
+        "success",
+        "failure"
       ]
     },
     "a2-invite-team": {
@@ -418,11 +417,10 @@
         "admin"
       ],
       "priority": "P2",
-      "description": "Issue and download the validity certificate PDF of an approved version (docs/audit/03 E4)",
+      "description": "Issue and download the validity certificate PDF of an approved version (docs/audit/03 E4). The `error` class was removed on 2026-08-02 because neither issuance DomainError is reachable through the UI: the `issue-certificate` button only renders when `canIssue && isApproved` (frontend/components/certificates/CertificatePanel.tsx:75) and the whole panel returns null when `!isApproved && rows.length === 0` (:70), so E4-E01 'unapproved version' can never be clicked; E4-E02 'tampered signature' requires corrupting a stored seal signature directly in the DB. Both remain covered at the backend layer (backend/reviews/tests/test_certificates.py:70-97). Re-declare `error` here if the UI ever grows an affordance that can surface a failed issuance",
       "expectedSpecs": 1,
       "outcomes": [
-        "success",
-        "error"
+        "success"
       ]
     },
     "master-e2e-journey": {

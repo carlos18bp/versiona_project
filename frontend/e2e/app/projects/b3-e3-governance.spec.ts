@@ -73,7 +73,7 @@ test.describe('B3 + E3 — Gobernanza del proyecto', () => {
 
   test(
     'B3-P02 — la configuración está oculta para quien no es admin',
-    { tag: [...E3_CONFIGURABLE_CHECKS, '@scenario:b3-p02', '@outcome:failure'] },
+    { tag: [...B3_PROJECT_SETTINGS, ...E3_CONFIGURABLE_CHECKS, '@scenario:b3-p02', '@outcome:failure'] },
     async ({ browser }) => {
       const viewerContext = await browser.newContext({ storageState: 'e2e/.auth/viewer.json' });
       const viewerPage = await viewerContext.newPage();

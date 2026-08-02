@@ -41,4 +41,45 @@ test.describe('C4 — Eliminar una versión borrador', () => {
       await expect(page.getByText('v2 borrador')).toBeVisible({ timeout: 15_000 });
     }
   );
+
+  test(
+    'C4-E02 — una versión antigua (no la última) no puede eliminarse',
+    { tag: [...C4_DELETE_DRAFT, '@scenario:c4-e02', '@outcome:error'] },
+    async ({ page }) => {
+      // Silent-failure gap, verified by reading the component:
+      // `VersionTimeline`'s onConfirm only handles the success branch (no
+      // toast on failure), unlike every other destructive dialog in this
+      // codebase. This test protects the ONE thing that IS still correct —
+      // v1 is not actually trashed while v2 exists — and deliberately does
+      // NOT assert a toast, since none is ever shown on this path.
+      await createProject(page, uniqueName('Papelera Vieja'));
+      await uploadPdf(page, 'contrato_v1.pdf', { title: 'No borrable', message: 'v1' });
+      await expect(page.getByText('No borrable')).toBeVisible({ timeout: 60_000 });
+      await page.getByText('No borrable').click();
+      await expect(page.getByTestId('version-item-1')).toBeVisible({ timeout: 15_000 });
+      await uploadPdf(page, 'contrato_v2.pdf', { message: 'v2 vigente' });
+      await expect(page.getByTestId('version-item-2')).toBeVisible({ timeout: 60_000 });
+
+      // v1 sigue mostrando su botón de papelera aunque ya no sea la última
+      // (`is_draft` no distingue "es la última versión del documento").
+      await page.getByTestId('trash-version-1').click();
+      await expect(page.getByTestId('type-to-confirm-submit')).toBeDisabled();
+      await page.getByTestId('type-to-confirm-input').fill('v1');
+      await page.getByTestId('type-to-confirm-submit').click();
+
+      // El backend rechaza con 409 ("Solo la última versión ... puede
+      // eliminarse"): v1 sigue viva, sin tombstone. La recarga obliga a releer
+      // el estado del servidor, porque en el camino de fallo el timeline nunca
+      // se refresca solo.
+      await page.reload();
+      await expect(page.getByTestId('version-item-1')).toBeVisible({ timeout: 20_000 });
+
+      // Positiva: v1 conserva su affordance de borrado, que sólo se renderiza
+      // cuando la versión existe y NO está en la papelera. Sin esto, un borrado
+      // duro (v1 desaparece del timeline) dejaría verdes a las negativas.
+      await expect(page.getByTestId('trash-version-1')).toBeVisible();
+      await expect(page.getByTestId('version-item-1')).not.toContainText('versión eliminada');
+      await expect(page.getByText('v1 — versión eliminada')).toHaveCount(0);
+    }
+  );
 });

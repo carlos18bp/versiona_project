@@ -81,4 +81,65 @@ test.describe('D3 — Observaciones ancladas', () => {
       await reviewerContext.close();
     }
   );
+
+  test(
+    'D3-E01 — responder sin texto no mueve el hilo de Abierta a Respondida',
+    { tag: [...D3_ANCHORED_OBSERVATIONS, '@scenario:d3-e01', '@outcome:error'] },
+    async ({ browser }) => {
+      // Catches: assuming the reply button has a client-side empty-text
+      // guard (it doesn't — `ObservationsPanel.tsx`'s `reply-send-` carries
+      // no `disabled`), or the backend 400 validation being dropped, which
+      // would silently flip a thread to "answered" with no reply content.
+      const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });
+      const editorPage = await editorContext.newPage();
+      await openSeededProject(editorPage);
+      const title = uniqueName('Contrato D3 Vacío');
+      await uploadPdf(editorPage, 'contrato_v1.pdf', { title, message: 'v1' });
+      const documentLink = editorPage
+        .getByTestId('documents-list')
+        .getByRole('link', { name: title });
+      await expect(documentLink).toBeVisible({ timeout: 90_000 });
+      await documentLink.click();
+      await expect(editorPage.getByTestId('version-item-1')).toBeVisible({ timeout: 20_000 });
+      await editorPage.getByRole('link', { name: 'Ver documento' }).click();
+      await editorPage.waitForURL(/versions\//);
+      const v1Url = editorPage.url();
+
+      // Revisor crea una observación abierta
+      const reviewerContext = await browser.newContext({
+        storageState: 'e2e/.auth/reviewer.json',
+      });
+      const reviewerPage = await reviewerContext.newPage();
+      await reviewerPage.goto(v1Url);
+      await expect(reviewerPage.getByTestId('observations-panel')).toBeVisible({
+        timeout: 20_000,
+      });
+      await reviewerPage.getByTestId('add-observation').click();
+      await reviewerPage
+        .getByTestId('observation-section')
+        .selectOption({ label: '3. OBLIGACIONES DEL CONTRATISTA' });
+      await reviewerPage
+        .getByTestId('observation-body')
+        .fill('Revisar el plazo de entrega del contratista.');
+      await reviewerPage.getByTestId('observation-submit').click();
+      await expect(reviewerPage.getByText('Abierta')).toBeVisible({ timeout: 20_000 });
+
+      // El editor recarga y responde SIN escribir texto
+      await editorPage.reload();
+      const replyInput = editorPage.locator('[data-testid^="reply-input-"]');
+      await expect(replyInput).toBeVisible({ timeout: 20_000 });
+      await expect(replyInput).toHaveValue('');
+      await editorPage.locator('[data-testid^="reply-send-"]').click();
+
+      await expect(editorPage.getByTestId('toaster')).toContainText(
+        'La respuesta necesita un texto.',
+        { timeout: 15_000 }
+      );
+      await expect(editorPage.getByText('Abierta')).toBeVisible();
+      await expect(editorPage.getByText('Respondida')).toHaveCount(0);
+
+      await editorContext.close();
+      await reviewerContext.close();
+    }
+  );
 });

@@ -8,7 +8,7 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 (A1…F1) planned in `docs/plan/01-alcance-mvp.md`.
 
 **Version:** 2.0.0
-**Last Updated:** 2026-07-12
+**Last Updated:** 2026-08-02
 
 > Maintenance rule (docs/plan/09 DoD #4): each vertical iteration rewrites the sheets of the
 > flows it ships and flips them from *Planned* to *Implemented*. Acceptance criteria live in

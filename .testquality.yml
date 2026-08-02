@@ -6,7 +6,11 @@
 
 backend_app_name: accounts
 py_test_file_glob: test_*.py
-frontend_unit_dir: ""
+# "." = all of frontend/, minus node_modules/build dirs and anything matching
+# e2e/playwright (the analyzer filters those itself). This project colocates unit
+# tests in **/__tests__/ at arbitrary depth, so there is no single unit dir to
+# name; "" silently DISABLED the whole layer — 0 of 67 files were ever analyzed.
+frontend_unit_dir: "."
 frontend_e2e_dir: e2e
 max_test_lines: 50
 min_test_lines: 3
