@@ -20,7 +20,19 @@ export function uniqueName(prefix: string): string {
 
 /** B1 happy path — returns the created project name. */
 export async function createProject(page: Page, name: string): Promise<void> {
-  await page.goto('/projects/new');
+  // Enter through the board and click "Nuevo proyecto" rather than deep-linking
+  // to /projects/new. A spec whose first action is a bare goto() to the form
+  // never proves the form is reachable — the link could be removed and every
+  // caller would still pass. It is also what made four specs carry a baselined
+  // `deep_link_entry` finding they never introduced themselves.
+  await page.goto('/projects');
+  // Generous: this is often the first route a spec touches, and the dev server
+  // compiles routes on demand, so a cold /projects can take far longer than the
+  // default expect timeout allows.
+  const newProjectLink = page.getByRole('link', { name: 'Nuevo proyecto' });
+  await expect(newProjectLink).toBeVisible({ timeout: 60_000 });
+  await newProjectLink.click();
+  await page.waitForURL(/\/projects\/new$/, { timeout: 30_000 });
   await page.getByTestId('project-name').fill(name);
   await page.getByTestId('project-submit').click();
   await expect(page.getByTestId('upload-dropzone')).toBeVisible({ timeout: 15_000 });
