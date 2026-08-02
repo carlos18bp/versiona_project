@@ -43,18 +43,6 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-      minio:
-        image: minio/minio:edge-cicd
-        env:
-          MINIO_ROOT_USER: versiona-minio
-          MINIO_ROOT_PASSWORD: versiona-minio-ci
-        ports:
-          - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
 
     env:
       DJANGO_DB_ENGINE: django.db.backends.postgresql
@@ -66,10 +54,10 @@ jobs:
       REDIS_URL: redis://127.0.0.1:6379/1
       CELERY_TASK_ALWAYS_EAGER: '1'
       DJANGO_SECRET_KEY: ci-only-secret
-      AWS_S3_ENDPOINT_URL: http://127.0.0.1:9000
-      AWS_ACCESS_KEY_ID: versiona-minio
-      AWS_SECRET_ACCESS_KEY: versiona-minio-ci
-      AWS_STORAGE_BUCKET_NAME: versiona-media
+      # No AWS_*: with no bucket configured, settings.py resolves object storage
+      # to the filesystem backend — the one every deployment runs. The suite
+      # would ignore a bucket anyway: conftest.py's autouse _object_storage_root
+      # forces AWS_STORAGE_BUCKET_NAME='' so tests stay hermetic.
 
     steps:
       - name: Checkout
@@ -100,13 +88,6 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
-
-      - name: Create MinIO bucket
-        run: |
-          curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
-          chmod +x /usr/local/bin/mc
-          mc alias set ci http://127.0.0.1:9000 versiona-minio versiona-minio-ci
-          mc mb --ignore-existing ci/versiona-media
 
       - name: Check for missing migrations
         run: python manage.py makemigrations --check --dry-run
@@ -219,18 +200,6 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-      minio:
-        image: minio/minio:edge-cicd
-        env:
-          MINIO_ROOT_USER: versiona-minio
-          MINIO_ROOT_PASSWORD: versiona-minio-ci
-        ports:
-          - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
       mailpit:
         image: axllent/mailpit:v1.27
         ports:
@@ -252,10 +221,11 @@ jobs:
       REDIS_URL: redis://127.0.0.1:6379/1
       CELERY_TASK_ALWAYS_EAGER: '1'
       DJANGO_SECRET_KEY: ci-only-secret
-      AWS_S3_ENDPOINT_URL: http://127.0.0.1:9000
-      AWS_ACCESS_KEY_ID: versiona-minio
-      AWS_SECRET_ACCESS_KEY: versiona-minio-ci
-      AWS_STORAGE_BUCKET_NAME: versiona-media
+      # No AWS_* and no OBJECT_STORAGE_SENDFILE_ROOT: the E2E run exercises the
+      # filesystem backend serving signed URLs straight from Django, which is
+      # exactly how staging and production are configured. Previously this job
+      # set a bucket and ran S3/MinIO — a configuration no deployment uses, so
+      # the path that actually ships was never exercised end to end.
       DJANGO_EMAIL_BACKEND: django.core.mail.backends.smtp.EmailBackend
       DJANGO_EMAIL_HOST: 127.0.0.1
       DJANGO_EMAIL_PORT: '1025'
@@ -291,13 +261,6 @@ jobs:
         run: |
           python -m venv venv
           venv/bin/pip install -r requirements.txt
-
-      - name: Create MinIO bucket
-        run: |
-          curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
-          chmod +x /usr/local/bin/mc
-          mc alias set ci http://127.0.0.1:9000 versiona-minio versiona-minio-ci
-          mc mb --ignore-existing ci/versiona-media
 
       - name: Run backend migrations
         working-directory: backend

@@ -33,7 +33,21 @@ test.describe('C3 — Navegar el historial', () => {
         .click();
       const response = await downloadResponse;
       const body = await response.json();
-      expect(body.url).toContain('X-Amz-Signature');
+
+      // Backend-agnostic, mirroring backend/documents/tests/views/
+      // test_document_endpoints.py: what matters is that the URL is a *signed
+      // capability* — it works as handed over and stops working once tampered
+      // with. Asserting 'X-Amz-Signature' pinned the storage vendor rather than
+      // the behaviour, so it went stale the moment the guarantee came from our
+      // own signer instead of S3.
+      // Status codes only, never the body: with OBJECT_STORAGE_SENDFILE_ROOT
+      // set, delivery is handed to nginx via X-Accel-Redirect and Django
+      // answers 200 with an empty body — asserting bytes would pass in CI and
+      // fail on every host configured like staging.
+      expect((await page.request.get(body.url)).status()).toBe(200);
+      expect(
+        (await page.request.get(body.url.replace('/api/objects/', '/api/objects/x'))).status()
+      ).toBe(403);
     }
   );
 });
