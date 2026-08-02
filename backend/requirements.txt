@@ -6,7 +6,6 @@
 
 
 # Database (PostgreSQL + pgvector)
-# Object storage (S3/MinIO)
 # PDF engine & test fixtures
 # Production server
 # Seal signing (Ed25519)
@@ -23,7 +22,6 @@ django-cleanup==9.0.0
 django-cors-headers==4.9.0
 django-dbbackup>=4.0.0
 django-silk>=5.0.0
-django-storages[s3]>=1.14,<2
 djangorestframework-simplejwt==5.5.1
 djangorestframework==3.17.1
 factory-boy==3.3.3
