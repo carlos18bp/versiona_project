@@ -72,4 +72,45 @@ test.describe('A2 — Invitar al equipo', () => {
       await inviteeContext.close();
     }
   );
+
+  // `storageState` scoped to this block only: a describe-level `test.use` also
+  // becomes the default for every bare `browser.newContext()` in its scope,
+  // which would silently authenticate F01's supposedly anonymous invitee.
+  test.describe('con sesión de admin', () => {
+    test.use({ storageState: 'e2e/.auth/admin.json' });
+
+    test(
+      'A2-E01 — invitar dos veces al mismo email no crea una invitación duplicada',
+      { tag: [...A2_INVITE_TEAM, '@scenario:a2-e01', '@outcome:error'] },
+      async ({ page }) => {
+        // Catches: a regression that drops/weakens the duplicate-pending check
+        // in `create_invitation`, or a frontend that stops surfacing
+        // `err.response.data.error` and silently swallows the 409.
+        const invitee = `dup-${Date.now().toString(36)}@versiona.test`;
+
+        await openSeededProject(page);
+        await page.getByTestId('project-settings-link').click();
+        await page.waitForURL(/\/settings$/);
+        await expect(page.getByTestId('members-section')).toBeVisible({ timeout: 20_000 });
+
+        await page.getByTestId('invite-email').fill(invitee);
+        await page.getByTestId('send-invite').click();
+        await expect(
+          page.getByTestId('invitations-list').getByText(invitee)
+        ).toBeVisible({ timeout: 15_000 });
+
+        // Segundo envío al MISMO email: el backend rechaza el duplicado.
+        await page.getByTestId('invite-email').fill(invitee);
+        await page.getByTestId('send-invite').click();
+
+        await expect(page.getByTestId('toaster')).toContainText(
+          `Ya hay una invitación pendiente para ${invitee}.`,
+          { timeout: 15_000 }
+        );
+        await expect(
+          page.getByTestId('invitations-list').locator('li', { hasText: invitee })
+        ).toHaveCount(1);
+      }
+    );
+  });
 });

@@ -56,4 +56,62 @@ test.describe('D4 — Aprobar con sello', () => {
       await reviewerContext.close();
     }
   );
+
+  test(
+    'D4-E01 — retirar un sello de una versión ya aprobada es rechazado (I5)',
+    { tag: [...D4_SEAL_APPROVE, '@scenario:d4-e01', '@outcome:error'] },
+    async ({ browser }) => {
+      // Crown-jewel invariant I5 ("Immutability is the product"): catches a
+      // regression where `revoke_seal`'s post-approval guard is weakened,
+      // letting an approved version's supporting seal be pulled after the fact.
+      const editorContext = await browser.newContext({ storageState: 'e2e/.auth/editor.json' });
+      const editorPage = await editorContext.newPage();
+      await openSeededProject(editorPage);
+      const title = uniqueName('Contrato D4 Retiro');
+      await uploadPdf(editorPage, 'contrato_v1.pdf', { title, message: 'v1' });
+      const documentLink = editorPage
+        .getByTestId('documents-list')
+        .getByRole('link', { name: title });
+      await expect(documentLink).toBeVisible({ timeout: 90_000 });
+      await documentLink.click();
+      await expect(editorPage.getByTestId('version-item-1')).toBeVisible({ timeout: 20_000 });
+      await editorPage.getByRole('link', { name: 'Ver documento' }).click();
+      await editorPage.waitForURL(/versions\//);
+      const versionUrl = editorPage.url();
+
+      // Reviewer seals the whole document, reaching full approval
+      const reviewerContext = await browser.newContext({
+        storageState: 'e2e/.auth/reviewer.json',
+      });
+      const reviewerPage = await reviewerContext.newPage();
+      await reviewerPage.goto(versionUrl);
+      await expect(reviewerPage.getByTestId('seal-action-bar')).toBeVisible({ timeout: 20_000 });
+      await reviewerPage.getByTestId('seal-all').click();
+      await expect(
+        reviewerPage.getByTestId('seal-reviewer@versiona.test')
+      ).toBeVisible({ timeout: 20_000 });
+      await expect(
+        reviewerPage.getByRole('heading', { level: 1 }).locator('..').getByText('Aprobada')
+      ).toBeVisible({ timeout: 15_000 });
+
+      // Intenta retirar el sello que sostiene esa aprobación
+      await reviewerPage.getByTestId('withdraw-seal').click();
+      await reviewerPage.getByTestId('type-to-confirm-input').fill('v1');
+      await reviewerPage.getByTestId('type-to-confirm-submit').click();
+
+      await expect(reviewerPage.getByTestId('toaster')).toContainText(
+        'La versión ya está aprobada: los sellos que la sustentan son inmutables (I5).',
+        { timeout: 15_000 }
+      );
+
+      // El sello sigue vivo — no fue revocado
+      await reviewerPage.reload();
+      await expect(
+        reviewerPage.getByTestId('seal-reviewer@versiona.test')
+      ).toBeVisible({ timeout: 20_000 });
+
+      await editorContext.close();
+      await reviewerContext.close();
+    }
+  );
 });

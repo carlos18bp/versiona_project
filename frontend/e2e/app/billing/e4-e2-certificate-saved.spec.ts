@@ -141,4 +141,52 @@ test.describe('E4 + E2 — Constancia exportable y comparaciones guardadas', () 
       await viewerContext.close();
     }
   );
+
+  test(
+    'E2-E01 — guardar una comparación con un nombre ya usado en el proyecto es rechazado',
+    { tag: [...E2_SAVED_COMPARISONS, '@scenario:e2-e01', '@outcome:error'] },
+    async ({ page }) => {
+      test.setTimeout(360_000); // dos análisis reales
+      // Catches: dropping the `SavedComparison.objects.filter(project=,
+      // name=).exists()` uniqueness check, which would let the same named
+      // comparison be saved twice and break the deep-link sharing guarantee
+      // (E2-F02) since a name would no longer resolve unambiguously.
+      await openSeededProject(page);
+      const title = uniqueName('Comparable Duplicado');
+      await uploadPdf(page, 'contrato_v1.pdf', { title, message: 'v1' });
+      const documentLink = page
+        .getByTestId('documents-list')
+        .getByRole('link', { name: title });
+      await expect(documentLink).toBeVisible({ timeout: 90_000 });
+      await documentLink.click();
+      await expect(page.getByTestId('version-item-1')).toBeVisible({ timeout: 90_000 });
+      await uploadPdf(page, 'contrato_v2.pdf', { message: 'v2' });
+      await expect(page.getByTestId('version-item-2')).toBeVisible({ timeout: 90_000 });
+
+      await page.getByTestId('select-version-1').check();
+      await page.getByTestId('select-version-2').check();
+      await page.getByTestId('compare-selected').click();
+      await page.waitForURL(/\/compare\//, { timeout: 20_000 });
+      await expect(page.getByTestId('compare-view')).toBeVisible({ timeout: 90_000 });
+
+      const savedName = uniqueName('Entrega Duplicada');
+      page.once('dialog', (dialog) => void dialog.accept(savedName));
+      await page.getByTestId('save-comparison').click();
+      await expect(page.getByText('Comparación guardada')).toBeVisible({ timeout: 15_000 });
+
+      // Segundo guardado con el MISMO nombre, en el mismo proyecto: rechazado.
+      page.once('dialog', (dialog) => void dialog.accept(savedName));
+      await page.getByTestId('save-comparison').click();
+
+      await expect(page.getByTestId('toaster')).toContainText(
+        `Ya existe una comparación guardada "${savedName}".`,
+        { timeout: 15_000 }
+      );
+
+      // La lista del proyecto sigue mostrando exactamente UNA fila con ese
+      // nombre (no se creó una segunda SavedComparison duplicada).
+      await openSeededProject(page);
+      await expect(page.getByTestId(`saved-${savedName}`)).toHaveCount(1);
+    }
+  );
 });
