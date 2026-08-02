@@ -260,6 +260,13 @@ export function VersionTimeline({
           if (ok) {
             toast(common.saved, 'success');
             onChanged();
+          } else {
+            // A rejected delete (e.g. the 409 "solo la última versión puede
+            // eliminarse") used to close the dialog and show nothing at all,
+            // leaving the user unable to tell a refusal from a success. The
+            // store already captured the backend's message — surface it, same
+            // as download() and saveMessage() above.
+            toast(useVersionStore.getState().error ?? common.error, 'error');
           }
         }}
       />

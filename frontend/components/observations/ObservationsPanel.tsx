@@ -23,9 +23,16 @@ interface ObservationsPanelProps {
   versionId: string;
   versionNumber: number;
   sections: SectionInfo[];
-  /** reviewers/admins create + resolve; editors reply; viewers read */
+  /** reviewers/admins create observations; editors reply; viewers read */
   canCreate: boolean;
   canReply: boolean;
+  /**
+   * Whether the user may resolve a thread they did NOT open. The backend
+   * (observations/services.py, `set_status`) allows resolving only to the
+   * thread's author or to an admin — gating this on `canCreate` instead put an
+   * enabled Resolve button in front of every reviewer, which then 403'd.
+   */
+  canResolveAny?: boolean;
   currentUserEmail?: string | null;
   onSelectAnchor?: (quads: ObservationRow['anchors'][number]['quads']) => void;
 }
@@ -36,6 +43,7 @@ export function ObservationsPanel({
   sections,
   canCreate,
   canReply,
+  canResolveAny = false,
   currentUserEmail,
   onSelectAnchor,
 }: ObservationsPanelProps) {
@@ -176,7 +184,7 @@ export function ObservationsPanel({
                     </>
                   ) : null}
                   {item.status === 'answered' &&
-                  (item.author_email === currentUserEmail || canCreate) ? (
+                  (item.author_email === currentUserEmail || canResolveAny) ? (
                     <button
                       data-testid={`resolve-${item.public_id}`}
                       className="rounded-full bg-primary px-3 py-1.5 text-xs text-primary-foreground"

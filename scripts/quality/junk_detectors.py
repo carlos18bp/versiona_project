@@ -53,6 +53,16 @@ DATA_ASSERTIONS: frozenset[str] = frozenset({
     # checked is a real assertion about behaviour (e.g. "submit is disabled while
     # the cart is empty"), not mere presentation like toBeVisible.
     "toBeDisabled", "toBeEnabled", "toBeChecked",
+    # jest-dom (React Testing Library) analogues of the Playwright matchers
+    # above. `toHaveTextContent('PDF')` pins content exactly like toContainText,
+    # and `toBeNull()` pins a concrete state exactly like `toBe(null)` — which
+    # _STRONG_ASSERTION_RE already accepts, so omitting the no-argument form was
+    # an inconsistency, not a policy. Deliberately NOT included: the presence-only
+    # `toBeInTheDocument`, which is the jest-dom sibling of `toBeVisible` and
+    # stays out for the same reason (see _CONTENT_LOCATOR_RE in
+    # detect_no_data_assertion for how a content-bearing QUERY is credited
+    # instead of the matcher).
+    "toHaveTextContent", "toBeNull",
 })
 
 # Assertions that are satisfied by almost any DOM, so they cannot fail
