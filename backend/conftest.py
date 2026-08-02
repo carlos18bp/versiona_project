@@ -453,11 +453,15 @@ def _object_storage_root(settings, tmp_path_factory):
 
     Before this existed the suite wrote to a real MinIO on 127.0.0.1:9000 (it
     had accumulated 124 MB under the `test/` prefix). Forcing the filesystem
-    backend makes the suite hermetic and removes the external dependency; the
+    backend made the suite hermetic and removed the external dependency; the
     per-module `_test_storage_prefix` fixtures still namespace keys inside the
     already-isolated root, so they stay harmless.
+
+    The bucket override is gone with the S3 backend itself (2026-08-02) — the
+    filesystem backend is now the only one, so there is nothing left to force.
+    The throwaway root still matters: it keeps tests from writing into the
+    developer's real OBJECT_STORAGE_ROOT.
     """
-    settings.AWS_STORAGE_BUCKET_NAME = ''
     settings.OBJECT_STORAGE_ROOT = str(tmp_path_factory.mktemp('objects'))
     settings.OBJECT_STORAGE_SENDFILE_ROOT = ''
 

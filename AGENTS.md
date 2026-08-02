@@ -48,7 +48,7 @@ invariants I1–I15, roadmap It0–It7 with D5 as the crown jewel).
 
 Key facts:
 - Stack: Django 6 + DRF + Celery / Next.js 16 + React 19 / PostgreSQL 16 + pgvector / Redis /
-  MinIO / mailpit. Native runtime — no Docker for now (DP-21).
+  filesystem object storage / mailpit. Native runtime — no Docker for now (DP-21).
 - Backend apps: `core`, `accounts` + skeleton bounded contexts (`docs/plan/03` §2).
 - Key commands: `backend/venv/bin/python backend/manage.py <cmd>` ·
   `cd frontend && npm test` · `npx playwright test <spec>` (max 2 files) ·

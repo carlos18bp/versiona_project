@@ -122,14 +122,9 @@ def test_nested_key_creates_parents_with_restricted_modes(settings):
     assert os.stat(path).st_mode & 0o777 == 0o640
     assert os.stat(path.parent).st_mode & 0o777 == 0o750
 
-
-def test_backend_selection_follows_the_bucket_setting(settings):
-    """Catches: a deploy that sets a bucket but keeps writing to local disk (or
-    the reverse) — the two backends are not interchangeable at runtime."""
-    from documents.services.storage import get_backend, s3
-
-    settings.AWS_STORAGE_BUCKET_NAME = ''
-    assert get_backend() is fs
-
-    settings.AWS_STORAGE_BUCKET_NAME = 'versiona-media'
-    assert get_backend() is s3
+# test_backend_selection_follows_the_bucket_setting was removed with the S3
+# backend on 2026-08-02. It asserted that a configured bucket selected S3 and an
+# empty one selected the filesystem — a switch that no longer exists. Rewriting
+# it as `assert get_backend() is fs` would assert that the only backend is the
+# only backend, which is the tautological shape docs/TESTING_QUALITY_STANDARDS.md
+# rules out.

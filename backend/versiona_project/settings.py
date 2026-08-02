@@ -242,24 +242,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Object storage (S3/MinIO) for domain media. Falls back to the local
-# filesystem when no bucket is configured (e.g. unit tests without MinIO).
-AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', '')
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', '')
-AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '')
-AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', '')
-AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
-AWS_S3_SIGNATURE_VERSION = 's3v4'
-AWS_DEFAULT_ACL = None
-
-# TTL of a signed object URL. Read by BOTH backends: S3 passes it to
-# generate_presigned_url, the filesystem backend bakes it into the token's `exp`.
-# (It used to be read only into AWS_QUERYSTRING_EXPIRE, so storage_service's
-# getattr(settings, 'MEDIA_SIGNED_URL_TTL_SECONDS', 300) always hit the default.)
+# TTL of a signed object URL: the filesystem backend bakes it into the token's
+# `exp`.
 MEDIA_SIGNED_URL_TTL_SECONDS = int(os.getenv('MEDIA_SIGNED_URL_TTL_SECONDS', '300'))
-AWS_QUERYSTRING_EXPIRE = MEDIA_SIGNED_URL_TTL_SECONDS
 
-# Filesystem object storage (active whenever AWS_STORAGE_BUCKET_NAME is empty).
+# Filesystem object storage for domain media — the only backend. The S3/MinIO
+# one was removed on 2026-08-02: no environment configured a bucket, so it ran
+# nowhere and nothing covered it.
 # The root sits OUTSIDE MEDIA_ROOT on purpose: urls.py serves MEDIA_ROOT
 # unsigned under DEBUG and nginx aliases /media/ to it, so an object placed
 # there would be readable by guessing its path. A system check enforces this.
@@ -274,20 +263,8 @@ OBJECT_STORAGE_SENDFILE_ROOT = os.getenv('OBJECT_STORAGE_SENDFILE_ROOT', '')
 # hostname the app answers on. Set this only to force an absolute origin.
 OBJECT_STORAGE_PUBLIC_ORIGIN = os.getenv('OBJECT_STORAGE_PUBLIC_ORIGIN', '').rstrip('/')
 
-if AWS_STORAGE_BUCKET_NAME:
-    _default_storage = {
-        'BACKEND': 'storages.backends.s3.S3Storage',
-        'OPTIONS': {
-            'bucket_name': AWS_STORAGE_BUCKET_NAME,
-            'endpoint_url': AWS_S3_ENDPOINT_URL or None,
-            'file_overwrite': False,
-        },
-    }
-else:
-    _default_storage = {'BACKEND': 'django.core.files.storage.FileSystemStorage'}
-
 STORAGES = {
-    'default': _default_storage,
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
     'staticfiles': {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },

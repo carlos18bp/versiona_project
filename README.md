@@ -35,10 +35,11 @@ are notified.
 ## Stack
 
 - **Backend**: Django 6 + DRF, Celery (Redis broker; queues `default` / `engine_light` /
-  `engine_heavy`), PostgreSQL 16 + pgvector, MinIO (S3 object storage), PyMuPDF engine.
+  `engine_heavy`), PostgreSQL 16 + pgvector, filesystem object storage behind signed
+  URLs, PyMuPDF engine.
 - **Frontend**: Next.js 16 (App Router) + React 19 + TypeScript + Tailwind v4 + Zustand.
 - **Testing**: pytest · Jest + RTL · Playwright (flow-coverage convention).
-- **Runtime**: native processes on the VPS (PostgreSQL/Redis/MinIO/mailpit as system
+- **Runtime**: native processes on the VPS (PostgreSQL/Redis/mailpit as system
   services). Docker/compose is a deferred blueprint for the self-hosted plan (DP-21).
 
 ## Project structure
@@ -62,10 +63,10 @@ docs/plan/            the planning suite (source of truth)
 ## Quick start (development)
 
 ```bash
-# Backend (native PostgreSQL/Redis/MinIO/mailpit must be running — docs/plan/07 §2.1)
+# Backend (native PostgreSQL/Redis/mailpit must be running — docs/plan/07 §2.1)
 cd backend
 python3 -m venv venv && venv/bin/pip install -r requirements.txt
-cp .env.example .env          # fill DB_PASSWORD / AWS_SECRET_ACCESS_KEY
+cp .env.example .env          # fill DB_PASSWORD and DJANGO_SECRET_KEY
 venv/bin/python manage.py migrate
 venv/bin/python manage.py runserver          # http://localhost:8000
 
