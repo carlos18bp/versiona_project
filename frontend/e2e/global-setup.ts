@@ -11,6 +11,8 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { E2E_ENV_HINT, backendE2eEnv, hasDedicatedE2eEnv } from './helpers/backend-env';
+
 const BACKEND = path.resolve(__dirname, '../../backend');
 const PYTHON = path.join(BACKEND, 'venv/bin/python');
 const AUTH_DIR = path.resolve(__dirname, '.auth');
@@ -34,12 +36,27 @@ function storageState(tokens: { access: string; refresh: string }) {
 }
 
 export default async function globalSetup() {
-  execFileSync(PYTHON, ['manage.py', 'create_fake_data', '--scenario=e2e'], {
-    cwd: BACKEND,
-    stdio: 'inherit',
-  });
+  // Never inherit backend/.env blindly: on a deployment host it names the live
+  // database. See helpers/backend-env.ts.
+  const env = backendE2eEnv();
 
-  const raw = execFileSync(PYTHON, ['manage.py', 'e2e_tokens'], { cwd: BACKEND });
+  try {
+    execFileSync(PYTHON, ['manage.py', 'create_fake_data', '--scenario=e2e'], {
+      cwd: BACKEND,
+      stdio: 'inherit',
+      env,
+    });
+  } catch (err) {
+    if (!hasDedicatedE2eEnv()) {
+      throw new Error(
+        `Seeding the E2E scenario failed.\n\n${E2E_ENV_HINT}\n\n` +
+          `Original failure: ${(err as Error).message}`
+      );
+    }
+    throw err;
+  }
+
+  const raw = execFileSync(PYTHON, ['manage.py', 'e2e_tokens'], { cwd: BACKEND, env });
   const tokens = JSON.parse(raw.toString()) as Record<string, { access: string; refresh: string }>;
 
   mkdirSync(AUTH_DIR, { recursive: true });

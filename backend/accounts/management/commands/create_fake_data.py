@@ -1,6 +1,8 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
+from core.fake_data_guard import add_allow_production_argument, refuse_on_production
+
 
 class Command(BaseCommand):
     """
@@ -22,8 +24,11 @@ class Command(BaseCommand):
         parser.add_argument('number_of_records', type=int, nargs='?', default=None)
         parser.add_argument('--users', type=int, default=10)
         parser.add_argument('--scenario', type=str, default='')
+        add_allow_production_argument(parser)
 
     def handle(self, *args, **options):
+        refuse_on_production(options, 'create_fake_data')
+
         if options.get('scenario') == 'e2e':
             self._seed_e2e()
             return
