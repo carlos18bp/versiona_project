@@ -25,7 +25,8 @@ class Certificate(PublicIdModel, TimestampedModel):
     # Everything needed for offline verification (T6): version sha256, seals
     # with canonical payloads + signatures, public key, validity decisions.
     snapshot = models.JSONField()
-    pdf_key = models.CharField(max_length=500)
+    # Object-store key — case-sensitive by definition.
+    pdf_key = models.CharField(max_length=500, db_collation='utf8mb4_bin')
 
     class Meta:
         constraints = [

@@ -57,8 +57,13 @@ class DocumentVersion(PublicIdModel, TimestampedModel, SoftDeletableModel):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='versions')
     number = models.PositiveIntegerField()
     message = models.TextField(blank=True, default='')
-    sha256 = models.CharField(max_length=64)
-    file_key = models.CharField(max_length=500)
+    # Identity of the exact binary: compared for equality to reject duplicate
+    # uploads, and bound into the D5 signature. Byte-exact, hence utf8mb4_bin.
+    sha256 = models.CharField(max_length=64, db_collation='utf8mb4_bin')
+    # Object-store keys are case-sensitive by definition. file_key is also one
+    # of the frozen columns the I2a trigger compares, and that comparison uses
+    # the column collation.
+    file_key = models.CharField(max_length=500, db_collation='utf8mb4_bin')
     size_bytes = models.BigIntegerField(default=0)
     page_count = models.PositiveIntegerField(default=0)
     source_scenario = models.CharField(
@@ -77,7 +82,9 @@ class DocumentVersion(PublicIdModel, TimestampedModel, SoftDeletableModel):
     config_version = models.ForeignKey(
         'projects.ProjectConfigVersion', on_delete=models.PROTECT, related_name='+'
     )
-    thumb_key = models.CharField(max_length=500, blank=True, default='')
+    thumb_key = models.CharField(
+        max_length=500, blank=True, default='', db_collation='utf8mb4_bin'
+    )
     thumb_status = models.CharField(
         max_length=10, choices=ThumbStatus.choices, default=ThumbStatus.PENDING
     )

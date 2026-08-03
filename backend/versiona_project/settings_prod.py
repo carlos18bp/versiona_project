@@ -10,6 +10,7 @@ validations.
 
 import os
 
+from .db import build_db_config
 from .settings import BASE_DIR  # noqa: F401
 from .settings import *  # noqa: F401,F403
 
@@ -42,18 +43,10 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # ---------------------------------------------------------------------------
-# Database — PostgreSQL (production)
+# Database — MySQL 8 (production). Same builder as the base settings, so the
+# driver OPTIONS cannot drift between the two files.
 # ---------------------------------------------------------------------------
-_db_engine = os.getenv('DJANGO_DB_ENGINE', 'django.db.backends.postgresql')
-_db_config = {
-    'ENGINE': _db_engine,
-    'NAME': os.getenv('DJANGO_DB_NAME', os.getenv('DB_NAME', 'versiona')),
-    'USER': os.getenv('DB_USER', 'versiona'),
-    'PASSWORD': os.getenv('DB_PASSWORD', ''),
-    'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-    'PORT': os.getenv('DB_PORT', '5432'),
-}
-DATABASES = {'default': _db_config}
+DATABASES = {'default': build_db_config(BASE_DIR)}
 
 # ---------------------------------------------------------------------------
 # Production email — require SMTP backend

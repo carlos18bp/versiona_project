@@ -26,11 +26,25 @@ class Project(PublicIdModel, TimestampedModel, SoftDeletableModel):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     is_sample = models.BooleanField(default=False)
 
+    # Stand-in for the partial unique index. MySQL 8 has none
+    # (mysql.features.supports_partial_indexes = False) and Django SKIPS a
+    # conditional UniqueConstraint there without failing, so the condition moves
+    # into the column instead: a trashed row carries NULL and a UNIQUE key
+    # ignores NULLs. STORED because PostgreSQL 16 has no VIRTUAL columns.
+    slug_alive = models.GeneratedField(
+        expression=models.Case(
+            models.When(deleted_at__isnull=True, then=models.F('slug')),
+            default=models.Value(None),
+            output_field=models.SlugField(max_length=160),
+        ),
+        output_field=models.SlugField(max_length=160),
+        db_persist=True,
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['organization', 'slug'],
-                condition=models.Q(deleted_at__isnull=True),
+                fields=['organization', 'slug_alive'],
                 name='uniq_project_slug_alive',
             ),
         ]

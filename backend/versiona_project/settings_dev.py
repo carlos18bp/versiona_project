@@ -7,8 +7,9 @@ Note: The default DJANGO_SETTINGS_MODULE in manage.py points to
 versiona_project.settings (base). Use this file explicitly when you want
 development-specific overrides (DEBUG=True, permissive hosts).
 
-Database and email come from the base settings + .env: native PostgreSQL
-(versiona) and mailpit as the SMTP catcher (docs/plan/07 §2.1 — no Docker).
+Database and email come from the base settings + .env: native MySQL 8
+(versiona_project_db) and mailpit as the SMTP catcher (docs/plan/07 §2.1 — no
+Docker).
 """
 
 from .settings import *  # noqa: F401,F403

@@ -5,8 +5,9 @@
 
 
 
-# Database (PostgreSQL + pgvector)
+# Database (MySQL 8 — mysqlclient is the driver Django documents as primary)
 # PDF engine & test fixtures
+# Spanish stemming for the B2 content search (replaces PG's spanish_unaccent)
 # Production server
 # Seal signing (Ed25519)
 # Security pins (transitive deps con CVEs en versiones previas)
@@ -28,10 +29,9 @@ factory-boy==3.3.3
 freezegun==1.5.5
 gunicorn>=23.0,<24.0
 hypothesis==6.156.6
+mysqlclient>=2.2.1,<3
 ocrmypdf==17.8.0
-pgvector>=0.3,<1
 pillow==12.2.0
-psycopg[binary]>=3.2,<4
 pygments>=2.20.0
 pyjwt>=2.12.1
 pyotp==2.10.0
@@ -46,6 +46,7 @@ reportlab>=4.2,<5
 requests==2.34.2
 ruff==0.15.13
 six==1.17.0
+snowballstemmer>=2.2,<4
 sqlparse==0.5.5
 typing_extensions==4.15.0
 urllib3>=2.7.0

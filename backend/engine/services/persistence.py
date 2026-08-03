@@ -4,10 +4,10 @@ docs/plan/05 §4), SectionVersion snapshots, lineage evidence, thumbnail and
 version fields. Runs inside one transaction; deterministic upserts (I15).
 """
 
-from django.contrib.postgres.search import SearchVector
 from django.db import transaction
 
 from documents.models import Document, DocumentVersion, Section, SectionLineage, SectionVersion
+from documents.search import build_search_text
 from documents.services import storage_service
 
 
@@ -75,6 +75,10 @@ def persist_analysis(version: DocumentVersion, analysis: dict) -> dict:
             heading_hash=payload['heading_hash'],
             body_hash=payload['body_hash'],
             normalized_text=payload['normalized_text'],
+            # B2 search index, computed here rather than in a second pass: the
+            # PG version needed a follow-up UPDATE because to_tsvector ran in
+            # the database, the stemmer runs in Python.
+            search_text=build_search_text(payload['normalized_text']),
             page_start=payload['page_start'],
             page_end=payload['page_end'],
             bboxes=payload['bboxes'],
@@ -109,9 +113,6 @@ def persist_analysis(version: DocumentVersion, analysis: dict) -> dict:
     except Exception:
         version.thumb_status = DocumentVersion.ThumbStatus.FAILED
 
-    SectionVersion.objects.filter(document_version=version).update(
-        search_vector=SearchVector('normalized_text', config='spanish_unaccent')
-    )
     version.page_count = analysis['page_count']
     version.source_scenario = analysis['scenario']
     version.analysis_status = DocumentVersion.AnalysisStatus.READY

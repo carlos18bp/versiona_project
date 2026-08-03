@@ -486,6 +486,34 @@ def _not_production(settings):
 
 
 @pytest.fixture(autouse=True)
+def _trash_versions_before_flush(request):
+    """Transactional tests only: send every DocumentVersion to the trash before
+    the harness wipes the tables.
+
+    Django's TransactionTestCase teardown always flushes with
+    `DELETE FROM ...` (reset_sequences is hardcoded False there), and the I2
+    trigger rejects a physical delete of a version that never went through the
+    trash — correctly. PostgreSQL never surfaced this because its flush uses
+    TRUNCATE CASCADE, which does not fire row triggers; MySQL's DELETE does.
+
+    So the fixture satisfies the invariant instead of bypassing it. It runs
+    before the flush because the `db` fixture is set up first and therefore
+    torn down last.
+    """
+    yield
+    marker = request.node.get_closest_marker('django_db')
+    if not (marker and marker.kwargs.get('transaction')):
+        return
+    from django.utils import timezone
+
+    from documents.models import DocumentVersion
+
+    DocumentVersion.all_objects.filter(deleted_at__isnull=True).update(
+        deleted_at=timezone.now()
+    )
+
+
+@pytest.fixture(autouse=True)
 def _eager_celery(settings):
     """Run tasks inline, regardless of what backend/.env says.
 

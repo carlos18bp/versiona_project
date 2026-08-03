@@ -23,11 +23,21 @@ class Document(PublicIdModel, TimestampedModel, SoftDeletableModel):
     )
     latest_number = models.PositiveIntegerField(default=0)
 
+    # Stand-in for the partial unique index — see Project.slug_alive for why.
+    slug_alive = models.GeneratedField(
+        expression=models.Case(
+            models.When(deleted_at__isnull=True, then=models.F('slug')),
+            default=models.Value(None),
+            output_field=models.SlugField(max_length=220),
+        ),
+        output_field=models.SlugField(max_length=220),
+        db_persist=True,
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['project', 'slug'],
-                condition=models.Q(deleted_at__isnull=True),
+                fields=['project', 'slug_alive'],
                 name='uniq_document_slug_alive',
             ),
         ]

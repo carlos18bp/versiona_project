@@ -40,18 +40,18 @@ def org_projects(request, org):
         queryset = _visible_projects(request.user, request.org)
         search = request.query_params.get('q', '').strip()
         if search:
-            from django.contrib.postgres.search import SearchQuery
             from django.db.models import Exists, F, OuterRef
 
             from documents.models import SectionVersion
+            from documents.search import boolean_query
 
             # B2-A02/A03: match by name OR by CONTENT of each document's
-            # latest version (FTS 'spanish' over the indexed section text).
+            # latest version (MySQL FULLTEXT over the stemmed section text).
             content_match = SectionVersion.objects.filter(
                 document_version__document__project=OuterRef('pk'),
                 document_version__document__deleted_at__isnull=True,
                 document_version__number=F('document_version__document__latest_number'),
-                search_vector=SearchQuery(search, config='spanish_unaccent'),
+                search_text__fts=boolean_query(search),
             )
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(Exists(content_match))

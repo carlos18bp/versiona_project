@@ -1,4 +1,10 @@
-"""B2 complete: content search (FTS spanish) + status filter on the board."""
+"""B2 complete: content search (Spanish stemming) + status filter on the board.
+
+The content-search tests run with transaction=True on purpose. InnoDB updates a
+FULLTEXT index at COMMIT, so rows written inside the usual rollback-only test
+transaction are invisible to MATCH ... AGAINST — including to the negative test,
+which would otherwise pass no matter how broken the search was.
+"""
 
 from pathlib import Path
 
@@ -34,11 +40,11 @@ def board_url(context, **params):
     return f'/api/orgs/{context.org.public_id}/projects/?{query}'
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
 @pytest.mark.escenario('B2-A03')
 def test_board_finds_a_project_by_pdf_content(client_as, board_with_content):
-    """FTS 'spanish': 'anticipo' appears INSIDE the uploaded PDF, not in the
-    project name — the board still finds the project."""
+    """'anticipo' appears INSIDE the uploaded PDF, not in the project name —
+    the board still finds the project."""
     context = board_with_content
 
     response = client_as('editor').get(board_url(context, q='anticipo'))
@@ -47,10 +53,10 @@ def test_board_finds_a_project_by_pdf_content(client_as, board_with_content):
     assert 'Torre Central' in names
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
 @pytest.mark.escenario('B2-A03')
 def test_content_search_uses_spanish_stemming(client_as, board_with_content):
-    """'obligaciones' vs 'obligación': the spanish config stems both."""
+    """'obligaciones' vs 'obligación': the Spanish stemmer collapses both."""
     context = board_with_content
 
     response = client_as('editor').get(board_url(context, q='obligación'))
@@ -58,7 +64,7 @@ def test_content_search_uses_spanish_stemming(client_as, board_with_content):
     assert len(response.data['results']) == 1
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
 @pytest.mark.escenario('B2-A02')
 def test_search_misses_return_the_guided_empty_list(client_as, board_with_content):
     context = board_with_content
