@@ -43,7 +43,7 @@ test.describe('D4 — Aprobar con sello', () => {
         reviewerPage.getByTestId('seal-reviewer@versiona.test')
       ).toBeVisible({ timeout: 20_000 });
       await expect(
-        reviewerPage.getByRole('heading', { level: 1 }).locator('..').getByText('Aprobada')
+        reviewerPage.getByTestId('status-badge').filter({ hasText: 'Aprobada' })
       ).toBeVisible({ timeout: 15_000 });
 
       // D4-F02: la firma Ed25519 verifica desde la UI
@@ -91,7 +91,7 @@ test.describe('D4 — Aprobar con sello', () => {
         reviewerPage.getByTestId('seal-reviewer@versiona.test')
       ).toBeVisible({ timeout: 20_000 });
       await expect(
-        reviewerPage.getByRole('heading', { level: 1 }).locator('..').getByText('Aprobada')
+        reviewerPage.getByTestId('status-badge').filter({ hasText: 'Aprobada' })
       ).toBeVisible({ timeout: 15_000 });
 
       // Intenta retirar el sello que sostiene esa aprobación

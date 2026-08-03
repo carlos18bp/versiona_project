@@ -3,6 +3,8 @@ import path from 'node:path';
 
 import { expect, test } from '../../test-with-coverage';
 import { F1_BILLING, F2_USAGE_PANEL } from '../../helpers/flow-tags';
+import { uniqueEmail } from '../../helpers/versiona';
+import { backendE2eEnv } from '../../helpers/backend-env';
 
 /** F1+F2 sobre una cuenta FRESCA: todo registro nuevo estrena el trial Pro de
  * 14 días (It9), así que primero se verifica el estado de prueba y luego se
@@ -22,7 +24,7 @@ function expireTrial(email: string) {
      `sub = Subscription.objects.get(organization__memberships__user__email='${email}');` +
      `sub.trial_ends_at = timezone.now() - timedelta(days=1);` +
      `sub.status = 'expired'; sub.save()`],
-    { cwd: BACKEND },
+    { cwd: BACKEND, env: backendE2eEnv() },
   );
 }
 
@@ -34,7 +36,7 @@ test.describe('F1+F2 — Límites del plan y consumo', () => {
     { tag: [...F1_BILLING, ...F2_USAGE_PANEL, '@scenario:f1-l01', '@scenario:f2-f01', '@scenario:f1-a01', '@outcome:error', '@outcome:display'] },
     async ({ page }) => {
       test.setTimeout(360_000); // registro + análisis real + recorrido completo del upgrade
-      const email = `free-${Date.now().toString(36)}@versiona.test`;
+      const email = uniqueEmail('free');
 
       // Registro + onboarding (siembra el proyecto ejemplo ⇒ 1 activo)
       await page.goto('/sign-up');

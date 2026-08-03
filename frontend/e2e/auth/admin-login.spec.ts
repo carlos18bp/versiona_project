@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
 import { expect, test } from '../test-with-coverage';
+import { backendE2eEnv } from '../helpers/backend-env';
 
 const ADMIN_LOGIN_HANDOFF = ['@flow:auth-admin-login-handoff', '@module:auth', '@priority:P3'];
 const BACKEND = path.resolve(__dirname, '../../../backend');
@@ -10,7 +11,7 @@ function mintTokens(): { access: string; refresh: string } {
   const raw = execFileSync(
     path.join(BACKEND, 'venv/bin/python'),
     ['manage.py', 'e2e_tokens'],
-    { cwd: BACKEND, encoding: 'utf-8' }
+    { cwd: BACKEND, encoding: 'utf-8', env: backendE2eEnv() }
   );
   return JSON.parse(raw).owner;
 }

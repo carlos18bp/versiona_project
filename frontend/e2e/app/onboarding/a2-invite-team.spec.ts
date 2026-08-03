@@ -1,7 +1,7 @@
 import { expect, test } from '../../test-with-coverage';
 import { A2_INVITE_TEAM } from '../../helpers/flow-tags';
 import { waitForEmail } from '../../helpers/mailpit';
-import { openSeededProject } from '../../helpers/versiona';
+import { openSeededProject, uniqueEmail } from '../../helpers/versiona';
 
 test.describe('A2 — Invitar al equipo', () => {
   test.slow();
@@ -10,7 +10,7 @@ test.describe('A2 — Invitar al equipo', () => {
     'A2-F01/F02 — invitación por email, registro y aterrizaje directo en el proyecto',
     { tag: [...A2_INVITE_TEAM, '@scenario:a2-f01', '@scenario:a2-f02', '@outcome:success'] },
     async ({ browser }) => {
-      const invitee = `inv-${Date.now().toString(36)}@versiona.test`;
+      const invitee = uniqueEmail('inv');
 
       // Admin invita desde la configuración del proyecto
       const adminContext = await browser.newContext({ storageState: 'e2e/.auth/admin.json' });
@@ -86,7 +86,7 @@ test.describe('A2 — Invitar al equipo', () => {
         // Catches: a regression that drops/weakens the duplicate-pending check
         // in `create_invitation`, or a frontend that stops surfacing
         // `err.response.data.error` and silently swallows the 409.
-        const invitee = `dup-${Date.now().toString(36)}@versiona.test`;
+        const invitee = uniqueEmail('dup');
 
         await openSeededProject(page);
         await page.getByTestId('project-settings-link').click();

@@ -1,5 +1,6 @@
 import { expect, test } from '../../test-with-coverage';
 import { TRIAL_VISIBILITY } from '../../helpers/flow-tags';
+import { uniqueEmail } from '../../helpers/versiona';
 
 /** It9 — la promesa del landing ("14 días de Pro incluidos") tiene prueba UI:
  * la cuenta fresca ve el banner del trial con los días restantes. */
@@ -11,7 +12,7 @@ test.describe('Trial — visibilidad del banner', () => {
     'TRIAL-F01 — el registro fresco ve el banner Pro con días restantes y lo descarta por sesión',
     { tag: [...TRIAL_VISIBILITY, '@scenario:trial-f01', '@outcome:success'] },
     async ({ page }) => {
-      const email = `trial-${Date.now().toString(36)}@versiona.test`;
+      const email = uniqueEmail('trial');
 
       await page.goto('/sign-up');
       await page.getByPlaceholder('Email').fill(email);

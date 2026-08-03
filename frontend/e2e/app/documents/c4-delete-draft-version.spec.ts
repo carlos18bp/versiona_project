@@ -9,10 +9,16 @@ test.describe('C4 — Eliminar una versión borrador', () => {
     'C4-F01/F02 — a la papelera con doble confirmación, tombstone y restauración',
     { tag: [...C4_DELETE_DRAFT, '@scenario:c4-f01', '@scenario:c4-f02', '@outcome:success'] },
     async ({ page, browser }) => {
+      // The title must be unique per run: /org/trash lists every trashed item in
+      // the org with no project scope, so a run that dies between trashing v2 and
+      // restoring it leaves an orphan row. With a fixed title the next run's
+      // `Borrable · v2` matcher then resolves to two elements and C4-F01 goes red
+      // permanently, until someone cleans the database by hand. Measured 2026-08-02.
+      const docTitle = uniqueName('Borrable');
       await createProject(page, uniqueName('Papelera'));
-      await uploadPdf(page, 'contrato_v1.pdf', { title: 'Borrable', message: 'v1' });
-      await expect(page.getByText('Borrable')).toBeVisible({ timeout: 60_000 });
-      await page.getByText('Borrable').click();
+      await uploadPdf(page, 'contrato_v1.pdf', { title: docTitle, message: 'v1' });
+      await expect(page.getByText(docTitle)).toBeVisible({ timeout: 60_000 });
+      await page.getByText(docTitle).click();
       await expect(page.getByTestId('version-item-1')).toBeVisible({ timeout: 15_000 });
       await uploadPdf(page, 'contrato_v2.pdf', { message: 'v2 borrador' });
       await expect(page.getByTestId('version-item-2')).toBeVisible({ timeout: 60_000 });
@@ -31,8 +37,14 @@ test.describe('C4 — Eliminar una versión borrador', () => {
       const ownerPage = await ownerContext.newPage();
       await ownerPage.goto('/org/trash');
       await expect(ownerPage.getByTestId('trash-list')).toBeVisible({ timeout: 15_000 });
-      await expect(ownerPage.getByText(/Borrable · v2/)).toBeVisible();
-      await ownerPage.getByTestId('restore-version').first().click();
+      // Scoped to THIS document's row, not `.first()`: the trash is org-wide, so
+      // the first row is whatever another spec trashed most recently.
+      const trashedRow = ownerPage
+        .getByTestId('trash-list')
+        .locator('li')
+        .filter({ hasText: `${docTitle} · v2` });
+      await expect(trashedRow).toBeVisible();
+      await trashedRow.getByTestId('restore-version').click();
       await expect(ownerPage.getByText('Elemento restaurado')).toBeVisible({ timeout: 10_000 });
       await ownerContext.close();
 

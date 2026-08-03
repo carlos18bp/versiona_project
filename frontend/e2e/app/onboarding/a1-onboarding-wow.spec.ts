@@ -1,5 +1,6 @@
 import { expect, test } from '../../test-with-coverage';
 import { A1_ONBOARDING_WOW } from '../../helpers/flow-tags';
+import { uniqueEmail } from '../../helpers/versiona';
 
 /** A1 — fresh guest, NO storageState: sign-up → wizard → a WORKING comparison
  * without uploading anything (metric S1). */
@@ -11,7 +12,7 @@ test.describe('A1 — Registro y momento wow', () => {
     'A1-F01 — del registro a una comparación funcionando',
     { tag: [...A1_ONBOARDING_WOW, '@scenario:a1-f01', '@scenario:a1-f03', '@outcome:success'] },
     async ({ page }) => {
-      const email = `wow-${Date.now().toString(36)}@versiona.test`;
+      const email = uniqueEmail('wow');
 
       // Registro por UI
       await page.goto('/sign-up');
@@ -49,7 +50,7 @@ test.describe('A1 — Registro y momento wow', () => {
       // or the wizard stops resetting `isSeeding` on error, a real storage
       // outage traps the user on an infinite spinner with a disabled button
       // instead of a retryable, visible error.
-      const email = `wow-fail-${Date.now().toString(36)}@versiona.test`;
+      const email = uniqueEmail('wow-fail');
 
       // Registro por UI
       await page.goto('/sign-up');
