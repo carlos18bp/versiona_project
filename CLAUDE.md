@@ -556,9 +556,19 @@ Full reference: `docs/TESTING_QUALITY_STANDARDS.md`
 
 ## Error Documentation — Versiona
 
-No resolved incidents yet. Known template debts are tracked in `tasks/tasks_plan.md`
-(pre-existing `tsc` error in `lib/services/__tests__/http.test.ts`, template ESLint errors in
-auth pages/scripts).
+Resolved 2026-08-03 — **hydration mismatch on every authenticated page**. The auth
+state is seeded from a cookie via js-cookie (browser-only), so the server computed
+`isAuthenticated: false` and the client `true`. `Header` branched on it directly and
+the 19 pages behind `useRequireAuth` did `if (!isAuthenticated) return null`, so
+server and client rendered different trees and React discarded the server HTML on
+every load. Fixed by gating both on a mounted flag — the codebase's own idiom, see
+`theme-toggle.tsx`. The redirect in `useRequireAuth` deliberately keeps reading the
+RAW store value, gated on mounted: sending a signed-in visitor to /sign-in because
+the component had not mounted would be a real bug, not a cosmetic one.
+
+Known template debts are tracked in `tasks/tasks_plan.md` (template ESLint errors in
+auth pages/scripts). The `tsc` error in `lib/services/__tests__/http.test.ts` was
+fixed 2026-08-03; `npx tsc --noEmit` is clean.
 
 ---
 
