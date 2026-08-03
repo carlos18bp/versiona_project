@@ -18,6 +18,18 @@ export function uniqueName(prefix: string): string {
   return `${prefix} ${Date.now().toString(36)}`;
 }
 
+/**
+ * A per-run e-mail address on the seeded test domain.
+ *
+ * Deliberately NOT `uniqueName()`: that joins with a SPACE, which is invalid in
+ * an e-mail local part. Every spec that needed a fresh account was therefore
+ * inlining `${prefix}-${Date.now().toString(36)}@versiona.test` by hand — seven
+ * copies of the same expression, which is how the domain drifts.
+ */
+export function uniqueEmail(prefix: string): string {
+  return `${prefix}-${Date.now().toString(36)}@versiona.test`;
+}
+
 /** B1 happy path — returns the created project name. */
 export async function createProject(page: Page, name: string): Promise<void> {
   // Enter through the board and click "Nuevo proyecto" rather than deep-linking

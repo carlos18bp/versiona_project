@@ -22,6 +22,10 @@ for (const screen of SCREENS) {
     `A11Y-01 — ${screen.name} sin violaciones críticas`,
     { tag: ['@flow:home-loads', '@scenario:a11y-01', '@states'] },
     async ({ page }) => {
+      // quality: allow-no-interaction (an axe sweep asserts the accessibility of
+      // a screen AS RENDERED; driving the UI first would change what is audited,
+      // not strengthen it. The interactions on these screens are covered by the
+      // flows that own them.)
       await page.goto(screen.path);
       await expect(screen.ready(page)).toBeVisible({ timeout: 20_000 });
 

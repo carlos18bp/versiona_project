@@ -5,6 +5,7 @@ import { expect, test } from '../test-with-coverage';
 import { MASTER_E2E_JOURNEY } from '../helpers/flow-tags';
 import { purgeMailbox, waitForEmail } from '../helpers/mailpit';
 import { TESTDATA, uniqueName } from '../helpers/versiona';
+import { backendE2eEnv } from '../helpers/backend-env';
 
 /**
  * LA PRUEBA MAESTRA (docs/audit/03 §SS7 — el examen final del producto):
@@ -26,7 +27,7 @@ function upgradeOrgToPro(email: string) {
      `from orgs.models import Organization;` +
      `org = Organization.objects.get(memberships__user__email='${email}');` +
      `org.plan = 'pro'; org.save(update_fields=['plan'])`],
-    { cwd: BACKEND },
+    { cwd: BACKEND, env: backendE2eEnv() },
   );
 }
 

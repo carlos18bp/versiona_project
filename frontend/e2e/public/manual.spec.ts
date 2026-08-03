@@ -7,6 +7,10 @@ test.describe('Manual interactivo', () => {
     'MAN-F01 — /manual muestra las secciones con sus procesos',
     { tag: [...HELP_MANUAL_BROWSE, '@scenario:man-f01', '@outcome:display'] },
     async ({ page }) => {
+      // quality: allow-no-interaction (display-only sheet — the manual renders
+      // from a static array with no network call, so there is nothing to drive.
+      // The interactive path of this same flow is MAN-F02 below, which types
+      // into the search box.)
       await page.goto('/manual');
 
       await expect(

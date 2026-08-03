@@ -1,6 +1,7 @@
 import { expect, test } from '../../test-with-coverage';
 import { A3_ACCOUNT_SECURITY } from '../../helpers/flow-tags';
 import { totpNow } from '../../helpers/totp';
+import { uniqueEmail } from '../../helpers/versiona';
 
 /** A3 — TOTP end to end: enrol from settings, re-login demands the code.
  * Uses a FRESH account so the seeded users keep 2FA off for other specs. */
@@ -12,7 +13,7 @@ test.describe('A3 — Seguridad de la cuenta', () => {
     'A3-F01/F03 — activar 2FA y entrar con el código',
     { tag: [...A3_ACCOUNT_SECURITY, '@scenario:a3-f01', '@scenario:a3-f03', '@outcome:success', '@outcome:error'] },
     async ({ page }) => {
-      const email = `sec-${Date.now().toString(36)}@versiona.test`;
+      const email = uniqueEmail('sec');
 
       // Cuenta nueva por UI
       await page.goto('/sign-up');

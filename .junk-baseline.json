@@ -7,9 +7,7 @@
     "frontend/app/sign-up/__tests__/page.test.tsx::mock_only_assertion::shows error when passwords do not match",
     "frontend/components/billing/__tests__/trial-banner.test.tsx::mock_only_assertion::renders nothing when the org is not on trial",
     "frontend/components/versions/__tests__/UploadDropzone.test.tsx::mock_only_assertion::[C1-A01] shows the local preview and cancels without spending network",
-    "frontend/e2e/app/a11y.spec.ts::no_user_interaction::A11Y-01 \u2014 ${screen.name} sin violaciones cr\u00edticas",
     "frontend/e2e/app/billing/f1-f2-limits-usage.spec.ts::deep_link_entry::F1-L01/F2-F01 \u2014 el trial arranca, al expirar el l\u00edmite bloquea con di\u00e1logo y el panel avisa",
-    "frontend/e2e/app/org/f3-org-audit.spec.ts::deep_link_entry::F3-F01 \u2014 el admin ve los filtros, filtra por tipo y el export CSV",
-    "frontend/e2e/public/manual.spec.ts::no_user_interaction::MAN-F01 \u2014 /manual muestra las secciones con sus procesos"
+    "frontend/e2e/app/org/f3-org-audit.spec.ts::deep_link_entry::F3-F01 \u2014 el admin ve los filtros, filtra por tipo y el export CSV"
   ]
 }
