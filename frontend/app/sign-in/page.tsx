@@ -10,6 +10,7 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/services/http';
+import { apiErrorMessage } from '@/lib/services/errors';
 
 type GoogleUser = {
   email: string;
@@ -61,8 +62,8 @@ export default function SignInPage() {
       }
       const next = new URLSearchParams(window.location.search).get('next');
       router.replace(next && next.startsWith('/') ? next : '/projects');
-    } catch (err: any) {
-      setError(err.response?.data?.error || t.errorInvalidCredentials);
+    } catch (err) {
+      setError(apiErrorMessage(err, t.errorInvalidCredentials));
       recaptchaRef.current?.reset();
       setCaptchaToken(null);
     } finally {
@@ -96,8 +97,8 @@ export default function SignInPage() {
       });
       
       router.replace('/projects');
-    } catch (err: any) {
-      setError(err.response?.data?.error || t.errorGoogle);
+    } catch (err) {
+      setError(apiErrorMessage(err, t.errorGoogle));
     } finally {
       setLoading(false);
     }
@@ -125,8 +126,8 @@ export default function SignInPage() {
                 await signIn2fa({ challenge, code: totpCode });
                 const next = new URLSearchParams(window.location.search).get('next');
                 router.replace(next && next.startsWith('/') ? next : '/projects');
-              } catch (err: any) {
-                setError(err.response?.data?.error || t.twofaInvalid);
+              } catch (err) {
+                setError(apiErrorMessage(err, t.twofaInvalid));
                 setLoading(false);
               }
             }}

@@ -10,6 +10,8 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useDict } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/services/http';
+import { apiErrorMessage } from '@/lib/services/errors';
+import { useMounted } from '@/lib/hooks/useMounted';
 
 type GoogleUser = {
   email: string;
@@ -32,13 +34,12 @@ export default function SignUpPage() {
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [siteKey, setSiteKey] = useState<string>('');
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
-    setMounted(true);
     api.get('google-captcha/site-key/')
       .then((res) => setSiteKey(res.data.site_key || ''))
       .catch(() => {});
@@ -78,8 +79,8 @@ export default function SignUpPage() {
         captcha_token: captchaToken ?? undefined,
       });
       router.replace('/onboarding');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Registration failed'));
       recaptchaRef.current?.reset();
       setCaptchaToken(null);
     } finally {
@@ -113,8 +114,8 @@ export default function SignUpPage() {
       });
       
       router.replace('/onboarding');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Google registration failed');
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Google registration failed'));
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 
 import { useLocaleStore } from '@/lib/stores/localeStore';
+import { useMounted } from '@/lib/hooks/useMounted';
 
 const DICTIONARIES = {
   common: {
@@ -1187,9 +1188,7 @@ export function getDict<N extends Namespace>(namespace: N, locale: Locale): Dict
 
 export function useDict<N extends Namespace>(namespace: N): Dicts[N]['es'] {
   const locale = useLocaleStore((s) => s.locale) as Locale;
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => setIsHydrated(true), []);
+  const isHydrated = useMounted();
 
   // Server and first client render must agree: the persisted locale is only
   // applied after hydration (otherwise React reports a text mismatch).

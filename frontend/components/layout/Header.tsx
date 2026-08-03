@@ -10,6 +10,7 @@ import { ROUTES } from '@/lib/constants';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { useOrgStore } from '@/lib/stores/orgStore';
 import { useDict } from '@/lib/i18n/dictionaries';
+import { useMounted } from '@/lib/hooks/useMounted';
 
 export default function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -25,8 +26,7 @@ export default function Header() {
   // authenticated page load — which also lets it discard the server HTML and
   // re-render the whole tree. Same fix as theme-toggle and locale-toggle: render
   // the server-consistent branch until mounted, then swap deliberately.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   useEffect(() => {
     if (isAuthenticated && orgs.length === 0) void fetchOrgs();

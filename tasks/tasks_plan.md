@@ -47,7 +47,14 @@ v2.2.0 (36 flows).
 1. ~~**Pre-existing tsc error** in `frontend/lib/services/__tests__/http.test.ts`~~ —
    fixed 2026-08-03: the cast omitted `interceptors`, which the declared
    intersection type requires. `npx tsc --noEmit` is now clean across the frontend.
-2. **Pre-existing ESLint errors** in template files (auth pages, jest.setup, scripts) —
+2. ~~**Pre-existing ESLint errors** in template files (auth pages, jest.setup, scripts)~~ —
+   cleared 2026-08-03: 37 errors → 0. The `require` reports were the rule applied to
+   `.cjs` files, where CommonJS is correct; the `any` reports were eight inlined
+   `catch (err: any)` now behind `lib/services/errors.ts`; the `mounted` duplication
+   is now `lib/hooks/useMounted.ts`, the project's ONE suppression, with its reason.
+   `react-hooks/set-state-in-effect` is a warning for the data-fetching effects it
+   still reports — visible, not silenced. 21 warnings remain, none blocking.
+   Old note kept for context —
    ESLint is not a CI gate; clean up when touching those files.
 3. Email verification exists as an unwired util (`accounts/utils/auth_utils.py`) —
    Etapa 2.

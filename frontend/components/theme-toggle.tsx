@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTheme } from 'next-themes';
 import { Sun, Moon, Monitor } from 'lucide-react';
+import { useMounted } from '@/lib/hooks/useMounted';
 
 const OPTIONS = [
   { value: 'light', label: 'Light', Icon: Sun },
@@ -20,12 +21,10 @@ const OPTIONS = [
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const itemsRef = useRef<Array<HTMLButtonElement | null>>([]);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (open) itemsRef.current[0]?.focus();

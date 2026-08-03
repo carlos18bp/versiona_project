@@ -8,13 +8,12 @@
 import { useEffect, useState } from 'react';
 
 import { useLocaleStore } from '@/lib/stores/localeStore';
+import { useMounted } from '@/lib/hooks/useMounted';
 
 export function LocaleToggle() {
   const locale = useLocaleStore((s) => s.locale);
   const setLocale = useLocaleStore((s) => s.setLocale);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   if (!mounted) {
     return <div className="h-9 w-9" aria-hidden />;
