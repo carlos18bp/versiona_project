@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuthStore } from '@/lib/stores/authStore';
+import { useMounted } from '@/lib/hooks/useMounted';
 
 /**
  * Auth gate for a client page, hydration-safe.
@@ -25,9 +26,7 @@ export const useRequireAuth = () => {
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const syncFromCookies = useAuthStore((s) => s.syncFromCookies);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   useEffect(() => {
     syncFromCookies();
