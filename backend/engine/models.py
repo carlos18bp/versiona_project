@@ -30,7 +30,12 @@ class EngineJob(PublicIdModel, TimestampedModel):
     result = models.JSONField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     attempts = models.PositiveSmallIntegerField(default=0)
-    idempotency_key = models.CharField(max_length=200, unique=True)
+    # Idempotency has to be exact: a case-insensitive collation would both
+    # collapse distinct keys into a spurious IntegrityError and let a case
+    # variant replay a job.
+    idempotency_key = models.CharField(
+        max_length=200, unique=True, db_collation='utf8mb4_bin'
+    )
     celery_task_id = models.CharField(max_length=100, blank=True, default='')
     error_detail = models.TextField(blank=True, default='')
     document_version = models.ForeignKey(

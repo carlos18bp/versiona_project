@@ -13,7 +13,7 @@ flowchart LR
     BE -- enqueue EngineJob --> R[(Redis)]
     R --> W[Celery workers: default / engine_light / engine_heavy]
     W -- PyMuPDF pipeline --> M[(MinIO: originals + artifacts)]
-    BE --> P[(PostgreSQL 16 + pgvector)]
+    BE --> P[(MySQL 8)]
     W --> P
     BE -- signed URLs --> M
     W -- selective emails --> MP[mailpit dev / SMTP prod]
@@ -28,17 +28,17 @@ flowchart LR
 - **Immutability spine**: DocumentVersion frozen once analyzed (I2/I3); Seal +
   SealValidityRecord append-only (I4); seal validity = unbroken chain of `preserved`
   records (I11); D5 conservative bias (I7).
-- **Runtime**: native processes on the VPS (no Docker — DP-21). PostgreSQL/Redis/MinIO/
+- **Runtime**: native processes on the VPS (no Docker — DP-21). MySQL/Redis/MinIO/
   mailpit as system services; gunicorn+systemd at staging deploy time (deferred).
 
 ## Current workflow (updated per iteration)
 
-**It0 (bootstrap) — DONE 2026-07-12**: services provisioned (Postgres 16 + pgvector via
-template1, MinIO + `versiona-media` bucket, mailpit), Huey→Celery (static beat schedule),
-MySQL→Postgres, FileSystem→S3-when-bucket-set, monolith split into bounded contexts
+**It0 (bootstrap) — DONE 2026-07-12**: services provisioned (database, MinIO +
+`versiona-media` bucket, mailpit), Huey→Celery (static beat schedule),
+FileSystem→S3-when-bucket-set, monolith split into bounded contexts
 (auth preserved in `accounts`, StagingPhaseBanner in `core`), fresh 0001 migrations,
 demo e-commerce purged on both sides, Versiona landing + `components/ui` kit,
-deterministic PDF fixtures (`testdata/`), flow-definitions v2.0.0, CI on Postgres services.
+deterministic PDF fixtures (`testdata/`), flow-definitions v2.0.0, CI on MySQL services.
 Backend suite: 123 tests green; frontend: 114 tests green.
 
 **It1–It8 — DONE 2026-07-12** (see `docs/audit/05-cierre.md`): document core (C1-C3,

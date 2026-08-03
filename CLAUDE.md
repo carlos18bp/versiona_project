@@ -178,10 +178,10 @@ por ecosistema. La fuente de verdad es `vps-ops-toolkit/workflows/`.
   seal-based approval for PDFs)
 - **Domain**: TBD (deployment details deferred post-MVP — DP-21/DP-22)
 - **Stack**: Django 6 + DRF + **Celery** (backend) / Next.js 16 + React 19 + TypeScript
-  (frontend) / **PostgreSQL 16 + pgvector** / Redis / filesystem object storage behind
+  (frontend) / **MySQL 8** / Redis / filesystem object storage behind
   signed URLs / mailpit (dev SMTP)
 - **Runtime**: native processes, NO Docker for now (operator decision DP-21); dev on this VPS
-- **Repo path**: `/home/ryzepeck/webapps/versiona_project`
+- **Repo path**: `/home/ryzepeck/webapps/versiona_project_staging`
 - **Planning suite (source of truth)**: `docs/plan/00-vision.md` … `09-roadmap-ejecucion.md` —
   every feature maps to an artifact flow id (A1…F1) and follows the vertical-iteration
   roadmap (It0 bootstrap done; next: It1 document core C1/C2/C3/B1)

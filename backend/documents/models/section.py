@@ -9,8 +9,6 @@ decision.
 Bounding boxes travel normalized 0–1, top-left origin: [{page, x0, y0, x1, y1}].
 """
 
-from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
 from core.models import TimestampedModel
@@ -50,8 +48,11 @@ class SectionVersion(TimestampedModel):
         DocumentVersion, on_delete=models.CASCADE, related_name='section_versions'
     )
     heading_text = models.CharField(max_length=300)
-    heading_hash = models.CharField(max_length=64)
-    body_hash = models.CharField(max_length=64)
+    # Content-identity hashes — the currency D5 spends to prove "this section did
+    # not change". They compare byte-exact, so they opt out of the table's
+    # accent/case-insensitive default collation.
+    heading_hash = models.CharField(max_length=64, db_collation='utf8mb4_bin')
+    body_hash = models.CharField(max_length=64, db_collation='utf8mb4_bin')
     normalized_text = models.TextField()
     page_start = models.PositiveIntegerField()
     page_end = models.PositiveIntegerField()
@@ -59,9 +60,11 @@ class SectionVersion(TimestampedModel):
     order_index = models.PositiveIntegerField()
     ocr_confidence = models.FloatField(null=True, blank=True)
     char_count = models.PositiveIntegerField(default=0)
-    # B2 content search: tsvector('spanish') over normalized_text, populated
-    # by persist_analysis right after the bulk insert.
-    search_vector = SearchVectorField(null=True, editable=False)
+    # B2 content search: normalized_text folded and Spanish-stemmed by
+    # documents.search.build_search_text, written by persist_analysis. MySQL
+    # indexes it with FULLTEXT (documents/migrations/0004) — an index Django
+    # cannot declare, so it is not in Meta.indexes.
+    search_text = models.TextField(blank=True, default='', editable=False)
 
     class Meta:
         constraints = [
@@ -72,7 +75,6 @@ class SectionVersion(TimestampedModel):
                 fields=['document_version', 'order_index'], name='uniq_snapshot_order'
             ),
         ]
-        indexes = [GinIndex(fields=['search_vector'], name='sectionversion_fts_gin')]
         ordering = ['order_index']
 
     def __str__(self):

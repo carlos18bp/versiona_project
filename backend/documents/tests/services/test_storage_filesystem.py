@@ -49,8 +49,17 @@ def test_copy_then_delete_source_leaves_destination_readable():
 
 def test_delete_of_missing_key_is_a_silent_no_op():
     """Catches: losing S3's idempotent delete. version_service and the public
-    comparison purge both delete keys that may already be gone."""
-    storage_service.delete('test/orgs/abc/docs/ghost/v1/original.pdf')  # must not raise
+    comparison purge both delete keys that may already be gone. Deleting a
+    sibling afterwards proves the backend is still usable — a delete that left
+    the store wedged would satisfy 'did not raise' on its own."""
+    ghost = 'test/orgs/abc/docs/ghost/v1/original.pdf'
+
+    storage_service.delete(ghost)  # must not raise
+
+    assert storage_service.head(ghost) is None
+    storage_service.put_bytes(KEY, PAYLOAD, 'application/pdf')
+    storage_service.delete(KEY)
+    assert storage_service.head(KEY) is None
 
 
 @pytest.mark.parametrize('bad_key', [

@@ -27,7 +27,7 @@ No containers. On the dev/staging VPS, fleet-style:
 
 | Piece | How it runs |
 |---|---|
-| PostgreSQL 16 + pgvector | Native install (apt + pgvector package); database `versiona`; extensions created by migration 0001 |
+| MySQL 8.0 | Native install (apt); database `versiona_project_db` + throwaway `versiona_e2e`; user, grants and the `SET_USER_ID` privilege needed for triggers are in `docs/methodology/error-documentation.md` |
 | Redis 7 | Native service (already present — the template used it for Huey) |
 | MinIO | Native single binary under systemd (`minio server`), bucket `versiona-media` bootstrapped with `mc mb --ignore-existing` |
 | Django | venv + `manage.py runserver` in dev; gunicorn + systemd unit at staging deploy time |
@@ -45,7 +45,7 @@ so adopting it later swaps the runtime, not the code.
 
 | Service | Image / build | Ports | depends_on (healthcheck) | Volumes | Command |
 |---|---|---|---|---|---|
-| `db` | `pgvector/pgvector:pg16` | 5432 | — · health `pg_isready -U versiona` | `pgdata:/var/lib/postgresql/data` | default |
+| `db` | `mysql:8.0` | 3306 | — · health `mysqladmin ping` | `mysqldata:/var/lib/mysql` | default |
 | `redis` | `redis:7-alpine` | 6379 | — · health `redis-cli ping` | — | default |
 | `minio` | `minio/minio` | 9000 (S3) / 9001 (console) | — · health `curl -f :9000/minio/health/live` | `miniodata:/data` | `server /data --console-address ":9001"` |
 | `minio-init` | `minio/mc` | — | minio (healthy); `restart: "no"` | — | `mc alias set local http://minio:9000 $U $P && mc mb --ignore-existing local/versiona-media` |
@@ -62,7 +62,7 @@ ghostscript; dev/prod targets), `frontend/Dockerfile` (node:22 dev / standalone 
 `.dockerignore` for both. The same engine system packages are installed **natively** in §2.1.
 
 **New environment variables** (names; added to both `.env.example` files):
-`POSTGRES_DB/USER/PASSWORD/HOST/PORT` (or `DATABASE_URL`) · `CELERY_BROKER_URL` ·
+`DJANGO_DB_ENGINE/DJANGO_DB_NAME` + `DB_USER/PASSWORD/HOST/PORT` · `CELERY_BROKER_URL` ·
 `CELERY_RESULT_BACKEND` · `AWS_S3_ENDPOINT_URL` · `AWS_ACCESS_KEY_ID` ·
 `AWS_SECRET_ACCESS_KEY` · `AWS_STORAGE_BUCKET_NAME` · `MEDIA_SIGNED_URL_TTL_SECONDS` ·
 `EMAIL_HOST=mailpit` / `EMAIL_PORT=1025` (dev) · `MAX_PDF_SIZE_MB` · `OCR_ENABLED` ·
@@ -80,7 +80,7 @@ blueprint is built.
 
 | Job | Changes |
 |---|---|
-| `backend-tests` | Add services `postgres` (image `pgvector/pgvector:pg16`), `redis:7`, `minio` (with health-cmd). pytest moves from SQLite → **PostgreSQL** (FTS/JSONB tests require it). Drop `default-libmysqlclient-dev` (MySQL leaves). Celery `task_always_eager` for unit/integration. Coverage gates per `06` §8 (`--cov-fail-under=75` + module gate script). New step: `manage.py makemigrations --check --dry-run` (anti-drift). |
+| `backend-tests` | Services `mysql:8.0` (health `mysqladmin ping`), `redis:7`, `minio` (with health-cmd). The job connects as `root`: the image grants `MYSQL_USER` rights on `MYSQL_DATABASE` only, so pytest-django could not create `test_versiona`. Celery `task_always_eager` for unit/integration. Coverage gates per `06` §8 (`--cov-fail-under=75` + module gate script). New step: `manage.py makemigrations --check --dry-run` (anti-drift). |
 | `frontend-unit-tests` | Unchanged mechanics; `coverageThreshold` per `06` §8. |
 | `frontend-e2e-tests` | Add the same services + steps `migrate` → `create_fake_data --scenario=e2e` → start a real Celery worker in the background (C1/C2/E1/D5 need real jobs) → Playwright webServer (Django + Next) as today. New cache: `~/.cache/ms-playwright` keyed by Playwright version. |
 | `coverage-summary` | Unchanged (sticky PR comment). |
@@ -92,8 +92,11 @@ Lint stays as-is (ruff backend, eslint frontend) and runs on every push/PR to ma
 
 - One migration chain per app starting at `0001`; **a merged migration is never edited**; no
   premature squashing.
-- `core` migration `0001` enables the `vector` (pgvector) and `pg_trgm` extensions.
-- CI runs `migrate` against real PostgreSQL from zero + the `--check` anti-drift step (§3).
+- `core` migration `0001` is an empty step kept for the dependency graph (it used to create
+  the pgvector/pg_trgm extensions, both of which were never used).
+- Migrations that emit raw DDL (`documents/0002` triggers, `0004` FULLTEXT) declare
+  `atomic = False`: MySQL cannot roll back DDL and Django refuses otherwise.
+- CI runs `migrate` against real MySQL from zero + the `--check` anti-drift step (§3).
 - Data migrations only for seed-independent invariants (e.g. default `Plan` rows).
 
 ## 5. Seed data
@@ -110,7 +113,7 @@ Lint stays as-is (ruff backend, eslint frontend) and runs on every push/PR to ma
 ## 6. Staging & production posture
 
 **RESOLVED (operator, 2026-07-12)**: staging deploys **without Docker**, on the fleet
-convention — gunicorn + systemd units on the VPS, with native PostgreSQL/Redis/MinIO; new
+convention — gunicorn + systemd units on the VPS, with native MySQL/Redis/MinIO; new
 `versiona-celery.service` / `versiona-celery-beat.service` units replace the template's
 `huey.service`. Deployment fine detail (nginx, domain, SSL) is deferred until after the MVP
 implementation. Production security headers already exist in `settings_prod.py` and stay.

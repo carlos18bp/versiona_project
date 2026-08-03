@@ -11,7 +11,7 @@ analysis job.
 from dataclasses import dataclass
 
 from django.conf import settings
-from django.db import transaction
+from django.db import OperationalError, transaction
 from django.utils.text import slugify
 
 from audit import services as audit
@@ -20,6 +20,10 @@ from documents.services import storage_service
 from engine.services.analysis import EncryptedPdfError, InvalidPdfError, open_pdf
 from engine.tasks import enqueue_analysis
 from projects.models import Project, ProjectConfigVersion
+
+
+# MySQL ER_LOCK_WAIT_TIMEOUT.
+ER_LOCK_WAIT_TIMEOUT = 1205
 
 
 class DomainError(Exception):
@@ -108,6 +112,29 @@ def complete_upload(document: Document, upload_id: str, message: str, user, requ
 
     sha256 = storage_service.sha256_of(data)
 
+    try:
+        version = _create_locked_version(document, staging, sha256, size, message, user, request)
+    except OperationalError as exc:
+        # _create_locked_version holds its row lock across storage_service.copy(),
+        # so a second
+        # upload to the same document waits on network I/O. PostgreSQL waited
+        # forever; InnoDB gives up after innodb_lock_wait_timeout (50s) with
+        # error 1205, which would otherwise surface as a 500.
+        if exc.args and exc.args[0] == ER_LOCK_WAIT_TIMEOUT:
+            raise DomainError(
+                'Otra subida sobre este documento está en curso; intenta de nuevo.', 409
+            ) from exc
+        raise
+
+    storage_service.delete(staging)
+    job = enqueue_analysis(version)
+    version.refresh_from_db()
+    return version, job
+
+
+def _create_locked_version(document, staging, sha256, size, message, user, request):
+    """I1: allocating the version number and writing the object happen under one
+    document-row lock, so two concurrent uploads cannot claim the same number."""
     with transaction.atomic():
         locked = Document.objects.select_for_update().get(pk=document.pk)
         latest = (
@@ -144,10 +171,7 @@ def complete_upload(document: Document, upload_id: str, message: str, user, requ
                      payload={'number': number, 'sha256': sha256, 'size': size},
                      request=request)
 
-    storage_service.delete(staging)
-    job = enqueue_analysis(version)
-    version.refresh_from_db()
-    return version, job
+    return version
 
 
 def edit_message(version: DocumentVersion, message: str, user, request=None) -> DocumentVersion:

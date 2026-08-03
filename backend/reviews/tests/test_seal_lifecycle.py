@@ -162,7 +162,7 @@ def test_seal_can_be_withdrawn_before_approval_but_not_after(sealed_v1):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('D4-F02')
-def test_full_coverage_seal_approves_the_version_and_freezes_it(versiona_context):
+def test_covers_all_seal_approves_the_version_and_freezes_it(versiona_context):
     """I10 + I5: a covers_all seal under the MVP policy approves the version;
     approval freezes the draft (message no longer editable — I2b)."""
     context = versiona_context

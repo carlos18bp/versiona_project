@@ -1,21 +1,15 @@
 """
-Enable the PostgreSQL extensions the domain relies on (docs/plan/02 §6):
-- vector (pgvector): SectionVersion.embedding, dormant until V2 (DP-05).
-- pg_trgm: trigram similarity for section matching (docs/plan/05 §4).
+Historically this enabled the PostgreSQL extensions the domain was expected to
+rely on: `vector` (pgvector, reserved for a dormant SectionVersion.embedding,
+DP-05) and `pg_trgm` (trigram similarity for section matching, docs/plan/05 §4).
 
-Both are trusted extensions, so the database owner can create them (works on
-CI service containers and on pytest-created test databases). No-op on
-non-PostgreSQL backends.
+Neither was ever used — no VectorField was declared and section matching went
+with exact hashes plus difflib — and the project moved to MySQL 8, which has no
+equivalent of either. The migration stays as an empty step because
+core/0002_initial depends on it and its number is baked into the graph.
 """
 
 from django.db import migrations
-
-
-def create_extensions(apps, schema_editor):
-    if schema_editor.connection.vendor != 'postgresql':
-        return
-    schema_editor.execute('CREATE EXTENSION IF NOT EXISTS vector')
-    schema_editor.execute('CREATE EXTENSION IF NOT EXISTS pg_trgm')
 
 
 class Migration(migrations.Migration):
@@ -23,6 +17,4 @@ class Migration(migrations.Migration):
 
     dependencies = []
 
-    operations = [
-        migrations.RunPython(create_extensions, migrations.RunPython.noop),
-    ]
+    operations = []

@@ -12,6 +12,8 @@ from pathlib import Path
 from celery.schedules import crontab
 from dotenv import load_dotenv
 
+from .db import build_db_config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -51,7 +53,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.postgres',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -177,24 +178,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'versiona_project.wsgi.application'
 
 
-# Database
+# Database — MySQL 8
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-_db_engine = os.getenv('DJANGO_DB_ENGINE', 'django.db.backends.postgresql')
-_db_config = {
-    'ENGINE': _db_engine,
-    'NAME': os.getenv('DJANGO_DB_NAME', 'versiona'),
-}
-if 'sqlite3' in _db_engine:
-    _db_config['NAME'] = os.getenv('DJANGO_DB_NAME', str(BASE_DIR / 'db.sqlite3'))
-else:
-    _db_config.update({
-        'USER': os.getenv('DB_USER', 'versiona'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    })
-DATABASES = {'default': _db_config}
+DATABASES = {'default': build_db_config(BASE_DIR)}
 
 
 # Password validation

@@ -5,7 +5,7 @@ Semantics:
 - `Model.objects` excludes trashed rows; `Model.all_objects` sees everything.
 - `instance.soft_delete(user)` sends to trash; `restore()` brings it back.
 - Physical deletion happens ONLY through the purge path (beat task / owner
-  endpoint) after the grace window — a PostgreSQL trigger on guarded tables
+  endpoint) after the grace window — a MySQL trigger on guarded tables
   additionally rejects DELETE while `deleted_at IS NULL` (I2/T2).
 - The grace window lives in settings.TRASH_RETENTION_DAYS (env, default 30):
   nothing hardcoded (kit 7).

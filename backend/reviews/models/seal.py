@@ -26,15 +26,32 @@ class Seal(PublicIdModel, TimestampedModel):
     )
     covers_all = models.BooleanField(default=False)
     signed_payload = models.JSONField()
-    signature = models.TextField()
-    key_id = models.CharField(max_length=40)
+    # Base64 and a key fingerprint: case IS meaningful, so they opt out of the
+    # accent/case-insensitive table default.
+    signature = models.TextField(db_collation='utf8mb4_bin')
+    key_id = models.CharField(max_length=40, db_collation='utf8mb4_bin')
     revoked_at = models.DateTimeField(null=True, blank=True)
+
+    # I4 at the database layer. `revoked_at` is the only mutable column on this
+    # append-only table (seal_service.revoke_seal); setting it drops the row out
+    # of the unique index, which is precisely what
+    # condition=Q(revoked_at__isnull=True) did on PostgreSQL. MySQL cannot
+    # express that condition and Django would SKIP the constraint silently, so
+    # it moves into the column.
+    document_version_active = models.GeneratedField(
+        expression=models.Case(
+            models.When(revoked_at__isnull=True, then=models.F('document_version')),
+            default=models.Value(None),
+            output_field=models.BigIntegerField(),
+        ),
+        output_field=models.BigIntegerField(),
+        db_persist=True,
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['document_version', 'reviewer'],
-                condition=models.Q(revoked_at__isnull=True),
+                fields=['document_version_active', 'reviewer'],
                 name='uniq_active_seal_per_reviewer',
             ),
         ]
@@ -61,7 +78,9 @@ class SealSection(TimestampedModel):
 
     seal = models.ForeignKey(Seal, on_delete=models.CASCADE, related_name='covered_sections')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='+')
-    body_hash = models.CharField(max_length=64)
+    # The hash inside the signed payload: must compare byte-exact against
+    # SectionVersion.body_hash, so it carries the same binary collation.
+    body_hash = models.CharField(max_length=64, db_collation='utf8mb4_bin')
 
     class Meta:
         constraints = [

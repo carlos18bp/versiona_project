@@ -41,11 +41,19 @@ def test_free_plan_allows_one_active_project(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('F1-L01')
 def test_pro_plan_lifts_the_project_limit(versiona_context):
+    """Catches: a check_project_limit that ignores the plan. Asserting only that
+    pro does not raise cannot catch it — a check that did nothing at all would
+    pass. The contrast on the SAME org is what pins the plan as the cause."""
     org = versiona_context.org
+
+    with pytest.raises(DomainError) as exc:
+        check_project_limit(org)
+    assert exc.value.status_code == 402
+
     org.plan = 'pro'
     org.save(update_fields=['plan'])
 
-    check_project_limit(org)  # no exception
+    assert check_project_limit(org) is None
 
 
 @pytest.mark.django_db
@@ -92,17 +100,30 @@ def test_old_history_is_locked_not_deleted_on_free(versiona_context, document_wi
 @pytest.mark.django_db
 @pytest.mark.escenario('C3-L02')
 def test_pro_plan_unlocks_history(versiona_context, document_with_versions):
+    """Catches: a check_history_access that never consults the plan. 400 days is
+    far past free's 30-day window, so the same version must be refused on free
+    and allowed on pro — the pair is what proves the window is plan-driven."""
     document, versions = document_with_versions(n_versions=2)
     org = versiona_context.org
-    org.plan = 'pro'
-    org.save(update_fields=['plan'])
     from documents.models import DocumentVersion
 
     DocumentVersion.all_objects.filter(pk=versions[0].pk).update(
         created_at=timezone.now() - timedelta(days=400)
     )
+    def aged():
+        # Re-fetched on purpose: check_history_access reaches the org through the
+        # version's related objects, and an instance loaded before the plan change
+        # keeps the stale plan cached — it would still read `free`.
+        return DocumentVersion.objects.get(pk=versions[0].pk)
 
-    check_history_access(DocumentVersion.objects.get(pk=versions[0].pk))
+    with pytest.raises(DomainError) as exc:
+        check_history_access(aged())
+    assert exc.value.status_code == 402
+
+    org.plan = 'pro'
+    org.save(update_fields=['plan'])
+
+    assert check_history_access(aged()) is None
 
 
 @pytest.mark.django_db

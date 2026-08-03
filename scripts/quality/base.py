@@ -82,6 +82,7 @@ class IssueCategory(Enum):
     MOCK_ONLY_ASSERTION = auto()
     REIMPLEMENTS_SUT = auto()
     TAUTOLOGICAL_URL = auto()
+    NEGATION_ONLY_ASSERTION = auto()
 
 
 # Centralized semantic rule identifiers used for rollout gating and reporting.
@@ -140,6 +141,10 @@ JUNK_RULE_CATEGORIES: dict[str, str] = {
     # navigated path itself — redirect and no-redirect both pass. 37 instances
     # machine-verified in one repo, all invisible before this rule.
     "tautological_url": "TAUTOLOGICAL_URL",
+    # F62 (2026-08): every assertion satisfied by absence — an empty DOM, a
+    # failed render or a hard delete all pass. Measured live in versiona C4-E02,
+    # which would have passed the very delete it was written to guard against.
+    "negation_only_assertion": "NEGATION_ONLY_ASSERTION",
 }
 
 
@@ -199,7 +204,9 @@ class Config:
     """
     
     # File discovery
-    backend_app_name: str = "content"
+    # F53: str keeps every existing repo working; list[str] names several apps;
+    # "*" means every app under backend/ that has a tests/ dir.
+    backend_app_name: str | list[str] = "content"
     py_allowed_folders: frozenset[str] = frozenset(
         {
             "commands",
@@ -285,7 +292,7 @@ CONFIG_FILENAME = ".testquality.yml"
 
 # Fields a project may override, mapped to how the raw value is coerced.
 _CONFIG_COERCIONS: dict[str, str] = {
-    "backend_app_name": "str",
+    "backend_app_name": "str_or_list",
     "py_test_file_glob": "str",
     "frontend_unit_dir": "str",
     "frontend_e2e_dir": "str",
@@ -396,6 +403,14 @@ def load_project_config(repo_root: Path | str, base: Config | None = None) -> Co
                 overrides[key] = int(str(value).strip())
             elif kind == "str":
                 overrides[key] = str(value)
+            elif kind == "str_or_list":
+                # F53: backend_app_name accepts a string, a list of app names, or
+                # "*". Without this branch the key falls through the loop with no
+                # override and NO error — the except below is deliberately quiet —
+                # so every repo would silently inherit the canonical default.
+                overrides[key] = (
+                    [str(v) for v in value] if isinstance(value, list) else str(value)
+                )
             elif kind == "frozenset":
                 overrides[key] = frozenset(value if isinstance(value, list) else [value])
             elif kind == "tuple":

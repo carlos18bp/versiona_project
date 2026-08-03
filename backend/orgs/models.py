@@ -81,7 +81,10 @@ class Invitation(PublicIdModel, TimestampedModel):
     )
     email = models.EmailField()
     role = models.CharField(max_length=10)  # project role: admin|editor|reviewer|viewer
-    token = models.CharField(max_length=64, unique=True)
+    # Authentication boundary: the token is looked up verbatim, so a
+    # case-insensitive collation would both widen the lookup and collide
+    # legitimately distinct tokens on the unique index.
+    token = models.CharField(max_length=64, unique=True, db_collation='utf8mb4_bin')
     invited_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='invitations_sent'
     )
@@ -93,11 +96,23 @@ class Invitation(PublicIdModel, TimestampedModel):
         on_delete=models.SET_NULL, related_name='+',
     )
 
+    # Stand-in for the partial unique index — see Project.slug_alive for why.
+    # `project` stays nullable, so org-level invitations (project IS NULL) are
+    # still not deduplicated: exactly what the PostgreSQL index did.
+    email_pending = models.GeneratedField(
+        expression=models.Case(
+            models.When(status=Status.PENDING, then=models.F('email')),
+            default=models.Value(None),
+            output_field=models.EmailField(),
+        ),
+        output_field=models.EmailField(),
+        db_persist=True,
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['project', 'email'],
-                condition=models.Q(status='pending'),
+                fields=['project', 'email_pending'],
                 name='uniq_pending_invitation_per_email',
             ),
         ]

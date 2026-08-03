@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   # ───────────────────────────────────────────
-  # Backend — pytest (Django + PostgreSQL)
+  # Backend — pytest (Django + MySQL)
   # ───────────────────────────────────────────
   backend-tests:
     runs-on: ubuntu-latest
@@ -21,19 +21,18 @@ jobs:
         working-directory: backend
 
     services:
-      postgres:
-        image: pgvector/pgvector:pg16
+      mysql:
+        image: mysql:8.0
         env:
-          POSTGRES_USER: versiona
-          POSTGRES_PASSWORD: versiona-ci
-          POSTGRES_DB: versiona
+          MYSQL_ROOT_PASSWORD: versiona-ci
+          MYSQL_DATABASE: versiona
         ports:
-          - 5432:5432
+          - 3306:3306
         options: >-
-          --health-cmd "pg_isready -U versiona"
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -pversiona-ci"
           --health-interval 5s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 20
       redis:
         image: redis:7-alpine
         ports:
@@ -45,12 +44,16 @@ jobs:
           --health-retries 10
 
     env:
-      DJANGO_DB_ENGINE: django.db.backends.postgresql
+      DJANGO_DB_ENGINE: django.db.backends.mysql
       DJANGO_DB_NAME: versiona
-      DB_USER: versiona
+      DB_USER: root
       DB_PASSWORD: versiona-ci
       DB_HOST: 127.0.0.1
-      DB_PORT: '5432'
+      DB_PORT: '3306'
+      # root, deliberately: the mysql image grants MYSQL_USER rights on
+      # MYSQL_DATABASE only, so pytest-django could not create test_versiona.
+      # Service containers cannot mount an init script, and the container is
+      # thrown away with the job.
       REDIS_URL: redis://127.0.0.1:6379/1
       CELERY_TASK_ALWAYS_EAGER: '1'
       DJANGO_SECRET_KEY: ci-only-secret
@@ -178,19 +181,18 @@ jobs:
         working-directory: frontend
 
     services:
-      postgres:
-        image: pgvector/pgvector:pg16
+      mysql:
+        image: mysql:8.0
         env:
-          POSTGRES_USER: versiona
-          POSTGRES_PASSWORD: versiona-ci
-          POSTGRES_DB: versiona
+          MYSQL_ROOT_PASSWORD: versiona-ci
+          MYSQL_DATABASE: versiona
         ports:
-          - 5432:5432
+          - 3306:3306
         options: >-
-          --health-cmd "pg_isready -U versiona"
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -pversiona-ci"
           --health-interval 5s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 20
       redis:
         image: redis:7-alpine
         ports:
@@ -212,12 +214,16 @@ jobs:
           --health-retries 10
 
     env:
-      DJANGO_DB_ENGINE: django.db.backends.postgresql
+      DJANGO_DB_ENGINE: django.db.backends.mysql
       DJANGO_DB_NAME: versiona
-      DB_USER: versiona
+      DB_USER: root
       DB_PASSWORD: versiona-ci
       DB_HOST: 127.0.0.1
-      DB_PORT: '5432'
+      DB_PORT: '3306'
+      # root, deliberately: the mysql image grants MYSQL_USER rights on
+      # MYSQL_DATABASE only, so pytest-django could not create test_versiona.
+      # Service containers cannot mount an init script, and the container is
+      # thrown away with the job.
       REDIS_URL: redis://127.0.0.1:6379/1
       CELERY_TASK_ALWAYS_EAGER: '1'
       DJANGO_SECRET_KEY: ci-only-secret

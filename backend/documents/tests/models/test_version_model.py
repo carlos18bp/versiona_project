@@ -2,7 +2,7 @@
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, connection, transaction
+from django.db import DatabaseError, IntegrityError, connection, transaction
 
 from documents.models import Document, DocumentVersion
 from orgs.models import Organization
@@ -65,10 +65,10 @@ def test_message_stays_editable_after_ready(document):
 
 @pytest.mark.django_db
 def test_database_trigger_blocks_raw_frozen_update(document):
-    """Defense in depth: the PG trigger stops raw SQL, not just the ORM."""
+    """Defense in depth: the database trigger stops raw SQL, not just the ORM."""
     version = make_version(document, number=1)
 
-    with pytest.raises(Exception, match='I2a'):
+    with pytest.raises(DatabaseError, match='I2a'):
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -83,7 +83,7 @@ def test_physical_delete_requires_trash_first(document):
     """I2/T2: DELETE is rejected while the row is alive; allowed after trash."""
     version = make_version(document, number=1)
 
-    with pytest.raises(Exception, match='trash'):
+    with pytest.raises(DatabaseError, match='trash'):
         with transaction.atomic():
             version.delete()
 

@@ -30,12 +30,22 @@ class ReviewRequest(PublicIdModel, TimestampedModel):
     due_at = models.DateTimeField(null=True, blank=True)
     closed_at = models.DateTimeField(null=True, blank=True)
 
+    # Stand-in for the partial unique index — see Project.slug_alive for why.
+    document_version_open = models.GeneratedField(
+        expression=models.Case(
+            models.When(status=Status.OPEN, then=models.F('document_version')),
+            default=models.Value(None),
+            output_field=models.BigIntegerField(),
+        ),
+        output_field=models.BigIntegerField(),
+        db_persist=True,
+    )
+
     class Meta:
         ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
-                fields=['document_version'],
-                condition=models.Q(status='open'),
+                fields=['document_version_open'],
                 name='uniq_open_request_per_version',
             ),
         ]

@@ -69,3 +69,63 @@ This file tracks known errors, their context, and resolutions. When a reusable f
 - **Root Cause**: `count() - 1` read immediately after clicking `add-check` — React hadn't committed the new row, so index resolved to -1.
 - **Resolution**: capture `initialCount` before the click, then `await expect(rows).toHaveCount(initialCount + 1)` and use `initialCount` as the index.
 - **Files Affected**: `frontend/e2e/app/projects/b3-e3-governance.spec.ts`
+
+### [ERROR-007] MySQL migration: four failures the engine swap surfaced
+- **Date**: 2026-08-03
+- **Context**: moving the project from PostgreSQL 16 + pgvector to MySQL 8.0 to align with
+  the MySQL-first fleet tooling (`migrate-project`, `full-audit`, `setup-mysql.sh`).
+- **Root Causes and Resolutions** (each was a green-but-wrong failure mode):
+  1. Django SKIPS `UniqueConstraint(condition=...)` on MySQL without erroring, so five
+     invariants — including I4 — would have vanished with `migrate` reporting success.
+     Replaced with `GeneratedField(db_persist=True)` + plain `UniqueConstraint`, and
+     covered by 13 new tests that did not exist before.
+  2. `CREATE TRIGGER` failed with error 1419 (binary logging on, no SUPER). Granted the
+     dynamic privilege `SET_USER_ID` rather than `SUPER`.
+  3. `TransactionManagementError` on the trigger migration: MySQL cannot roll back DDL, so
+     `documents/0002` and `0004` need `atomic = False`.
+  4. InnoDB updates FULLTEXT indexes at COMMIT, so the B2 search tests found nothing
+     inside the usual rollback-only test transaction — and the negative test passed
+     vacuously. They now run with `transaction=True`, which in turn tripped the I2 trigger
+     during the flush (`DELETE FROM`, where PostgreSQL used `TRUNCATE CASCADE`); an
+     autouse fixture trashes versions before teardown.
+- **Files Affected**: `versiona_project/db.py`, `documents/search.py`,
+  `documents/migrations/0002`–`0005`, `core/migrations/0001_extensions.py`, the five
+  models carrying generated columns, `conftest.py`, `.github/workflows/ci.yml`.
+
+---
+
+## Database provisioning (MySQL 8, native — nothing in the repo did this before)
+
+Run once per host, as a MySQL admin (`sudo mysql --defaults-file=/etc/mysql/debian.cnf`):
+
+```sql
+CREATE DATABASE `versiona_project_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+-- Throwaway database for the Playwright suite (backend/.env.e2e).
+CREATE DATABASE `versiona_e2e`        CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+-- validate_password is MEDIUM here: >= 8 chars with upper, lower, digit and symbol.
+CREATE USER 'versiona_project_user'@'localhost' IDENTIFIED BY '<password>';
+GRANT ALL PRIVILEGES ON `versiona_project_db`.* TO 'versiona_project_user'@'localhost';
+GRANT ALL PRIVILEGES ON `versiona_e2e`.*        TO 'versiona_project_user'@'localhost';
+-- pytest-django creates and drops test_<name>; the pattern grant covers both databases.
+GRANT ALL PRIVILEGES ON `test\_versiona%`.*     TO 'versiona_project_user'@'localhost';
+-- Required to CREATE TRIGGER while binary logging is on (error 1419 otherwise).
+-- Narrower than SUPER; TRIGGER itself comes with GRANT ALL on the schema.
+GRANT SET_USER_ID ON *.* TO 'versiona_project_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+Verification after `migrate`:
+
+```sql
+SHOW TRIGGERS FROM versiona_project_db;                      -- exactly 2
+SELECT DISTINCT INDEX_NAME FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA='versiona_project_db' AND NON_UNIQUE=0
+    AND INDEX_NAME LIKE 'uniq_%';                            -- the 5 invariants present
+SELECT TABLE_NAME, COLUMN_NAME, COLLATION_NAME FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA='versiona_project_db'
+    AND COLLATION_NAME NOT IN ('utf8mb4_0900_ai_ci');        -- the identity columns only
+```
+
+`slug` and `slug_alive` must NOT appear in that last query: if their collations diverge,
+the unique index compares by different rules than the application does.
