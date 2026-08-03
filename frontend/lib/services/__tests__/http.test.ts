@@ -42,7 +42,11 @@ describe('http service', () => {
     requestInterceptor = null;
     responseSuccessInterceptor = null;
     responseErrorInterceptor = null;
-    apiInstance = jest.fn() as jest.Mock<Promise<any>, any>;
+    // The cast must include `interceptors`: the declared type at the top of this
+    // file is the intersection, and `interceptors` is attached on the next line.
+    // Casting to the bare Mock left the assignment unassignable — the tsc error
+    // this repo had been carrying as known debt.
+    apiInstance = jest.fn() as unknown as typeof apiInstance;
     apiInstance.interceptors = {
       request: {
         use: jest.fn((handler) => {

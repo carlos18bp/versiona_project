@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { PublicHeader } from '@/components/marketing/PublicHeader';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -18,6 +18,16 @@ export default function Header() {
   const orgs = useOrgStore((s) => s.orgs);
   const fetchOrgs = useOrgStore((s) => s.fetchOrgs);
 
+  // authStore seeds isAuthenticated from a cookie via js-cookie, which is
+  // browser-only: the server always computes `false` and the client `true` for a
+  // signed-in visitor. Branching the tree on it directly meant server and client
+  // rendered DIFFERENT navs, and React reported a hydration mismatch on every
+  // authenticated page load — which also lets it discard the server HTML and
+  // re-render the whole tree. Same fix as theme-toggle and locale-toggle: render
+  // the server-consistent branch until mounted, then swap deliberately.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   useEffect(() => {
     if (isAuthenticated && orgs.length === 0) void fetchOrgs();
   }, [isAuthenticated, orgs.length, fetchOrgs]);
@@ -26,7 +36,7 @@ export default function Header() {
   // else instead of letting them walk into a 403.
   const canSeeTrash = orgs.some((org) => org.role === 'owner' || org.role === 'admin');
 
-  if (!isAuthenticated) {
+  if (!mounted || !isAuthenticated) {
     return <PublicHeader />;
   }
 

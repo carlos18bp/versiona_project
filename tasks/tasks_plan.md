@@ -44,8 +44,9 @@ v2.2.0 (36 flows).
 
 ## Known issues (non-blocking)
 
-1. **Pre-existing tsc error** in `frontend/lib/services/__tests__/http.test.ts`
-   (mock typing) — `npx tsc --noEmit` fails on that file only.
+1. ~~**Pre-existing tsc error** in `frontend/lib/services/__tests__/http.test.ts`~~ —
+   fixed 2026-08-03: the cast omitted `interceptors`, which the declared
+   intersection type requires. `npx tsc --noEmit` is now clean across the frontend.
 2. **Pre-existing ESLint errors** in template files (auth pages, jest.setup, scripts) —
    ESLint is not a CI gate; clean up when touching those files.
 3. Email verification exists as an unwired util (`accounts/utils/auth_utils.py`) —
