@@ -110,16 +110,20 @@ def test_pro_plan_unlocks_history(versiona_context, document_with_versions):
     DocumentVersion.all_objects.filter(pk=versions[0].pk).update(
         created_at=timezone.now() - timedelta(days=400)
     )
-    aged = DocumentVersion.objects.get(pk=versions[0].pk)
+    def aged():
+        # Re-fetched on purpose: check_history_access reaches the org through the
+        # version's related objects, and an instance loaded before the plan change
+        # keeps the stale plan cached — it would still read `free`.
+        return DocumentVersion.objects.get(pk=versions[0].pk)
 
     with pytest.raises(DomainError) as exc:
-        check_history_access(aged)
+        check_history_access(aged())
     assert exc.value.status_code == 402
 
     org.plan = 'pro'
     org.save(update_fields=['plan'])
 
-    assert check_history_access(aged) is None
+    assert check_history_access(aged()) is None
 
 
 @pytest.mark.django_db

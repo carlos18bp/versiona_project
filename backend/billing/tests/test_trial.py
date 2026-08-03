@@ -166,15 +166,19 @@ def test_trial_unlocks_history_older_than_thirty_days(free_org, document_with_ve
     DocumentVersion.all_objects.filter(pk=versions[0].pk).update(
         created_at=timezone.now() - timedelta(days=45)
     )
-    aged = DocumentVersion.objects.get(pk=versions[0].pk)
+    def aged():
+        # Re-fetched on purpose: check_history_access reaches the org through the
+        # version's related objects, and an instance loaded before start_trial
+        # keeps the pre-trial org cached.
+        return DocumentVersion.objects.get(pk=versions[0].pk)
 
     with pytest.raises(DomainError) as exc:
-        check_history_access(aged)
+        check_history_access(aged())
     assert exc.value.status_code == 402
 
     start_trial(free_org)
 
-    assert check_history_access(aged) is None
+    assert check_history_access(aged()) is None
 
 
 @pytest.mark.django_db
