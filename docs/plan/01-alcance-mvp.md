@@ -65,7 +65,8 @@ Goal metric: first real comparison in **< 5 minutes** from sign-up (S1).
 - **Given** the board, **when** they filter by state or search by name, **then** results are
   scoped to projects where they are members (I12).
 - **Given** indexed documents, **when** they search by **content**, **then** matches come from
-  the engine's full-text index over section text (PostgreSQL FTS `spanish`) and link to the
+  the engine's full-text index over section text (MySQL FULLTEXT over Spanish-stemmed
+  tokens) and link to the
   matching document.
 
 ### B3 — Edit project configuration (actor: admin)

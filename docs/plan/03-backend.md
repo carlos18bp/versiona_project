@@ -30,7 +30,7 @@ Justified deviations from the template (each solves a real gap):
 | Throttling scopes on auth, upload and webhooks | Public-facing abuse surface. |
 | `public_id` (UUIDv7) in routes instead of integer PKs | Anti-enumeration in a multi-tenant product (I12). |
 | Huey → **Celery** (+ django-celery-results, django-celery-beat) | Fixed mission decision; the template's four operational periodic tasks (weekly DB+media backup, Silk cleanups) migrate to beat unchanged. |
-| MySQL/SQLite → **PostgreSQL** (+ pgvector extension in migration 0001) | Fixed mission decision; FTS `spanish` powers B2. |
+| **MySQL 8** (fleet standard; the project ran on PostgreSQL until 2026-08-03) | B2 search is MySQL FULLTEXT over Spanish-stemmed tokens built in `documents/search.py`. |
 | FileSystemStorage → **django-storages S3/MinIO** for domain media | Fixed mission decision; `STORAGES['default']` is already the clean extension point. |
 
 Removed: Blog/Product/Sale (models, serializers, views, urls, tests, fake-data subcommands),

@@ -1,7 +1,7 @@
 # 02 — Data Model
 
 > Entities, attributes, relationships (ER diagram), the domain invariants written as
-> enforceable rules, and the storage strategy (PostgreSQL for metadata, S3/MinIO for files).
+> enforceable rules, and the storage strategy (MySQL for metadata, S3/MinIO for files).
 > Names follow the glossary in `00-vision.md`. Flows referenced by id (A1…F1); invariants
 > referenced from every other document as I1…I15.
 
@@ -12,14 +12,15 @@ From the template: the custom `User` model (email login, `AUTH_USER_MODEL`) and
 moves to `core`. Everything else in this document is new. The template's demo models
 (Blog/Product/Sale) and the vendored `django_attachments` library are **removed** (image-
 gallery oriented; PDF storage is a first-class domain service instead). Databases change
-MySQL→PostgreSQL and file storage FileSystem→S3/MinIO per the fixed mission decisions.
+file storage FileSystem→S3/MinIO per the fixed mission decisions. The database ran on
+PostgreSQL 16 from It0 until 2026-08-03, when it moved to MySQL 8 to match the fleet.
 
 ## 2. Model conventions
 
 - Internal PK (`BigAutoField`) + **`public_id` UUIDv7** (unique, indexed) exposed in every API
   route — prevents cross-tenant id enumeration.
 - `created_at` / `updated_at` on all models (`core.TimestampedModel`).
-- PostgreSQL-native types; `JSONB` where noted; `tsvector` for search; `vector` (pgvector) as
+- MySQL 8 types; `JSON` where noted; a stemmed text column + FULLTEXT for search; the vector column stays as
   a dormant column (DP-05).
 
 ## 3. Entities
@@ -52,7 +53,7 @@ MySQL→PostgreSQL and file storage FileSystem→S3/MinIO per the fixed mission 
 | `Document` | title, slug, approved_version FK (nullable — the single current one, I5), latest_number (cache) | FK project. `unique(project, slug)`. |
 | `DocumentVersion` — **immutable** | number (sequential), message, sha256 (64 hex), file_key (S3), size_bytes, page_count, source_scenario `text_native\|scanned_ocr\|mixed`, ocr_confidence?, analysis_status `pending\|processing\|ready\|failed`, is_approved, approved_at?, **config_version FK (pinned at creation)** | FK document, author. `unique(document, number)` (I1); index `(document, sha256)` (duplicate rejection, edge F6). Content columns frozen by trigger (I2/I3). |
 | `Section` — **stable identity** | stable_key (slug of normalized heading + disambiguator `-2`), title_current, level, created_in_version FK, retired_in_version FK? | FK document. `unique(document, stable_key)`. Identity does NOT depend on position (survives reordering) nor on the exact title (renames re-assign the SAME row via content matching, `05` §matching). This is the unit D5 operates on. |
-| `SectionVersion` | heading_text, heading_hash, body_hash (sha256 of normalized text), normalized_text TEXT, search_vector tsvector (`spanish`, B2), embedding vector? (pgvector, **nullable, unpopulated in MVP**, DP-05), page_start/page_end, bboxes JSONB `[{page, x0, y0, x1, y1}]` (normalized 0–1, top-left origin), order_index, ocr_confidence?, char_count | FK section, document_version. `unique(section, document_version)`, `unique(document_version, order_index)`. GIN index on search_vector. |
+| `SectionVersion` | heading_text, heading_hash, body_hash (sha256 of normalized text), normalized_text TEXT, search_text TEXT (accent-folded + Spanish-stemmed, B2), page_start/page_end, bboxes JSONB `[{page, x0, y0, x1, y1}]` (normalized 0–1, top-left origin), order_index, ocr_confidence?, char_count | FK section, document_version. `unique(section, document_version)`, `unique(document_version, order_index)`. FULLTEXT index on search_text. |
 | `SectionLineage` — append-only | relation `same\|renamed\|split_from\|merged_into\|added\|removed`, similarity float, decided_mode `auto\|coordinator` | FK from_section?, to_section?, document_version. The probatory evidence of every matching decision (D5). |
 
 ### 3.4 Review & approval (D1, D2, D4, D5)
@@ -135,7 +136,7 @@ the contract the unit-test suite in `06` asserts first.
 | ID | Invariant | Enforcement | Protects |
 |---|---|---|---|
 | I1 | The history is linear: `version.number = max(number)+1` per document, no gaps, no parents; creation is serialized. | `unique(document, number)` + `select_for_update` on Document in the creation service; no parent field exists. Concurrency test. | C2, C3, D5 |
-| I2 | A `DocumentVersion` with `analysis_status >= ready` admits no UPDATE of content fields (number, sha256, file_key, message, author, config_version) and no DELETE ever (MVP deletes nothing; C4 is V2). | Service-layer guard + **PostgreSQL trigger** rejecting UPDATE of frozen columns and DELETE + `save()` guard. Admin without delete. | Seals, C3 |
+| I2 | A `DocumentVersion` with `analysis_status >= ready` admits no UPDATE of content fields (number, sha256, file_key, message, author, config_version) and no DELETE ever (MVP deletes nothing; C4 is V2). | Service-layer guard + **two MySQL triggers** rejecting UPDATE of frozen columns and DELETE + `save()` guard. Admin without delete. | Seals, C3 |
 | I3 | A version with ≥ 1 seal admits no UPDATE/DELETE through any path (explicit superset of I2 for future C4). | PG trigger with EXISTS over Seal + test. | D4 |
 | I4 | `Seal` and `SealValidityRecord` are append-only: never UPDATE (except the single `pending_confirmation → final` transition on the record) and never DELETE. | PG trigger + no mutation endpoints + read-only admin. "Withdraw my seal" (DP-08) = an append event, not a delete. | D4, D5, E4 |
 | I5 | At most ONE current approved version per document. | Structural: single FK `Document.approved_version`; pointer moves leave an AuditEvent + historical `approved_at` per version. | D4 |
@@ -155,14 +156,14 @@ the contract the unit-test suite in `06` asserts first.
 | Store | Holds | Details |
 |---|---|---|
 | **S3/MinIO** (private bucket, SSE, versioning ON; Object Lock in governance mode in production for sealed versions — reinforces I2/I4 at the object layer) | Original PDFs and engine artifacts | Key layout: `{env}/orgs/{org_uuid}/projects/{proj_uuid}/docs/{doc_uuid}/v{number}/original.pdf` · `.../v{n}/artifacts/sections.json` (raw engine output: words + positions) · `.../comparisons/{from}-{to}/diff-{section_key}.json` · `{env}/orgs/{org_uuid}/billing/invoices/{id}.pdf`. Keys are server-generated and **never overwritten** (one unique key per version). Access exclusively through signed URLs with short TTL (`08`). |
-| **PostgreSQL** | The whole relational model + per-section normalized text (TEXT — MVP-scale documents fit comfortably) + `search_vector` tsvector (`spanish` config) | B2 content search = FTS over the `SectionVersion` rows of each document's latest version, joined through Document/Project with the membership filter (I12). |
-| **pgvector** | `embedding` column on `SectionVersion` — **enabled but unpopulated in MVP** | Extension created in the initial migration (the compose image is `pgvector/pgvector:pg16`, `07`). Populated in V2 for semantic search and as an extra matching signal (DP-05). |
+| **MySQL 8** | The whole relational model + per-section normalized text (TEXT — MVP-scale documents fit comfortably) + `search_text` (folded + stemmed in Python, FULLTEXT-indexed) | B2 content search = FTS over the `SectionVersion` rows of each document's latest version, joined through Document/Project with the membership filter (I12). |
+| ~~pgvector~~ | **Dropped 2026-08-03 with the move to MySQL 8.** The extension was created by migration 0001 but no `VectorField` was ever declared, so nothing was lost. Semantic search in V2 needs a new decision (DP-05 reopens). |
 
 ## 7. Open questions (DECISIÓN PENDIENTE)
 
 | ID | Question | Recommendation |
 |---|---|---|
 | DP-04 | Free-plan 30-day retention vs the immutability promise. | **RESOLVED (operator, 2026-07-12): never delete** — versions older than 30 days become `locked` (visible in the timeline, not downloadable/comparable) and unlock on upgrade. Preserves I2/I3 and doubles as a conversion lever. |
-| DP-05 | pgvector in MVP? | FTS `spanish` only in MVP; extension + nullable column ready from migration 0001; populate in V2. |
+| DP-05 | pgvector in MVP? | **Superseded 2026-08-03**: full-text only. The extension left with PostgreSQL and no embedding column was ever declared; V2 semantic search needs a fresh choice of vector store. |
 | DP-08 | "Withdraw my seal": forbidden, allowed pre-approval, or always? | Allowed only while the version is not approved, as an append-only `seal.revoked_by_reviewer` event (Seal never deleted, I4) + approval recompute + audit. Post-approval un-approval is a V2 admin flow. |
 | DP-11 | Maximum PDF size / page count. | 100 MB / 500 pages on paid, 25 MB on free — stored in `Plan.limits` so it is adjustable without deploys. |

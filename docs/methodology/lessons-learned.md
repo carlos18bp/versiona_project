@@ -14,11 +14,33 @@ this file records the *discovered-the-hard-way* items.
 
 ## 1. Iteration 0 findings (2026-07-12)
 
-### pgvector 0.6 (Ubuntu 24.04 apt) is NOT a trusted extension
-- `CREATE EXTENSION vector` fails for non-superusers, so pytest-created test databases
-  cannot run the core migration as the app user.
-- Fix on this VPS: extensions pre-created in `template1` (every new DB inherits them);
-  the vendor-safe migration stays for CI, where the service-container user is superuser.
+### MySQL drops conditional unique constraints SILENTLY (2026-08-03)
+- `UniqueConstraint(condition=...)` has no MySQL equivalent
+  (`supports_partial_indexes = False`). Django does not fail — it emits a
+  `models.W039` warning, skips the constraint and lets `migrate` finish green. Five
+  product invariants, including I4 (one active seal per reviewer), would have been
+  unenforced with a passing test suite, because **no test asserted any of them**.
+- Fix: the condition moves into a `GeneratedField(db_persist=True)` that is NULL when the
+  row does not qualify; a plain `UniqueConstraint` over that column reproduces the rule,
+  because a UNIQUE index ignores NULLs. `STORED` is mandatory (PostgreSQL has no VIRTUAL).
+- The real lesson is not about MySQL: a DB-level invariant with no test is a
+  configuration detail, not a guarantee. The canary is
+  `manage.py check --database default | grep "unique constraints with conditions"` → must
+  be 0, and `reviews/tests/test_partial_unique_invariants.py` is what actually holds I4.
+
+### Three MySQL behaviours that only surface at runtime (2026-08-03)
+- **DDL cannot run inside an atomic migration** (`can_rollback_ddl = False`). Any
+  migration creating a trigger or a FULLTEXT index needs `atomic = False`.
+- **Creating a trigger needs more than the TRIGGER privilege** when binary logging is on:
+  error 1419. Granting the dynamic privilege `SET_USER_ID` is enough and far narrower
+  than `SUPER`.
+- **The transactional-test teardown fights the I2 trigger.** Django's
+  `TransactionTestCase` flush always issues `DELETE FROM` (its `reset_sequences` is
+  hardcoded False), and the trigger correctly rejects deleting a version that never went
+  through the trash. PostgreSQL never showed this because its flush uses
+  `TRUNCATE CASCADE`, which does not fire row triggers. Handled by an autouse fixture in
+  `conftest.py` that trashes versions before the flush — satisfying the invariant instead
+  of bypassing it.
 
 ### Celery replaces Huey with less surface than planned
 - Static `settings.CELERY_BEAT_SCHEDULE` + Redis result backend cover everything the

@@ -6,7 +6,7 @@
 [![Django](https://img.shields.io/badge/Django-6.0-092E20?style=flat&logo=django)](https://www.djangoproject.com/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react)](https://react.dev/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20%2B%20pgvector-4169E1?style=flat&logo=postgresql)](https://www.postgresql.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Celery](https://img.shields.io/badge/Celery-5.6-37814A?style=flat&logo=celery)](https://docs.celeryq.dev/)
 
 Every upload is an immutable **version**; every re-delivery produces an automatic
@@ -35,11 +35,11 @@ are notified.
 ## Stack
 
 - **Backend**: Django 6 + DRF, Celery (Redis broker; queues `default` / `engine_light` /
-  `engine_heavy`), PostgreSQL 16 + pgvector, filesystem object storage behind signed
+  `engine_heavy`), MySQL 8, filesystem object storage behind signed
   URLs, PyMuPDF engine.
 - **Frontend**: Next.js 16 (App Router) + React 19 + TypeScript + Tailwind v4 + Zustand.
 - **Testing**: pytest · Jest + RTL · Playwright (flow-coverage convention).
-- **Runtime**: native processes on the VPS (PostgreSQL/Redis/mailpit as system
+- **Runtime**: native processes on the VPS (MySQL/Redis/mailpit as system
   services). Docker/compose is a deferred blueprint for the self-hosted plan (DP-21).
 
 ## Project structure
@@ -63,7 +63,7 @@ docs/plan/            the planning suite (source of truth)
 ## Quick start (development)
 
 ```bash
-# Backend (native PostgreSQL/Redis/mailpit must be running — docs/plan/07 §2.1)
+# Backend (native MySQL/Redis/mailpit must be running — docs/plan/07 §2.1)
 cd backend
 python3 -m venv venv && venv/bin/pip install -r requirements.txt
 cp .env.example .env          # fill DB_PASSWORD and DJANGO_SECRET_KEY
@@ -100,7 +100,7 @@ Quality gates: `docs/TESTING_QUALITY_STANDARDS.md` + `scripts/test_quality_gate.
 
 ## Status
 
-**Iteration 0 (bootstrap) — done**: Postgres+pgvector/Celery/MinIO/mailpit provisioned and
-wired, demo domain purged, bounded-context skeleton, deterministic fixtures, CI on Postgres
+**Iteration 0 (bootstrap) — done**: MySQL/Celery/MinIO/mailpit provisioned and
+wired, demo domain purged, bounded-context skeleton, deterministic fixtures, CI on MySQL
 services, flow definitions v2. **Next: Iteration 1 — document core (C1, C2, C3, B1)** per
 `docs/plan/09-roadmap-ejecucion.md`.

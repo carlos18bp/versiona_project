@@ -23,7 +23,7 @@ flowchart LR
     A1 --> A2[Extraction: PyMuPDF text+layout, OCR w/ confidence]
     A2 --> A3[Sectioning: heading heuristics]
     A3 --> A4[Identity matching vs existing Sections]
-    A4 --> A5[Persist SectionVersions + tsvector index B2]
+    A4 --> A5[Persist SectionVersions + search_text for B2]
     A5 --> A6[CheckRun E3, pinned config]
     A6 --> A7[Re-anchor open observations D3]
     A7 --> C[ComparisonJob auto vs previous ready version]
@@ -63,7 +63,7 @@ to coordinator mode (§6e). Rejecting the document would break A1/C1 with real-w
   for D3, highlights for E1), order index, level, per-section `ocr_confidence` (min of its
   blocks), char count.
 - The full raw artifact (`sections.json`: words + positions) goes to S3 for fine word-diffs
-  without bloating PostgreSQL.
+  without bloating the database.
 
 ## 4. Section identity & matching (runs inside ComparisonJob)
 
@@ -172,7 +172,7 @@ existing result; upserts are deterministic (I15).
 |---|---|---|---|
 | Trigger | C1/C2: version created (upload completed) | Auto when analysis of vN finishes (vs previous ready), or E1 manual (any pair) | Auto when the auto-comparison of (last ready, vN) finishes |
 | Input payload | `{job:"analysis", version_id, document_id, file_key, sha256, config_version_id, locale:"es"}` | `{job:"comparison", document_id, from_version_id, to_version_id, trigger:"auto\|manual"}` | `{job:"seal_review", document_id, to_version_id, from_version_id, comparison_id, d5_mode}` |
-| Pipeline | scenario detection → extraction (PyMuPDF; OCR w/ confidence if scanned) → sectioning (§3) → identity matching steps 1–2 (§4) → persist SectionVersions + tsvector → CheckRun (pinned config, E3) → re-anchor open observations (D3) | load both versions' SectionVersions → full matching (§4) → classification → word-level diff per section (S3 artifacts) → summary | §6 c–f: matrix, records, notifications, approval recompute |
+| Pipeline | scenario detection → extraction (PyMuPDF; OCR w/ confidence if scanned) → sectioning (§3) → identity matching steps 1–2 (§4) → persist SectionVersions + search_text → CheckRun (pinned config, E3) → re-anchor open observations (D3) | load both versions' SectionVersions → full matching (§4) → classification → word-level diff per section (S3 artifacts) → summary | §6 c–f: matrix, records, notifications, approval recompute |
 | Result (JSONB) | `{scenario, ocr_confidence?, page_count, sections:[{stable_key, section_id, heading, level, body_hash, pages:[a,b], order}], checks:{green,yellow,red}, reanchored:n, orphaned:n, duration_ms}` | `{comparison_id, sections:{unchanged:n, modified:[keys], added:[], removed:[], renamed_only:[], ambiguous:[]}, summary_text, duration_ms}` | `{plan:[{seal_id, decision\|proposed, reason_code}], notified_reviewers:[ids], approval:"approved\|blocked\|pending_confirmation"}` |
 | Idempotency key | `analysis:v{version_id}` | `comparison:{from_id}:{to_id}` | `d5:v{to_version_id}` |
 | Queue / priority | `engine_heavy` (low concurrency, CPU/OCR-bound); a new org's **first version jumps the queue** (A1 < 5 min) | `engine_light`; auto > manual | `default` (domain worker, transactional with the DB) |

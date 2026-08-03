@@ -9,7 +9,7 @@
 |---|---|
 | Backend | Python 3.12 · Django 6.0.5 · DRF 3.17 · simplejwt 5.5 (+token_blacklist) |
 | Async | Celery 5.6 (Redis broker/results; queues default/engine_light/engine_heavy; static `CELERY_BEAT_SCHEDULE`; eager in dev/tests) |
-| Data | PostgreSQL 16 + pgvector 0.6 + pg_trgm (extensions in template1 on this VPS + vendor-safe core migration 0001) |
+| Data | MySQL 8.0 (utf8mb4 / utf8mb4_0900_ai_ci; identity columns pinned to utf8mb4_bin). Partial unique indexes are emulated with STORED generated columns; I2/I2a live in two triggers |
 | Files | MinIO (native systemd, bucket `versiona-media`) via django-storages S3; FileSystem fallback when no bucket configured |
 | PDF engine | PyMuPDF 1.28 (+ reportlab for fixtures); OCR mandatory since It5: ocrmypdf 17.8 + tesseract-spa with confidence gating (DP-02); `analyze_bytes(allow_ocr=)` for the anonymous comparator |
 | Frontend | Next.js 16.2 (App Router) · React 19.2 · TS strict · Tailwind v4 (OKLCH tokens) · Zustand 5 · axios `api` (401 refresh single-flight) + bare `publicApi` for AllowAny endpoints |
@@ -20,12 +20,12 @@
 
 ## Dev environment (native — no Docker, DP-21)
 
-- System services on this VPS: `postgresql`, `redis-server`, `minio.service`,
+- System services on this VPS: `mysql`, `redis-server`, `minio.service`,
   `mailpit.service` (units in /etc/systemd/system; MinIO env in /etc/default/minio).
 - Backend: `backend/venv`; `.env` holds DB/MinIO/mailpit config (gitignored).
 - Commands: `venv/bin/python manage.py runserver` · `venv/bin/celery -A versiona_project
   worker|beat` · `npm run dev` · fixtures: `venv/bin/python testdata/generate_pdfs.py`.
-- CI: GitHub Actions with pgvector+redis+minio+mailpit services; OCR system deps
+- CI: GitHub Actions with mysql+redis+minio+mailpit services; OCR system deps
   (tesseract/tesseract-spa/ghostscript) in the backend job; `makemigrations --check`
   anti-drift; Playwright browser cache; separate Test Quality Gate workflow.
 
@@ -34,7 +34,9 @@
 - Docker/compose deferred (DP-21) — kept as blueprint in `docs/plan/07` §2.2.
 - Payment gateway: **Wompi** behind a `PaymentGateway` adapter (DP-01, It7).
 - `d5_mode` default **auto** (DP-03); free-plan retention locks access, never deletes (DP-04).
-- Search: PostgreSQL FTS `spanish`; pgvector column dormant until V2 (DP-05).
+- Search: MySQL FULLTEXT over `SectionVersion.search_text`, which holds accent-folded,
+  Snowball-stemmed Spanish tokens built in Python (`documents/search.py`). InnoDB updates
+  a FULLTEXT index at COMMIT, so tests that assert a match must run transactionally.
 - Coverage gates (as enforced today): pytest `--cov-fail-under=80` (backend total ~92%)
   + engine module gate 95% in CI (`scripts/ci/coverage-module-gate.py`); Jest
   `coverageThreshold` = global-residual 50 lines · `lib/stores/` 75 · gated component

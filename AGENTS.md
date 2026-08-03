@@ -47,7 +47,7 @@ section); the planning suite in `docs/plan/00…09` is the source of truth (flow
 invariants I1–I15, roadmap It0–It7 with D5 as the crown jewel).
 
 Key facts:
-- Stack: Django 6 + DRF + Celery / Next.js 16 + React 19 / PostgreSQL 16 + pgvector / Redis /
+- Stack: Django 6 + DRF + Celery / Next.js 16 + React 19 / MySQL 8 / Redis /
   filesystem object storage / mailpit. Native runtime — no Docker for now (DP-21).
 - Backend apps: `core`, `accounts` + skeleton bounded contexts (`docs/plan/03` §2).
 - Key commands: `backend/venv/bin/python backend/manage.py <cmd>` ·

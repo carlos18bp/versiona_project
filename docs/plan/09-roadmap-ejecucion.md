@@ -99,6 +99,7 @@ Full statements live in the owning documents; this is the master index.
 | DP-22 | Domain + production SMTP | `07` | Operator call (deferred with deployment, DP-21) |
 | DP-23 | VPS sizing for OCR | `07` | Measure in It4/It5 |
 | DP-24 | Ed25519 key home in production | `08` | Secret manager before first regulated customer |
+| DP-25 | Database engine | `02`/`07` | **RESOLVED (operator, 2026-08-03): MySQL 8.** Versiona was the only PostgreSQL outlier in a MySQL-first fleet, so it sat outside `migrate-project`, `full-audit` and `setup-mysql.sh`. Cost of the move: partial unique indexes became STORED generated columns, the PL/pgSQL guard became two MySQL triggers, and Postgres FTS became Python stemming + `FULLTEXT`. pgvector and pg_trgm were dropped — both were created but never used (DP-05 superseded). |
 
 **The former top-5 blockers (DP-01, DP-14, DP-03, DP-04, DP-21) were all answered by the
 operator on 2026-07-12** — execution is unblocked. Remaining recommendations stand unless
