@@ -1,13 +1,16 @@
-"""D3: anchored threads, the I14 state machine and re-anchoring vs the truth
-table (contrato v1→v2: §3 changes ⇒ reanchored · §6 removed ⇒ orphaned ·
-§1 intact ⇒ exact)."""
+"""D3: anchored threads, the I14 state machine and re-anchoring.
+
+Verified against the truth table (contrato v1→v2: §3 changes ⇒ reanchored ·
+§6 removed ⇒ orphaned · §1 intact ⇒ exact).
+"""
 
 from pathlib import Path
 
 import pytest
-
+from documents.models import SectionVersion
 from documents.services import storage_service, version_service
 from notifications.models import Notification
+
 from observations import services
 from observations.models import Observation, ObservationAnchor
 
@@ -21,6 +24,7 @@ def _test_env(settings, tmp_path):
 
 
 def upload(document, fixture, message, author):
+    """Upload a fixture PDF as a new version and return it."""
     intent = version_service.create_upload_intent(document, author)
     storage_service.put_bytes(intent.key, (TESTDATA / fixture).read_bytes(), 'application/pdf')
     version, _ = version_service.complete_upload(document, intent.upload_id, message, author)
@@ -29,6 +33,7 @@ def upload(document, fixture, message, author):
 
 @pytest.fixture
 def with_v1(versiona_context):
+    """Build a document with an uploaded v1 (contrato_v1.pdf) for observation tests."""
     editor = versiona_context.users['editor']
     document = version_service.create_document(versiona_context.project, 'Observado', editor)
     return versiona_context, document, upload(document, 'contrato_v1.pdf', 'v1', editor)
@@ -37,6 +42,12 @@ def with_v1(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-F01')
 def test_observation_anchors_to_a_section_with_its_bboxes(with_v1):
+    """Catches create_observation copying the wrong section's bboxes.
+
+    Also catches an empty-but-truthy placeholder — a bare truthy check cannot
+    tell those apart from the real section coordinates it is supposed to
+    inherit.
+    """
     context, document, v1 = with_v1
 
     observation = services.create_observation(
@@ -46,8 +57,12 @@ def test_observation_anchors_to_a_section_with_its_bboxes(with_v1):
     )
 
     anchor = observation.anchors.get()
+    section_bboxes = SectionVersion.objects.get(
+        document_version=v1, section__stable_key='obligaciones-del-contratista'
+    ).bboxes
+    assert section_bboxes != []  # guard: the equality below must not pass vacuously on []
     assert anchor.method == ObservationAnchor.Method.EXACT
-    assert anchor.quads, 'el ancla hereda los bboxes de la sección'
+    assert anchor.quads == section_bboxes
     assert observation.section.stable_key == 'obligaciones-del-contratista'
     # The document author was told.
     assert Notification.objects.filter(
@@ -58,6 +73,7 @@ def test_observation_anchors_to_a_section_with_its_bboxes(with_v1):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-F02')
 def test_reply_from_the_author_moves_open_to_answered(with_v1):
+    """A reply from someone other than the thread author moves the observation from open to answered."""
     context, document, v1 = with_v1
     observation = services.create_observation(
         v1, context.users['reviewer'], body='Falta el plazo de garantía.',
@@ -80,6 +96,7 @@ def test_reply_from_the_author_moves_open_to_answered(with_v1):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-F03')
 def test_author_resolves_after_answered_with_version_recorded(with_v1):
+    """set_observation_status records resolved_in_version when the thread author resolves an answered observation."""
     context, document, v1 = with_v1
     reviewer = context.users['reviewer']
     observation = services.create_observation(
@@ -97,6 +114,7 @@ def test_author_resolves_after_answered_with_version_recorded(with_v1):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-E01')
 def test_i14_forbids_jumping_open_to_resolved(with_v1):
+    """I14 forbids jumping directly from open to resolved, skipping answered."""
     context, _, v1 = with_v1
     observation = services.create_observation(
         v1, context.users['reviewer'], body='x', section_key='definiciones'
@@ -112,6 +130,7 @@ def test_i14_forbids_jumping_open_to_resolved(with_v1):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-E02')
 def test_only_the_thread_author_or_admin_resolves(with_v1):
+    """set_observation_status rejects resolution by a non-author, non-admin editor, but allows an admin."""
     context, _, v1 = with_v1
     observation = services.create_observation(
         v1, context.users['reviewer'], body='x', section_key='definiciones'
@@ -130,6 +149,7 @@ def test_only_the_thread_author_or_admin_resolves(with_v1):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-A01')
 def test_resolved_thread_can_be_reopened(with_v1):
+    """set_observation_status reopens a resolved thread back to open and clears resolved_in_version."""
     context, _, v1 = with_v1
     reviewer = context.users['reviewer']
     observation = services.create_observation(
@@ -150,8 +170,11 @@ def test_resolved_thread_can_be_reopened(with_v1):
 @pytest.mark.escenario('D3-A03')
 @pytest.mark.escenario('D3-A04')
 def test_reanchor_truth_table_v1_to_v2(with_v1):
-    """v2: §3 modified ⇒ reanchored_section · §6 removed ⇒ orphaned ·
-    §1 intact ⇒ exact carrying the original quads."""
+    """Re-anchoring on v2 follows the truth table for all three section fates.
+
+    §3 modified ⇒ reanchored_section · §6 removed ⇒ orphaned · §1 intact ⇒
+    exact carrying the original quads.
+    """
     context, document, v1 = with_v1
     reviewer = context.users['reviewer']
     on_changed = services.create_observation(
@@ -170,8 +193,13 @@ def test_reanchor_truth_table_v1_to_v2(with_v1):
     changed_anchor = on_changed.anchors.get(document_version=v2)
     removed_anchor = on_removed.anchors.get(document_version=v2)
     intact_anchor = on_intact.anchors.get(document_version=v2)
+    v2_section_bboxes = SectionVersion.objects.get(
+        document_version=v2, section__stable_key='obligaciones-del-contratista'
+    ).bboxes
     assert changed_anchor.method == ObservationAnchor.Method.REANCHORED
-    assert changed_anchor.quads, 'se re-ancla a los bboxes nuevos de la sección'
+    assert changed_anchor.quads == v2_section_bboxes
+    # Proves the coordinates actually moved — not silently carried over stale.
+    assert changed_anchor.quads != on_changed.anchors.get(document_version=v1).quads
     assert removed_anchor.method == ObservationAnchor.Method.ORPHANED
     assert removed_anchor.quads == []
     assert intact_anchor.method == ObservationAnchor.Method.EXACT
@@ -181,6 +209,7 @@ def test_reanchor_truth_table_v1_to_v2(with_v1):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-A02')
 def test_reanchor_is_idempotent(with_v1):
+    """reanchor_observations is idempotent: re-running it on the same version creates no duplicate anchors."""
     context, document, v1 = with_v1
     services.create_observation(
         v1, context.users['reviewer'], body='x', section_key='objeto-del-contrato'
@@ -196,6 +225,7 @@ def test_reanchor_is_idempotent(with_v1):
 @pytest.mark.django_db
 @pytest.mark.escenario('D3-E03')
 def test_observation_on_unknown_section_is_rejected(with_v1):
+    """create_observation rejects a section_key that does not exist on the version."""
     context, _, v1 = with_v1
 
     with pytest.raises(version_service.DomainError):
@@ -205,7 +235,7 @@ def test_observation_on_unknown_section_is_rejected(with_v1):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('actor, expected', [
+@pytest.mark.parametrize(('actor', 'expected'), [
     pytest.param('reviewer', 201, id='d3-p01-reviewer'),
     pytest.param('admin', 201, id='d3-p01-admin'),
     pytest.param('editor', 404, id='d3-p02-editor-hidden'),
@@ -215,6 +245,7 @@ def test_observation_on_unknown_section_is_rejected(with_v1):
 ])
 @pytest.mark.escenario('D3-P01')
 def test_create_observation_permission_matrix(client_as, with_v1, actor, expected):
+    """The create-observation endpoint enforces the DRF permission matrix per role."""
     _, _, v1 = with_v1
 
     response = client_as(actor).post(
@@ -228,6 +259,7 @@ def test_create_observation_permission_matrix(client_as, with_v1, actor, expecte
 
 @pytest.mark.django_db
 def test_observations_list_shows_thread_with_anchors_via_api(client_as, with_v1):
+    """The observations-list endpoint returns a thread with per-version anchor methods (exact, reanchored_section)."""
     context, document, v1 = with_v1
     services.create_observation(
         v1, context.users['reviewer'], body='multa baja',

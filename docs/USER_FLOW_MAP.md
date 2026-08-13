@@ -4,11 +4,11 @@
 
 Use this document to understand each flow's steps, branching conditions, role restrictions,
 and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
-`frontend/e2e/flow-definitions.json` (v2.0.0) and to the founding-artifact flow ids
+`frontend/e2e/flow-definitions.json` (v2.2.0) and to the founding-artifact flow ids
 (A1…F1) planned in `docs/plan/01-alcance-mvp.md`.
 
-**Version:** 2.0.0
-**Last Updated:** 2026-08-02
+**Version:** 2.2.0
+**Last Updated:** 2026-08-13
 
 > Maintenance rule (docs/plan/09 DoD #4): each vertical iteration rewrites the sheets of the
 > flows it ships and flips them from *Planned* to *Implemented*. Acceptance criteria live in
@@ -28,11 +28,16 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 
 ## Module Index
 
-> **Status governance (2026-07-22)**: since It1 the authoritative status per flow is
-> `frontend/e2e/flow-definitions.json` (v2.2.0, 36 flows) + the flow-coverage CI report;
+> **Status governance (updated 2026-08-13)**: the authoritative status per flow is
+> `frontend/e2e/flow-definitions.json` (v2.2.0, 37 flows) + the flow-coverage CI report;
 > the audit trail lives in `docs/audit/`. Every flow below is **Implemented** and E2E
-> covered unless its row says otherwise — the per-iteration "Planned (ItN)" labels are
-> historical.
+> covered; the "(ItN)" suffix records the iteration that shipped it, not a pending
+> target — the previous revision of this table still read "Planned (ItN)" for 15 flows
+> that had in fact shipped and been covered since It1–It6, which this refresh corrects.
+> Verified against the real routes/components/endpoints on 2026-08-13 (`git log
+> --since=2026-08-02`): no flow was added, removed, or changed shape since the prior
+> map (2026-08-02) — the corrections in this revision are metadata fixes (stale
+> route/status/role text caught by reading the real code), not new coverage.
 
 | Flow ID | Name | Module | Priority | Roles | Frontend Route | Status |
 |---------|------|--------|----------|-------|----------------|--------|
@@ -46,29 +51,29 @@ and API contracts before writing or reviewing E2E tests. Flow ids map 1:1 to
 | `auth-sign-out` | Sign out ends the session | auth | P2 | user | header (Salir) | Implemented (It1) |
 | `auth-admin-login-handoff` | Django admin impersonation handoff | auth | P3 | staff | `/admin-login` | Implemented — spec added 2026-07-22 |
 | `help-manual-browse` | Browse the interactive help | home | P3 | shared | `/manual` | Implemented — spec added 2026-07-22 |
-| `a1-onboarding-wow` | A1 Sign-up and first wow | onboarding | P1 | guest | `/onboarding` | Planned (It6) |
-| `a2-invite-team` | A2 Invite team and roles | org | P1 | admin | `/org/settings`, `/invite/[token]` | Planned (It6) |
-| `b1-create-project` | B1 Create a project | projects | P1 | editor | `/projects/new` | Planned (It1) |
-| `b2-projects-board` | B2 Projects board | projects | P2 | viewer | `/projects` | Planned (It5; minimal list in It1) |
-| `b3-project-settings` | B3 Project configuration | projects | P2 | admin | `/projects/[id]/settings` | Planned (It5) |
-| `c1-upload-first` | C1 Upload first document | documents | P1 | editor | `/projects/[id]` | Planned (It1) |
-| `c2-upload-version` | C2 Upload a new version | documents | P1 | editor | `/projects/[id]/documents/[docId]` | Planned (It1) |
-| `c3-history` | C3 Version history | documents | P2 | viewer | `/projects/[id]/documents/[docId]` | Planned (It1) |
-| `d1-request-review` | D1 Request a review | review | P1 | editor | version viewer + `/inbox` | Planned (It4) |
-| `d2-assisted-review` | D2 Assisted review | review | P1 | reviewer | version viewer `?review=` | Planned (It4) |
-| `d3-anchored-observations` | D3 Anchored observations | review | P1 | reviewer/editor | version viewer | Planned (It4) |
-| `d4-seal-approve` | D4 Approve with a seal | review | P1 | reviewer | version viewer (Seals tab) | Planned (It3) |
-| `d5-selective-invalidation` | D5 Selective invalidation | review | P1 | system/coordinator | seals panel + `/inbox` | Planned (It3) |
-| `e1-compare` | E1 Compare two versions | compare | P1 | viewer | `.../compare/[base]/[target]` | Planned (It2) |
-| `e3-configurable-checks` | E3 Configurable checks | compare | P2 | admin | settings + version viewer (Checks tab) | Planned (It5) |
+| `a1-onboarding-wow` | A1 Sign-up and first wow | onboarding | P1 | guest | `/onboarding` | Implemented (It6) |
+| `a2-invite-team` | A2 Invite team and roles | org | P1 | admin | `/projects/[id]/settings`, `/invite/[token]` | Implemented (It6) |
+| `b1-create-project` | B1 Create a project | projects | P1 | editor | `/projects/new` | Implemented (It1) |
+| `b2-projects-board` | B2 Projects board | projects | P2 | viewer | `/projects` | Implemented (It5; minimal list in It1) |
+| `b3-project-settings` | B3 Project configuration | projects | P2 | admin | `/projects/[id]/settings` | Implemented (It5) |
+| `c1-upload-first` | C1 Upload first document | documents | P1 | editor | `/projects/[id]` | Implemented (It1) |
+| `c2-upload-version` | C2 Upload a new version | documents | P1 | editor | `/projects/[id]/documents/[docId]` | Implemented (It1) |
+| `c3-history` | C3 Version history | documents | P2 | viewer | `/projects/[id]/documents/[docId]` | Implemented (It1) |
+| `d1-request-review` | D1 Request a review | review | P1 | editor/reviewer | version viewer + `/inbox` | Implemented (It4) |
+| `d2-assisted-review` | D2 Assisted review | review | P1 | reviewer | version viewer, auto (`ReviewContextBar`, shown when you sealed an earlier version) | Implemented (It4) |
+| `d3-anchored-observations` | D3 Anchored observations | review | P1 | reviewer/editor/admin | version viewer | Implemented (It4) |
+| `d4-seal-approve` | D4 Approve with a seal | review | P1 | reviewer | version viewer (Seals panel) | Implemented (It3) |
+| `d5-selective-invalidation` | D5 Selective invalidation | review | P1 | editor/reviewer/admin | seals panel + `/inbox` | Implemented (It3) |
+| `e1-compare` | E1 Compare two versions | compare | P1 | viewer | `.../compare/[base]/[target]` | Implemented (It2) |
+| `e3-configurable-checks` | E3 Configurable checks | compare | P2 | admin | `/projects/[id]/settings` + version viewer (Checks panel) | Implemented (It5) |
 | `f1-billing` | F1 Plan limits + upgrade path (contact) | billing | P2 | owner | 402 sites → UpgradeDialog → `/precios` | Implemented (It7/It9 — no online checkout) |
 | `f2-usage-panel` | F2 Usage panel + warnings + trial line | billing | P2 | member | `/org/usage` (header "Plan y uso") | Implemented (It7/It9) |
 | `c4-delete-draft` | C4 Delete a draft version | documents | P2 | editor | version timeline | Implemented (It1) |
 | `b4-archive-delete` | B4 Archive/delete a project | projects | P2 | admin | project settings + `/org/trash` | Implemented (It1) |
 | `a3-account-security` | A3 TOTP 2FA + sessions | auth | P2 | user | `/settings` (Seguridad) | Implemented (It6) |
 | `e2-saved-comparisons` | E2 Saved comparisons | compare | P2 | viewer | compare view + project panel | Implemented (It7) |
-| `e4-constancia` | E4 Exportable certificate | review | P2 | admin | version viewer (Constancias) | Implemented (It7) |
-| `master-e2e-journey` | Master journey (16 steps, 3 users) | master | P1 | all | end-to-end | Implemented (It8) |
+| `e4-constancia` | E4 Exportable certificate | review | P2 | admin | version viewer (Certificates panel — Constancias) | Implemented (It7) |
+| `master-e2e-journey` | Master journey (16 steps, 3 users) | master | P1 | guest/editor/reviewer | end-to-end | Implemented (It8) |
 | `public-pricing` | Public pricing page | billing | P1 | guest | `/precios` | Implemented (It9) |
 | `trial-visibility` | Trial banner + days left | billing | P2 | user | global banner + `/org/usage` | Implemented (It9) |
 | `public-compare` | Anonymous public PDF comparison | public | P1 | guest | `/comparar` → `/comparar/[id]` | Implemented (It9) |
@@ -110,7 +115,11 @@ Auth pages are inherited from the template and already functional (JWT + Google 
 | **API endpoints** | `POST /api/sign_in/`, `POST /api/google_login/`, `GET /api/google-captcha/site-key/` |
 
 **Steps:** form renders email/password + Google button → invalid credentials show an inline
-error and no session cookie is set → valid credentials redirect to `/dashboard`.
+error and no session cookie is set → valid credentials redirect to `/projects` (direct —
+`app/sign-in/page.tsx` calls `router.replace(next ?? '/projects')`; see `auth-sign-in-success`
+for the full session/cookie contract. Corrected 2026-08-13: this row previously claimed a
+`/dashboard` landing, which stopped being true once sign-in started targeting `/projects`
+directly — `/dashboard` today is only a redirect stub, exercised by `auth-protected-redirect`).
 
 **Spec:** `e2e/auth/auth.spec.ts`.
 
@@ -138,7 +147,11 @@ the A1 sample-project job (see `a1-onboarding-wow`).
 | **Frontend route** | `/dashboard` (guard: `proxy.ts`) |
 | **API endpoints** | — |
 
-**Steps:** anonymous visit to a protected route → redirect to `/sign-in?next=`.
+**Steps:** anonymous visit to a protected route → redirect to `/sign-in?next=`. Today this is
+a double hop and the spec pins both legs: `/dashboard` itself hard-redirects to `/projects`
+(`app/dashboard/page.tsx` is now a bare `redirect('/projects')` stub), and the
+`useRequireAuth` guard gating `/projects` then bounces the unauthenticated visitor to
+`/sign-in` before `projects-grid` ever mounts.
 
 **Spec:** `e2e/auth/auth.spec.ts`.
 
@@ -164,27 +177,34 @@ The 16 MVP flows (A1…F1) are specified with Given/When/Then acceptance criteri
 `docs/plan/01-alcance-mvp.md`, their screens in `docs/plan/04-frontend.md` §2, their API in
 `docs/plan/03-backend.md` §3, and their E2E designs (including the D5 queen test) in
 `docs/plan/06-pruebas.md` §5. Each sheet is written into this map by the iteration that ships
-it (see the Module Index status column for the target iteration).
+it (see the Module Index status column for the shipping iteration).
 
 ---
 
 ## Cross-Reference
 
-| Artifact flow | flow-definitions id | Ships in | E2E spec (planned name) |
+| Artifact flow | flow-definitions id | Ships in | E2E spec (actual path, verified 2026-08-13) |
 |---|---|---|---|
-| A1 | `a1-onboarding-wow` | It6 | `e2e/app/a1-onboarding-first-wow.spec.ts` |
-| A2 | `a2-invite-team` | It6 | `e2e/app/a2-invite-team.spec.ts` |
-| B1 | `b1-create-project` | It1 | `e2e/app/b1-create-project.spec.ts` |
-| B2 | `b2-projects-board` | It5 | `e2e/app/b2-projects-board.spec.ts` |
-| B3 | `b3-project-settings` | It5 | `e2e/app/b3-project-settings.spec.ts` |
-| C1 | `c1-upload-first` | It1 | `e2e/app/c1-upload-first-document.spec.ts` |
-| C2 | `c2-upload-version` | It1 | `e2e/app/c2-upload-new-version.spec.ts` |
-| C3 | `c3-history` | It1 | `e2e/app/c3-version-history.spec.ts` |
-| D1 | `d1-request-review` | It4 | `e2e/app/d1-request-review.spec.ts` |
-| D2 | `d2-assisted-review` | It4 | `e2e/app/d2-assisted-review.spec.ts` |
-| D3 | `d3-anchored-observations` | It4 | `e2e/app/d3-anchored-observations.spec.ts` |
-| D4 | `d4-seal-approve` | It3 | `e2e/app/d4-approve-with-seal.spec.ts` |
-| D5 | `d5-selective-invalidation` | It3 | `e2e/app/d5-selective-invalidation.spec.ts` |
-| E1 | `e1-compare` | It2 | `e2e/app/e1-compare-versions.spec.ts` |
-| E3 | `e3-configurable-checks` | It5 | `e2e/app/e3-configurable-checks.spec.ts` |
-| F1 | `f1-billing` | It7 | `e2e/app/f1-plan-and-billing.spec.ts` |
+| A1 | `a1-onboarding-wow` | It6 | `e2e/app/onboarding/a1-onboarding-wow.spec.ts` |
+| A2 | `a2-invite-team` | It6 | `e2e/app/onboarding/a2-invite-team.spec.ts` |
+| B1 | `b1-create-project` | It1 | `e2e/app/projects/b1-create-project.spec.ts` |
+| B2 | `b2-projects-board` | It5 | `e2e/app/projects/b2-board-search.spec.ts` |
+| B3 | `b3-project-settings` | It5 | `e2e/app/projects/b3-e3-governance.spec.ts` (shared with E3) |
+| C1 | `c1-upload-first` | It1 | `e2e/app/documents/c1-upload-first-document.spec.ts` |
+| C2 | `c2-upload-version` | It1 | `e2e/app/documents/c2-upload-new-version.spec.ts` |
+| C3 | `c3-history` | It1 | `e2e/app/documents/c3-version-history.spec.ts` |
+| D1 | `d1-request-review` | It4 | `e2e/app/reviews/d1-request-review.spec.ts` |
+| D2 | `d2-assisted-review` | It4 | `e2e/app/reviews/d2-assisted-review.spec.ts` |
+| D3 | `d3-anchored-observations` | It4 | `e2e/app/reviews/d3-anchored-observations.spec.ts` |
+| D4 | `d4-seal-approve` | It3 | `e2e/app/seals/d4-seal-approve.spec.ts` |
+| D5 | `d5-selective-invalidation` | It3 | `e2e/app/seals/d5-selective-invalidation.spec.ts` |
+| E1 | `e1-compare` | It2 | `e2e/app/compare/e1-compare-versions.spec.ts` |
+| E3 | `e3-configurable-checks` | It5 | `e2e/app/projects/b3-e3-governance.spec.ts` (shared with B3) |
+| F1 | `f1-billing` | It7 | `e2e/app/billing/f1-f2-limits-usage.spec.ts` (shared with F2) |
+
+> This table previously listed the file names proposed at MVP-planning time
+> (`docs/plan/06` §5), before implementation chose its own directory layout
+> (`e2e/app/<module>/...`) and, in three cases, folded two flow ids into one spec
+> file (B3+E3, F1+F2, and separately E4+E2 in `e4-e2-certificate-saved.spec.ts`).
+> Every path above was confirmed against `find frontend/e2e -name "*.spec.ts"` and the
+> `@flow:` tag constants in `frontend/e2e/helpers/flow-tags.ts` on 2026-08-13.

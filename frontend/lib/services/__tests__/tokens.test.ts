@@ -40,6 +40,8 @@ describe('tokens service', () => {
 
     expect(getAccessToken()).toBeNull();
     expect(getRefreshToken()).toBeNull();
+    expect(mockCookies.get).toHaveBeenCalledWith('access_token');
+    expect(mockCookies.get).toHaveBeenCalledWith('refresh_token');
   });
 
   it('sets and clears tokens', () => {

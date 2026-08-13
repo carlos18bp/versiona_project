@@ -2,15 +2,16 @@
 
 import pytest
 from freezegun import freeze_time
+from reviews.models import Seal
 
 from documents.models import Document, DocumentVersion
 from documents.services import trash_service
 from documents.services.version_service import DomainError
-from reviews.models import Seal
 
 
 @pytest.fixture
 def doc_and_version(document_with_versions):
+    """Build a document with a single draft version for trash tests."""
     document, versions = document_with_versions(n_versions=1)
     return document, versions[0]
 
@@ -18,17 +19,25 @@ def doc_and_version(document_with_versions):
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F01')
 def test_latest_draft_version_goes_to_trash(doc_and_version, versiona_context):
+    """Catches soft_delete() dropping actor attribution.
+
+    E.g. a call-site that forgets to pass `user`: a bare is_trashed check only
+    proves deleted_at is set, not who trashed it (core/models/soft_delete.py:72-75).
+    """
     document, version = doc_and_version
 
     trash_service.trash_version(version, versiona_context.users['editor'])
 
     assert DocumentVersion.objects.filter(pk=version.pk).count() == 0
-    assert DocumentVersion.all_objects.get(pk=version.pk).is_trashed
+    trashed = DocumentVersion.all_objects.get(pk=version.pk)
+    assert trashed.deleted_at is not None
+    assert trashed.deleted_by_id == versiona_context.users['editor'].pk
 
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-E01')
 def test_approved_version_is_never_trash_eligible(doc_and_version, versiona_context):
+    """trash_version rejects an approved version with a 409 conflict."""
     document, version = doc_and_version
     DocumentVersion.all_objects.filter(pk=version.pk).update(is_approved=True)
     version.refresh_from_db()
@@ -42,6 +51,7 @@ def test_approved_version_is_never_trash_eligible(doc_and_version, versiona_cont
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-E02')
 def test_non_latest_version_cannot_be_trashed(document_with_versions, versiona_context):
+    """trash_version rejects a non-latest version with a 409 conflict."""
     document, versions = document_with_versions(n_versions=2)
 
     with pytest.raises(DomainError) as excinfo:
@@ -53,6 +63,7 @@ def test_non_latest_version_cannot_be_trashed(document_with_versions, versiona_c
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
 def test_restore_returns_version_to_timeline(doc_and_version, versiona_context):
+    """restore_version brings a trashed version back into the alive queryset."""
     document, version = doc_and_version
     trash_service.trash_version(version, versiona_context.users['editor'])
     version.refresh_from_db()
@@ -65,6 +76,7 @@ def test_restore_returns_version_to_timeline(doc_and_version, versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-E03')
 def test_restore_blocked_when_newer_version_exists(document_with_versions, versiona_context):
+    """restore_version is rejected with 409 when a newer version already exists."""
     document, versions = document_with_versions(n_versions=1)
     trash_service.trash_version(versions[0], versiona_context.users['editor'])
     DocumentVersion.objects.create(
@@ -86,6 +98,7 @@ def test_restore_blocked_when_newer_version_exists(document_with_versions, versi
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-A01')
 def test_purge_removes_expired_and_number_is_never_reused(doc_and_version, versiona_context, settings):
+    """purge_expired deletes a version past the grace window; the document's latest_number is never reused (I1)."""
     settings.TRASH_RETENTION_DAYS = 30
     document, version = doc_and_version
     with freeze_time('2026-06-01'):
@@ -104,6 +117,7 @@ def test_purge_removes_expired_and_number_is_never_reused(doc_and_version, versi
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-F02')
 def test_trash_project_requires_exact_name_confirmation(versiona_context):
+    """trash_project rejects a confirmation name that does not match exactly."""
     with pytest.raises(DomainError, match='nombre exacto'):
         trash_service.trash_project(
             versiona_context.project, 'nombre-equivocado', versiona_context.users['admin']
@@ -113,6 +127,7 @@ def test_trash_project_requires_exact_name_confirmation(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-E01')
 def test_project_with_approved_version_only_archivable(document_with_versions, versiona_context):
+    """trash_project rejects a project holding an approved version with a 409 conflict."""
     document, versions = document_with_versions(n_versions=1)
     DocumentVersion.all_objects.filter(pk=versions[0].pk).update(is_approved=True)
 
@@ -128,6 +143,7 @@ def test_project_with_approved_version_only_archivable(document_with_versions, v
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-F01')
 def test_archive_makes_project_read_only_and_reversible(versiona_context):
+    """archive_project/unarchive_project toggle the project's is_read_only flag."""
     admin = versiona_context.users['admin']
 
     trash_service.archive_project(versiona_context.project, admin)
@@ -142,17 +158,25 @@ def test_archive_makes_project_read_only_and_reversible(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F01')
 def test_trash_document_without_sealed_versions_goes_to_trash(doc_and_version, versiona_context):
+    """Catches soft_delete() dropping actor attribution.
+
+    E.g. a call-site that forgets to pass `user`: a bare is_trashed check only
+    proves deleted_at is set, not who trashed it (core/models/soft_delete.py:72-75).
+    """
     document, version = doc_and_version
 
     trash_service.trash_document(document, versiona_context.users['admin'])
 
     assert Document.objects.filter(pk=document.pk).count() == 0
-    assert Document.all_objects.get(pk=document.pk).is_trashed
+    trashed = Document.all_objects.get(pk=document.pk)
+    assert trashed.deleted_at is not None
+    assert trashed.deleted_by_id == versiona_context.users['admin'].pk
 
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-E01')
 def test_document_with_sealed_version_cannot_be_trashed(doc_and_version, versiona_context):
+    """trash_document rejects a document with a sealed version with a 409 conflict."""
     document, version = doc_and_version
     Seal.objects.create(
         document_version=version, reviewer=versiona_context.users['reviewer'],
@@ -169,6 +193,7 @@ def test_document_with_sealed_version_cannot_be_trashed(doc_and_version, version
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
 def test_restore_version_not_in_trash_is_rejected(doc_and_version, versiona_context):
+    """restore_version rejects a version that is not currently trashed with a 400."""
     document, version = doc_and_version
 
     with pytest.raises(DomainError) as excinfo:
@@ -181,6 +206,7 @@ def test_restore_version_not_in_trash_is_rejected(doc_and_version, versiona_cont
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-E03')
 def test_restore_version_requires_restoring_trashed_document_first(doc_and_version, versiona_context):
+    """restore_version is rejected with 409 while the parent document is still trashed."""
     document, version = doc_and_version
     editor = versiona_context.users['editor']
     trash_service.trash_version(version, editor)
@@ -197,6 +223,7 @@ def test_restore_version_requires_restoring_trashed_document_first(doc_and_versi
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
 def test_restore_document_not_in_trash_is_rejected(doc_and_version, versiona_context):
+    """restore_document rejects a document that is not currently trashed with a 400."""
     document, _ = doc_and_version
 
     with pytest.raises(DomainError) as excinfo:
@@ -209,6 +236,7 @@ def test_restore_document_not_in_trash_is_rejected(doc_and_version, versiona_con
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-F03')
 def test_restore_document_requires_restoring_project_first(doc_and_version, versiona_context):
+    """restore_document is rejected with 409 while the parent project is still trashed."""
     document, _ = doc_and_version
     admin = versiona_context.users['admin']
     trash_service.trash_document(document, admin)
@@ -224,6 +252,7 @@ def test_restore_document_requires_restoring_project_first(doc_and_version, vers
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
 def test_restore_document_returns_it_to_the_project(doc_and_version, versiona_context):
+    """restore_document brings a trashed document back into the alive queryset."""
     document, _ = doc_and_version
     admin = versiona_context.users['admin']
     trash_service.trash_document(document, admin)
@@ -238,6 +267,7 @@ def test_restore_document_returns_it_to_the_project(doc_and_version, versiona_co
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-F03')
 def test_restore_project_not_in_trash_is_rejected(versiona_context):
+    """restore_project rejects a project that is not currently trashed with a 400."""
     with pytest.raises(DomainError) as excinfo:
         trash_service.restore_project(versiona_context.project, versiona_context.users['admin'])
 
@@ -248,6 +278,7 @@ def test_restore_project_not_in_trash_is_rejected(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-A02')
 def test_purge_deletes_expired_document_with_its_versions(doc_and_version, versiona_context, settings):
+    """purge_expired deletes an expired document together with its versions."""
     settings.TRASH_RETENTION_DAYS = 30
     document, version = doc_and_version
     with freeze_time('2026-06-01'):
@@ -264,6 +295,7 @@ def test_purge_deletes_expired_document_with_its_versions(doc_and_version, versi
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-A02')
 def test_purge_deletes_expired_project_cascade(doc_and_version, versiona_context, settings):
+    """purge_expired deletes an expired project cascading to its documents and versions."""
     from projects.models import Project
 
     settings.TRASH_RETENTION_DAYS = 30
@@ -286,6 +318,7 @@ def test_purge_deletes_expired_project_cascade(doc_and_version, versiona_context
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-E02')
 def test_project_restore_with_live_slug_collision_is_rejected(versiona_context):
+    """restore_project is rejected with 409 when an alive project already holds the same slug."""
     from projects.models import Project
 
     admin = versiona_context.users['admin']
@@ -306,6 +339,7 @@ def test_project_restore_with_live_slug_collision_is_rejected(versiona_context):
 def test_restore_document_renames_slug_when_an_alive_document_took_it(
     doc_and_version, versiona_context
 ):
+    """restore_document appends '-restaurado' to the slug when an alive document has taken it."""
     document, _ = doc_and_version
     original_slug = document.slug
     trash_service.trash_document(document, versiona_context.users['editor'])

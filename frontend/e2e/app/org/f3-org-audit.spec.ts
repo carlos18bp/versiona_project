@@ -9,6 +9,10 @@ test.describe('F3 — Auditoría de la organización', () => {
       const adminContext = await browser.newContext({ storageState: 'e2e/.auth/admin.json' });
       const adminPage = await adminContext.newPage();
 
+      // quality: allow-deep-link (verified 2026-08-13: no .tsx in frontend/
+      // links to /org/audit — grep for the literal string returned zero
+      // matches outside this spec and flow-definitions.json; there is no
+      // button/link to click yet)
       await adminPage.goto('/org/audit');
 
       await expect(adminPage.getByTestId('filter-type')).toBeVisible({ timeout: 20_000 });

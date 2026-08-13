@@ -48,6 +48,7 @@ describe('compare/sync (pure)', () => {
   });
 
   it('nextChanged returns null when nothing changed', () => {
+    // quality: allow-negation-only (pure function on a fixed input; a broken "always null" implementation is already caught by the adjacent tests in this same file — lines 34-48 — that assert real, non-null returns for other inputs)
     expect(nextChanged([change()], null)).toBeNull();
   });
 

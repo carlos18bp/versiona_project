@@ -59,7 +59,7 @@ describe('ProjectPage screen states (C1)', () => {
   it('[C1-L01] does not render the documents list when the project is empty', async () => {
     render(<ProjectPage />);
 
-    await screen.findByTestId('empty-state');
+    expect(await screen.findByTestId('empty-state')).toBeInTheDocument();
     expect(screen.queryByTestId('documents-list')).not.toBeInTheDocument();
   });
 });

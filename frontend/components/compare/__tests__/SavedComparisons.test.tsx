@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import { SavedComparisons } from '../SavedComparisons';
 import { api } from '../../../lib/services/http';
@@ -36,7 +36,7 @@ describe('SavedComparisons (E2)', () => {
 
     render(<SavedComparisons projectId="p1" />);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('projects/p1/saved_comparisons/'));
     expect(screen.queryByTestId('saved-comparisons')).not.toBeInTheDocument();
   });
 });

@@ -23,6 +23,7 @@ describe('ReviewContextBar (D2)', () => {
 
     render(<ReviewContextBar versionId="v2" />);
 
+    expect(fetchContext).toHaveBeenCalledWith('v2');
     expect(screen.queryByTestId('review-context-bar')).not.toBeInTheDocument();
   });
 

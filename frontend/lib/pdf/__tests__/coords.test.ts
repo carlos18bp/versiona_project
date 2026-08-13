@@ -50,6 +50,7 @@ describe('pdf/coords (pure)', () => {
   });
 
   it('firstPage returns null with no bboxes', () => {
+    // quality: allow-negation-only (pure function; adjacent test at line 43-50 in the same file proves firstPage returns a real value for non-empty input)
     expect(firstPage([])).toBeNull();
   });
 });

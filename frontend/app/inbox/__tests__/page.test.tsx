@@ -42,14 +42,14 @@ describe('InboxPage screen states (D1)', () => {
   it('[D1-L01] hides the mark-all-read action when nothing is unread', async () => {
     render(<InboxPage />);
 
-    await screen.findByTestId('empty-state');
+    expect(await screen.findByTestId('empty-state')).toBeInTheDocument();
     expect(screen.queryByTestId('mark-all-read')).not.toBeInTheDocument();
   });
 
   it('[D1-L01] hides the assigned reviews section when there is no pending work', async () => {
     render(<InboxPage />);
 
-    await screen.findByTestId('empty-state');
+    expect(await screen.findByTestId('empty-state')).toBeInTheDocument();
     expect(screen.queryByTestId('inbox-assignments')).not.toBeInTheDocument();
   });
 });

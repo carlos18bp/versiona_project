@@ -1,18 +1,22 @@
-"""Edge matrix for document/version endpoints (C1/C3/C4 guards, B4 read-only
-locks and the C3-L02 plan lock) over engine-independent fixtures."""
+"""Edge matrix for document/version endpoints.
+
+Covers C1/C3/C4 guards, B4 read-only locks and the C3-L02 plan lock, over
+engine-independent fixtures.
+"""
 
 from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
+from projects.models import Project
 
 from documents.models import Document, DocumentVersion
 from documents.services import trash_service
-from projects.models import Project
 
 
 @pytest.fixture
 def doc_with_version(document_with_versions):
+    """Build a document with a single draft version for view-layer edge tests."""
     document, versions = document_with_versions(n_versions=1)
     return document, versions[0]
 
@@ -20,6 +24,7 @@ def doc_with_version(document_with_versions):
 @pytest.mark.django_db
 @pytest.mark.escenario('C1-F01')
 def test_documents_list_returns_paginated_documents(client_as, versiona_context, doc_with_version):
+    """The documents-list endpoint returns the project's documents in a paginated envelope."""
     document, _ = doc_with_version
 
     response = client_as('viewer').get(
@@ -34,6 +39,7 @@ def test_documents_list_returns_paginated_documents(client_as, versiona_context,
 @pytest.mark.django_db
 @pytest.mark.escenario('C1-F01')
 def test_documents_list_filters_by_title_search(client_as, versiona_context, document_with_versions):
+    """The documents-list endpoint filters results by the `q` title search param."""
     document_with_versions(n_versions=1, document_slug='contrato')
     document_with_versions(n_versions=1, document_slug='acta')
 
@@ -49,6 +55,7 @@ def test_documents_list_filters_by_title_search(client_as, versiona_context, doc
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-L01')
 def test_create_document_in_archived_project_is_rejected(client_as, versiona_context):
+    """Creating a document in an archived project is rejected with a 409 read-only error."""
     project = versiona_context.project
     project.status = Project.Status.ARCHIVED
     project.save(update_fields=['status'])
@@ -66,6 +73,7 @@ def test_create_document_in_archived_project_is_rejected(client_as, versiona_con
 @pytest.mark.django_db
 @pytest.mark.escenario('C3-F01')
 def test_document_detail_returns_document_payload(client_as, doc_with_version):
+    """The document-detail endpoint returns the document's title and latest_number."""
     document, _ = doc_with_version
 
     response = client_as('viewer').get(f'/api/documents/{document.public_id}/')
@@ -78,6 +86,7 @@ def test_document_detail_returns_document_payload(client_as, doc_with_version):
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-P02')
 def test_document_delete_requires_admin_role(client_as, doc_with_version):
+    """DELETE on a document is rejected with 403 for a non-admin editor."""
     document, _ = doc_with_version
 
     response = client_as('editor').delete(f'/api/documents/{document.public_id}/')
@@ -88,19 +97,28 @@ def test_document_delete_requires_admin_role(client_as, doc_with_version):
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F01')
-def test_admin_deletes_document_into_trash(client_as, doc_with_version):
+def test_admin_deletes_document_into_trash(client_as, versiona_context, doc_with_version):
+    """Proves request.user threads from the HTTP layer into the persisted row.
+
+    Not None, not some other actor: document_detail's
+    trash_service.trash_document(..., request.user, ...) call
+    (documents/views.py:70) must carry the real authenticated actor through.
+    """
     document, _ = doc_with_version
 
     response = client_as('admin').delete(f'/api/documents/{document.public_id}/')
 
     assert response.status_code == 204
     assert Document.objects.filter(pk=document.pk).count() == 0
-    assert Document.all_objects.get(pk=document.pk).is_trashed
+    trashed = Document.all_objects.get(pk=document.pk)
+    assert trashed.deleted_at is not None
+    assert trashed.deleted_by_id == versiona_context.users['admin'].pk
 
 
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-E01')
 def test_delete_document_with_approved_version_is_rejected(client_as, doc_with_version):
+    """DELETE on a document with an approved version is rejected with a 409 conflict."""
     document, version = doc_with_version
     DocumentVersion.all_objects.filter(pk=version.pk).update(is_approved=True)
 
@@ -113,6 +131,7 @@ def test_delete_document_with_approved_version_is_rejected(client_as, doc_with_v
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
 def test_admin_restores_trashed_document_via_api(client_as, versiona_context, doc_with_version):
+    """POST .../restore/ brings a trashed document back into the alive queryset."""
     document, _ = doc_with_version
     trash_service.trash_document(document, versiona_context.users['admin'])
 
@@ -125,6 +144,7 @@ def test_admin_restores_trashed_document_via_api(client_as, versiona_context, do
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
 def test_restore_document_not_in_trash_returns_400(client_as, doc_with_version):
+    """POST .../restore/ on a document that is not trashed returns 400."""
     document, _ = doc_with_version
 
     response = client_as('admin').post(f'/api/documents/{document.public_id}/restore/')
@@ -136,6 +156,7 @@ def test_restore_document_not_in_trash_returns_400(client_as, doc_with_version):
 @pytest.mark.django_db
 @pytest.mark.escenario('B4-L01')
 def test_upload_intent_on_archived_project_is_rejected(client_as, versiona_context, doc_with_version):
+    """Requesting an upload intent in an archived project is rejected with a 409 read-only error."""
     document, _ = doc_with_version
     project = versiona_context.project
     project.status = Project.Status.ARCHIVED
@@ -152,6 +173,7 @@ def test_upload_intent_on_archived_project_is_rejected(client_as, versiona_conte
 @pytest.mark.django_db
 @pytest.mark.escenario('C2-E02')
 def test_edit_message_on_approved_version_is_rejected(client_as, doc_with_version):
+    """PATCH-ing the message of an approved version is rejected with a 409 conflict."""
     document, version = doc_with_version
     DocumentVersion.all_objects.filter(pk=version.pk).update(is_approved=True)
 
@@ -167,6 +189,7 @@ def test_edit_message_on_approved_version_is_rejected(client_as, doc_with_versio
 @pytest.mark.escenario('C4-P02')
 @pytest.mark.escenario('C4-P01')
 def test_viewer_cannot_delete_a_version(client_as, doc_with_version):
+    """DELETE on a version is rejected with 403 for a viewer."""
     _, version = doc_with_version
 
     response = client_as('viewer').delete(f'/api/versions/{version.public_id}/')
@@ -178,6 +201,7 @@ def test_viewer_cannot_delete_a_version(client_as, doc_with_version):
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-E02')
 def test_delete_non_latest_version_returns_conflict(client_as, document_with_versions):
+    """DELETE on a non-latest version returns a 409 conflict."""
     document, versions = document_with_versions(n_versions=2)
 
     response = client_as('editor').delete(f'/api/versions/{versions[0].public_id}/')
@@ -191,6 +215,7 @@ def test_delete_non_latest_version_returns_conflict(client_as, document_with_ver
 def test_restore_version_by_non_author_editor_is_rejected(
     api_client, versiona_context, doc_with_version, django_user_model
 ):
+    """POST .../restore/ on a version is rejected with 403 for an editor who is not its author."""
     from orgs.models import OrganizationMembership
     from projects.models import ProjectMembership
 
@@ -217,6 +242,7 @@ def test_restore_version_by_non_author_editor_is_rejected(
 @pytest.mark.django_db
 @pytest.mark.escenario('C4-F02')
 def test_restore_version_not_in_trash_returns_400(client_as, doc_with_version):
+    """POST .../restore/ on a version that is not trashed returns 400."""
     _, version = doc_with_version
 
     response = client_as('editor').post(f'/api/versions/{version.public_id}/restore/')
@@ -230,6 +256,7 @@ def test_restore_version_not_in_trash_returns_400(client_as, doc_with_version):
 def test_download_of_locked_history_version_returns_402_with_upgrade(
     client_as, versiona_context, document_with_versions
 ):
+    """Downloading a version locked by the free plan's history window returns 402 with the upgrade flag."""
     versiona_context.org.plan = 'free'
     versiona_context.org.save(update_fields=['plan'])
     with freeze_time('2026-01-01'):
@@ -246,6 +273,7 @@ def test_download_of_locked_history_version_returns_402_with_upgrade(
 @pytest.mark.django_db
 @pytest.mark.escenario('C3-F02')
 def test_version_file_returns_inline_presigned_url(client_as, doc_with_version):
+    """GET .../file/ returns a presigned inline URL for the version's stored PDF."""
     _, version = doc_with_version
 
     with patch(

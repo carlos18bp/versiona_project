@@ -45,6 +45,7 @@ describe('ProcessCard', () => {
   it('omits the route section when the process has no route', () => {
     render(<ProcessCard process={createProcess({ route: undefined })} locale="es" />);
 
+    expect(screen.getByText('Aprueba con tu sello')).toBeInTheDocument();
     expect(screen.queryByText('Dónde encontrarlo')).not.toBeInTheDocument();
   });
 
@@ -58,6 +59,7 @@ describe('ProcessCard', () => {
   it('omits tips when the process has none', () => {
     render(<ProcessCard process={createProcess({ tips: undefined })} locale="es" />);
 
+    expect(screen.getByText('Aprueba con tu sello')).toBeInTheDocument();
     expect(screen.queryByText('Tips útiles')).not.toBeInTheDocument();
   });
 
@@ -69,6 +71,7 @@ describe('ProcessCard', () => {
       />
     );
 
+    expect(screen.getByText('Aprueba con tu sello')).toBeInTheDocument();
     expect(screen.queryByText('Tips útiles')).not.toBeInTheDocument();
   });
 
