@@ -56,8 +56,13 @@ export default async function globalSetup() {
     throw err;
   }
 
-  const raw = execFileSync(PYTHON, ['manage.py', 'e2e_tokens'], { cwd: BACKEND, env });
-  const tokens = JSON.parse(raw.toString()) as Record<string, { access: string; refresh: string }>;
+  // The minter's stdout can carry import-time noise ahead of the JSON (pymupdf
+  // 1.28.2 prints its `fitz` deprecation warning to STDOUT), so parse from the
+  // first `{` instead of trusting the whole stream.
+  const raw = execFileSync(PYTHON, ['manage.py', 'e2e_tokens'], { cwd: BACKEND, env }).toString();
+  const jsonStart = raw.indexOf('{');
+  if (jsonStart === -1) throw new Error(`e2e_tokens produced no JSON on stdout:\n${raw}`);
+  const tokens = JSON.parse(raw.slice(jsonStart)) as Record<string, { access: string; refresh: string }>;
 
   mkdirSync(AUTH_DIR, { recursive: true });
   for (const [alias, pair] of Object.entries(tokens)) {
