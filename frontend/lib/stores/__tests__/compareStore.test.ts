@@ -114,6 +114,7 @@ describe('compareStore', () => {
   });
 
   it('returns null from fetchSectionDiff without a loaded comparison', async () => {
+    // quality: allow-negation-only (early-return guard with no other state mutated on this path — compareStore.ts:69 'if (!comparison) return null' — both existing assertions, the null return AND the non-call of mockGet, already fully describe this branch's behavior; nothing else to anchor on without duplicating the sibling test at line 123)
     const result = await useCompareStore.getState().fetchSectionDiff('sec-1');
 
     expect(result).toBeNull();

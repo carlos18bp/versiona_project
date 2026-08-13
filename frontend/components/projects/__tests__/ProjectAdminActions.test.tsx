@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ProjectAdminActions } from '../ProjectAdminActions';
@@ -40,7 +40,7 @@ describe('ProjectAdminActions (B4)', () => {
 
     render(<ProjectAdminActions projectId="p1" />);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('projects/p1/'));
     expect(screen.queryByTestId('project-admin-actions')).not.toBeInTheDocument();
   });
 

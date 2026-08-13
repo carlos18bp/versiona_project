@@ -66,7 +66,7 @@ describe('TrialBanner', () => {
 
     render(<TrialBanner />);
 
-    await waitFor(() => expect(mockGet).toHaveBeenCalled());
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('orgs/org-1/usage/'));
     expect(screen.queryByTestId('trial-banner')).not.toBeInTheDocument();
   });
 });

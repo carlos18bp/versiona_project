@@ -1,6 +1,6 @@
 {
   "version": "2.2.0",
-  "lastUpdated": "2026-08-02",
+  "lastUpdated": "2026-08-13",
   "flows": {
     "home-loads": {
       "name": "Landing page loads",
@@ -275,10 +275,11 @@
       "module": "review",
       "roles": [
         "reviewer",
-        "editor"
+        "editor",
+        "admin"
       ],
       "priority": "P1",
-      "description": "Reviewer selects a page zone and comments; thread transitions open/answered/resolved and survives across versions (docs/plan/01 D3)",
+      "description": "Reviewer selects a page zone and comments; thread transitions open/answered/resolved and survives across versions (docs/plan/01 D3). Resolving a thread you did not open requires admin (`canResolveAny`, gated on `effective_role === 'admin'` in the version viewer) — a non-author reviewer no longer sees an enabled Resolve button that would 403 against observations/services.py's set_status rule; fixed 2026-08-02 (PR #9) and unit-covered in ObservationsPanel.test.tsx",
       "expectedSpecs": 1,
       "outcomes": [
         "success",
@@ -362,7 +363,7 @@
         "editor"
       ],
       "priority": "P2",
-      "description": "Latest draft version goes to the trash with two-step confirmation, shows a tombstone and can be restored (docs/audit/03 C4)",
+      "description": "Latest draft version goes to the trash with two-step confirmation, shows a tombstone and can be restored (docs/audit/03 C4). A rejected delete (e.g. the 409 'Solo la última versión del documento puede eliminarse') surfaces the backend's message via toast instead of closing the dialog silently — fixed 2026-08-02 (PR #9) after VersionTimeline was found swallowing the refusal; pinned by the C4-E02 spec assertion",
       "expectedSpecs": 1,
       "outcomes": [
         "success",
@@ -401,7 +402,7 @@
       "name": "F2 - Usage panel and preventive warnings",
       "module": "billing",
       "roles": [
-        "owner"
+        "member"
       ],
       "priority": "P2",
       "description": "Usage vs plan limits with warnings at 80%, trial status line, reachable from the authed header (Plan y uso) and settings; upgrade CTA links to /precios with a contact fallback",

@@ -3,12 +3,12 @@
 from pathlib import Path
 
 import pytest
-
 from checks.models import ChecklistTemplate
 from documents.services import storage_service, version_service
+from reviews.services import seal_service
+
 from projects.models import ProjectConfigVersion
 from projects.services import config_service
-from reviews.services import seal_service
 
 TESTDATA = Path(__file__).resolve().parents[3] / 'testdata' / 'pdfs'
 
@@ -20,6 +20,7 @@ def _test_env(settings, tmp_path):
 
 
 def upload(document, fixture, message, author):
+    """Upload a fixture PDF as a new version and return it."""
     intent = version_service.create_upload_intent(document, author)
     storage_service.put_bytes(intent.key, (TESTDATA / fixture).read_bytes(), 'application/pdf')
     version, _ = version_service.complete_upload(document, intent.upload_id, message, author)
@@ -29,6 +30,7 @@ def upload(document, fixture, message, author):
 @pytest.mark.django_db
 @pytest.mark.escenario('B3-F01')
 def test_editing_config_creates_a_new_version(versiona_context):
+    """update_config creates a new ProjectConfigVersion row and leaves the previous one untouched."""
     project = versiona_context.project
     admin = versiona_context.users['admin']
     original = ProjectConfigVersion.current_for(project)
@@ -48,8 +50,11 @@ def test_editing_config_creates_a_new_version(versiona_context):
 @pytest.mark.escenario('B3-F02')
 @pytest.mark.escenario('B3-L01')
 def test_i8_existing_versions_keep_their_pinned_config(versiona_context):
-    """THE non-retroactivity proof: a version uploaded under config v1 keeps
-    answering to v1 even after the project moves to v2."""
+    """THE non-retroactivity proof (I8).
+
+    A version uploaded under config v1 keeps answering to v1 even after the
+    project moves to v2.
+    """
     context = versiona_context
     editor = context.users['editor']
     document = version_service.create_document(context.project, 'Pineado', editor)
@@ -72,6 +77,7 @@ def test_i8_existing_versions_keep_their_pinned_config(versiona_context):
 @pytest.mark.escenario('B3-E01')
 @pytest.mark.escenario('E3-E01')
 def test_checklist_validation_rejects_bad_items(versiona_context):
+    """update_config rejects a checklist with a missing key, an invalid type, or a non-member owner."""
     project = versiona_context.project
     admin = versiona_context.users['admin']
 
@@ -92,8 +98,10 @@ def test_checklist_validation_rejects_bad_items(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('B3-F03')
 def test_owner_based_approval_all_assigned(versiona_context):
-    """'all_assigned': the version approves only when EVERY owned section is
-    sealed by one of its owners."""
+    """'all_assigned' approves the version only when EVERY owned section is sealed.
+
+    Each owned section must be sealed by one of its OWN owners.
+    """
     context = versiona_context
     editor = context.users['editor']
     reviewer = context.users['reviewer']
@@ -121,6 +129,7 @@ def test_owner_based_approval_all_assigned(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('B3-E02')
 def test_owner_seal_by_a_non_owner_does_not_approve(versiona_context):
+    """A seal placed by someone other than the section's assigned owner does not approve the version."""
     context = versiona_context
     editor = context.users['editor']
     reviewer = context.users['reviewer']
@@ -143,8 +152,13 @@ def test_owner_seal_by_a_non_owner_does_not_approve(versiona_context):
 @pytest.mark.django_db
 @pytest.mark.escenario('B3-A01')
 def test_template_copy_on_apply_is_a_snapshot(versiona_context):
-    """Kit 2: applying copies the items; editing the template later never
-    touches the project config (I8-friendly)."""
+    """Kit 2: applying a template copies its items; editing it later never touches the project config.
+
+    A bare truthy check on config.checklist only fails if the list goes fully
+    empty — it would miss apply_template's shallow copy (config_service.py:94)
+    silently losing or corrupting a field, since any non-empty list would
+    still pass.
+    """
     context = versiona_context
     admin = context.users['admin']
     template = ChecklistTemplate.objects.create(
@@ -155,16 +169,17 @@ def test_template_copy_on_apply_is_a_snapshot(versiona_context):
     )
 
     config = config_service.apply_template(context.project, admin, template)
+    original_items = list(template.items)
 
     assert config.checklist[0]['key'] == 'confidencialidad'
     template.items = []
     template.save(update_fields=['items'])
     config.refresh_from_db()
-    assert config.checklist, 'la copia sobrevive a la edición de la plantilla'
+    assert config.checklist == original_items
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('actor, expected', [
+@pytest.mark.parametrize(('actor', 'expected'), [
     pytest.param('admin', 201, id='b3-p01-admin'),
     pytest.param('editor', 404, id='b3-p02-editor-hidden'),
     pytest.param('anonymous', 401, id='b3-p03-anonymous'),
@@ -173,6 +188,7 @@ def test_template_copy_on_apply_is_a_snapshot(versiona_context):
 @pytest.mark.escenario('B3-P01')
 @pytest.mark.escenario('E3-P01')
 def test_update_config_permission_matrix(client_as, versiona_context, actor, expected):
+    """The update-config endpoint enforces the DRF permission matrix per role."""
     response = client_as(actor).post(
         f'/api/projects/{versiona_context.project.public_id}/config/',
         {'d5_mode': 'coordinator'},
@@ -184,6 +200,7 @@ def test_update_config_permission_matrix(client_as, versiona_context, actor, exp
 
 @pytest.mark.django_db
 def test_config_is_hidden_from_non_admin_members(client_as, versiona_context):
+    """GET .../config/ returns 404 for a non-admin project member."""
     response = client_as('viewer').get(
         f'/api/projects/{versiona_context.project.public_id}/config/'
     )
@@ -193,6 +210,7 @@ def test_config_is_hidden_from_non_admin_members(client_as, versiona_context):
 
 @pytest.mark.django_db
 def test_config_get_exposes_current_state(client_as, versiona_context):
+    """GET .../config/ exposes the current config version's number, d5_mode and checklist."""
     response = client_as('admin').get(
         f'/api/projects/{versiona_context.project.public_id}/config/'
     )

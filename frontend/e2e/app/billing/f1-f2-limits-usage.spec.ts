@@ -49,8 +49,14 @@ test.describe('F1+F2 — Límites del plan y consumo', () => {
       await page.getByTestId('onboarding-submit').click();
       await page.waitForURL(/\/compare\//, { timeout: 120_000 });
 
-      // It9: la cuenta fresca está en prueba Pro — el panel lo dice
-      await page.goto('/org/usage');
+      // It9: la cuenta fresca está en prueba Pro — el panel lo dice. Llega por
+      // el nav autenticado (no deep link): el header ya está montado en
+      // /compare/... (arriba). Catches: a regression where the "Plan y uso"
+      // nav href drifts from /org/usage — the unit test (Header-R4) only
+      // reads the rendered attribute and would stay green; only a real
+      // click-through exercises Next.js routing/hydration.
+      await page.getByTestId('nav-plan-usage').click();
+      await page.waitForURL(/\/org\/usage/);
       await expect(page.getByTestId('usage-panel')).toBeVisible({ timeout: 20_000 });
       await expect(page.getByTestId('usage-trial-line')).toBeVisible();
 

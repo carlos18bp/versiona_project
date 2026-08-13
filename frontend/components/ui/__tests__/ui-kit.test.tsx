@@ -51,6 +51,7 @@ describe('Skeleton', () => {
 
 describe('Modal', () => {
   it('renders nothing when closed', () => {
+    // quality: allow-negation-only (Modal.tsx:15 returns null before rendering anything when !open — there is nothing else the component renders in this state)
     render(
       <Modal open={false} onClose={jest.fn()} title="Confirmar">
         contenido
@@ -115,6 +116,7 @@ describe('Toaster', () => {
   });
 
   it('renders nothing when there are no toasts', () => {
+    // quality: allow-negation-only (toast.tsx:36 returns null when toasts.length === 0 — nothing else renders)
     render(<Toaster />);
 
     expect(screen.queryByTestId('toaster')).not.toBeInTheDocument();

@@ -22,6 +22,7 @@ describe('Header role-based navigation', () => {
 
     render(<Header />);
 
+    expect(screen.getByTestId('nav-plan-usage')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Papelera' })).not.toBeInTheDocument();
   });
 

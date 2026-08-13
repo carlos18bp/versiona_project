@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { CertificatePanel } from '../CertificatePanel';
@@ -30,7 +30,7 @@ describe('CertificatePanel (E4)', () => {
       <CertificatePanel versionId="v1" isApproved={false} canIssue={false} />
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('versions/v1/certificates/'));
     expect(screen.queryByTestId('certificate-panel')).not.toBeInTheDocument();
   });
 

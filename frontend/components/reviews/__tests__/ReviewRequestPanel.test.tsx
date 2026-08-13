@@ -91,6 +91,7 @@ describe('ReviewRequestPanel (D1)', () => {
   it('[D1-P02] hides the request button from non-editors', () => {
     render(<ReviewRequestPanel versionId="v1" projectId="p1" canRequest={false} />);
 
+    expect(screen.getByTestId('review-request-panel')).toBeInTheDocument();
     expect(screen.queryByTestId('request-review')).not.toBeInTheDocument();
   });
 });

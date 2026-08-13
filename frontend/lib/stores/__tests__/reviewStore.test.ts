@@ -69,6 +69,7 @@ describe('reviewStore', () => {
     await useReviewStore.getState().fetchContext('v2');
 
     expect(useReviewStore.getState().context).toBeNull();
+    expect(mockGet).toHaveBeenCalledWith('versions/v2/review_context/');
   });
 
   it('cancelRequest posts and reloads', async () => {

@@ -38,4 +38,20 @@ test.describe('Manual interactivo', () => {
       ).toBeVisible({ timeout: 10_000 });
     }
   );
+
+  test(
+    'MAN-F03 — una búsqueda sin coincidencias muestra "Sin resultados"',
+    { tag: [...HELP_MANUAL_BROWSE, '@scenario:man-f03', '@outcome:display'] },
+    async ({ page }) => {
+      // Catches: a Fuse.js threshold/config regression that loosens past 0.4
+      // and starts matching everything, or an empty-results branch that
+      // silently breaks (renders neither the list nor the "Sin resultados"
+      // copy) — see ManualSearch.tsx:140-143 and useManualSearch.ts:46-58.
+      await page.goto('/manual');
+      await page.getByPlaceholder('Buscar en el manual…').fill('zzznoexistexyz123');
+
+      await expect(page.getByRole('listbox').getByText('Sin resultados')).toBeVisible();
+      await expect(page.getByRole('option')).toHaveCount(0);
+    }
+  );
 });

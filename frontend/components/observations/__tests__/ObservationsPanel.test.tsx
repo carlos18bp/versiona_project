@@ -118,6 +118,7 @@ describe('ObservationsPanel (D3)', () => {
   it('[D3-P02] hides creation from non-reviewers', () => {
     render(<ObservationsPanel {...baseProps} canCreate={false} />);
 
+    expect(screen.getByText('Sin observaciones')).toBeInTheDocument();
     expect(screen.queryByTestId('add-observation')).not.toBeInTheDocument();
   });
 
@@ -129,6 +130,7 @@ describe('ObservationsPanel (D3)', () => {
 
     render(<ObservationsPanel {...baseProps} canResolveAny={false} />);
 
+    expect(screen.getByTestId('observation-o1')).toBeInTheDocument();
     expect(screen.queryByTestId('resolve-o1')).not.toBeInTheDocument();
   });
 

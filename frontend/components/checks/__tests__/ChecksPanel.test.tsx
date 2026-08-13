@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 
 import { ChecksPanel } from '../ChecksPanel';
 import { api } from '../../../lib/services/http';
@@ -100,6 +100,7 @@ describe('ChecksPanel (E3)', () => {
     render(<ChecksPanel versionId="v1" />);
 
     const row = await screen.findByTestId('check-tiene-multa');
+    expect(row).toBeInTheDocument();
     expect(within(row).queryByRole('link')).not.toBeInTheDocument();
   });
 
@@ -109,6 +110,7 @@ describe('ChecksPanel (E3)', () => {
     render(<ChecksPanel versionId="v1" />);
 
     const row = await screen.findByTestId('check-tiene-multa');
+    expect(row).toBeInTheDocument();
     expect(within(row).queryByRole('button')).not.toBeInTheDocument();
   });
 
@@ -117,6 +119,7 @@ describe('ChecksPanel (E3)', () => {
 
     render(<ChecksPanel versionId="v1" />);
 
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('versions/v1/checks/'));
     expect(screen.queryByTestId('checks-panel')).not.toBeInTheDocument();
   });
 });

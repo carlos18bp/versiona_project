@@ -118,7 +118,7 @@ describe('DocumentTimelinePage screen states (C2/C3)', () => {
 
     render(<DocumentTimelinePage />);
 
-    await screen.findByTestId('version-item-1');
+    expect(await screen.findByTestId('version-item-1')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Siguiente' })).not.toBeInTheDocument();
   });
 });
