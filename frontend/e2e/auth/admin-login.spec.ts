@@ -13,7 +13,11 @@ function mintTokens(): { access: string; refresh: string } {
     ['manage.py', 'e2e_tokens'],
     { cwd: BACKEND, encoding: 'utf-8', env: backendE2eEnv() }
   );
-  return JSON.parse(raw).owner;
+  // Same guard as global-setup.ts: the minter's stdout can carry import-time
+  // noise ahead of the JSON (pymupdf 1.28.2 prints to STDOUT).
+  const jsonStart = raw.indexOf('{');
+  if (jsonStart === -1) throw new Error(`e2e_tokens produced no JSON on stdout:\n${raw}`);
+  return JSON.parse(raw.slice(jsonStart)).owner;
 }
 
 // quality: disable no_user_interaction (query-param handoff page, no clickable UI by design — the click happens in Django admin, a separate app outside this suite; handoff logic is already unit-tested in app/admin-login/__tests__/page.test.tsx)
