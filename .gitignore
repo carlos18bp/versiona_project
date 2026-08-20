@@ -125,7 +125,6 @@ test-results/test-quality-report.json
 
 
 # ============================================================================
-# Sync artifacts (sync-{claude,codex,windsurf,settings,shared}-base.sh backups)
 # ============================================================================
 *.bak.*
 *.bak.*/
