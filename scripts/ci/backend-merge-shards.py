@@ -21,10 +21,13 @@ def run_coverage(*args: str) -> None:
 
 
 def coverage_files() -> list[Path]:
+    def is_coverage_data(path: Path) -> bool:
+        return path.name == ".coverage" or path.name.startswith(".coverage.")
+
     return sorted(
         path
         for path in ARTIFACTS.rglob(".coverage*")
-        if path.is_file()
+        if path.is_file() and is_coverage_data(path)
     )
 
 

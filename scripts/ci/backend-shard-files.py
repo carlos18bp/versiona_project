@@ -30,6 +30,13 @@ ROOTS = (
     "engine/tests",
     "public_tools/tests",
 )
+# These files launch real OCR subprocesses. Keeping them on distinct runners,
+# together with xdist's loadfile scheduler, avoids saturating one runner with
+# concurrent Tesseract processes while preserving duration-based balancing.
+DISTINCT_RESOURCE_FILES = (
+    "engine/tests/test_analysis_pipeline.py",
+    "reviews/tests/test_hardening.py",
+)
 
 
 def discover() -> list[str]:
@@ -51,7 +58,17 @@ def assign(
     default = statistics.median(weights.values()) if weights else 1.0
     bins: list[list[str]] = [[] for _ in range(count)]
     loads = [0.0] * count
-    for path in sorted(files, key=lambda item: (-weights.get(item, default), item)):
+    remaining = set(files)
+    for index, path in enumerate(DISTINCT_RESOURCE_FILES):
+        if path not in remaining:
+            continue
+        target = index % count
+        bins[target].append(path)
+        loads[target] += weights.get(path, default)
+        remaining.remove(path)
+    for path in sorted(
+        remaining, key=lambda item: (-weights.get(item, default), item)
+    ):
         target = loads.index(min(loads))
         bins[target].append(path)
         loads[target] += weights.get(path, default)

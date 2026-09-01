@@ -115,7 +115,7 @@ jobs:
         # floor and module gates move to the combined report below.
         run: |
           FILES=$(python3 "$GITHUB_WORKSPACE/scripts/ci/backend-shard-files.py" --shard ${{ matrix.shard }})
-          pytest -n auto -v --tb=short --junitxml=pytest-results.xml --cov-branch --cov-fail-under=0 --cov-report= $FILES
+          pytest -n auto --dist=loadfile -v --tb=short --junitxml=pytest-results.xml --cov-branch --cov-fail-under=0 --cov-report= $FILES
 
       - name: Upload backend shard results
         if: always()
